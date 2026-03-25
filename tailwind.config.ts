@@ -46,6 +46,9 @@ export default {
         "blue-btn": {
           DEFAULT: "hsl(var(--blue-btn))",
           foreground: "hsl(var(--blue-btn-foreground))",
+        "green-btn": {
+          DEFAULT: "hsl(var(--green-btn))",
+          foreground: "hsl(var(--green-btn-foreground))",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",

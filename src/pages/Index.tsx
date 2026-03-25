@@ -9,6 +9,9 @@ const Index = () => {
       <Button className="bg-blue-btn text-blue-btn-foreground hover:bg-blue-btn/90">
         Botão Azul
       </Button>
+      <Button className="bg-green-btn text-green-btn-foreground hover:bg-green-btn/90">
+        Botão Verde
+      </Button>
     </div>
   );
 };
