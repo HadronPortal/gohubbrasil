@@ -4,7 +4,7 @@ const Index = () => {
   return (
     <div className="flex min-h-screen items-center justify-center gap-4 bg-background">
       <Button className="bg-blue-btn text-blue-btn-foreground hover:bg-blue-btn/90">
-        Botão Azul
+        Botão Laranja
       </Button>
       <Button variant="destructive">
         Botão Vermelho
