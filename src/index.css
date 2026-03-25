@@ -42,6 +42,9 @@ All colors MUST be HSL.
     --blue-btn: 211 100% 50%;
     --blue-btn-foreground: 0 0% 100%;
 
+    --green-btn: 142 71% 45%;
+    --green-btn-foreground: 0 0% 100%;
+
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
