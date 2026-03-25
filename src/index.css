@@ -36,7 +36,10 @@ All colors MUST be HSL.
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
 
-    --blue-btn: 24 95% 53%;
+    --orange-btn: 24 95% 53%;
+    --orange-btn-foreground: 0 0% 100%;
+
+    --blue-btn: 211 100% 50%;
     --blue-btn-foreground: 0 0% 100%;
 
     --radius: 0.5rem;

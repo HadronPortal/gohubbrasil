@@ -39,6 +39,10 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
+        "orange-btn": {
+          DEFAULT: "hsl(var(--orange-btn))",
+          foreground: "hsl(var(--orange-btn-foreground))",
+        },
         "blue-btn": {
           DEFAULT: "hsl(var(--blue-btn))",
           foreground: "hsl(var(--blue-btn-foreground))",
