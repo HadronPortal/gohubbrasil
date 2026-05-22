@@ -21,7 +21,7 @@ const Index = () => {
       {/* Sidebar - Bling Style */}
       <aside className="w-64 bg-[#2c3e50] text-white flex flex-col">
         <div className="p-6 border-b border-[#34495e]">
-          <h1 className="text-2xl font-bold tracking-tight text-blue-400">Bling!</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-blue-400">Painel Fácil</h1>
         </div>
         <nav className="flex-1 py-4">
           <ul className="space-y-1 px-3">
