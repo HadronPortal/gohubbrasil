@@ -14,6 +14,16 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const handleSocialLogin = (provider: string) => {
+    setIsLoading(true);
+    toast.info(`Conectando ao ${provider}...`);
+    setTimeout(() => {
+      setIsLoading(false);
+      toast.success(`Login com ${provider} realizado!`);
+      navigate("/dashboard");
+    }, 1500);
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     

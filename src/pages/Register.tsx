@@ -17,6 +17,28 @@ import {
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSocialRegister = (provider: string) => {
+    setIsLoading(true);
+    toast.info(`Conectando ao ${provider}...`);
+    setTimeout(() => {
+      setIsLoading(false);
+      toast.success(`Cadastro com ${provider} realizado!`);
+      navigate("/dashboard");
+    }, 1500);
+  };
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      toast.success("Conta criada com sucesso!");
+      navigate("/dashboard");
+    }, 1500);
+  };
 
   const benefits = [
     {
@@ -85,7 +107,12 @@ const Register = () => {
               <h3 className="text-lg font-bold text-gray-800 text-center md:text-left">Crie sua conta no Painel Fácil</h3>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Button variant="outline" className="h-12 border-gray-200 hover:bg-gray-50 flex items-center justify-center gap-2">
+                <Button 
+                  variant="outline" 
+                  disabled={isLoading}
+                  onClick={() => handleSocialRegister("Google")}
+                  className="h-12 border-gray-200 hover:bg-gray-50 flex items-center justify-center gap-2"
+                >
                   <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                     <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -94,7 +121,12 @@ const Register = () => {
                   </svg>
                   <span className="font-semibold text-gray-700">Google</span>
                 </Button>
-                <Button variant="outline" className="h-12 border-gray-200 hover:bg-gray-50 flex items-center justify-center gap-2">
+                <Button 
+                  variant="outline" 
+                  disabled={isLoading}
+                  onClick={() => handleSocialRegister("Facebook")}
+                  className="h-12 border-gray-200 hover:bg-gray-50 flex items-center justify-center gap-2"
+                >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="#1877F2" xmlns="http://www.w3.org/2000/svg">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                   </svg>
@@ -108,7 +140,7 @@ const Register = () => {
               <span className="absolute bg-white px-4 text-xs font-medium text-gray-400 uppercase tracking-wider">ou insira seus dados abaixo</span>
             </div>
 
-            <form className="space-y-6">
+            <form onSubmit={handleRegister} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-700">Razão Social*</label>
@@ -195,8 +227,19 @@ const Register = () => {
                 </label>
               </div>
 
-              <Button className="w-full h-14 bg-[#3498DB] hover:bg-[#2980B9] text-white font-bold text-lg shadow-lg shadow-blue-200 transition-all rounded-lg">
-                CRIAR CONTA
+              <Button 
+                type="submit" 
+                disabled={isLoading}
+                className="w-full h-14 bg-[#3498DB] hover:bg-[#2980B9] text-white font-bold text-lg shadow-lg shadow-blue-200 transition-all rounded-lg"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    CRIANDO CONTA...
+                  </>
+                ) : (
+                  "CRIAR CONTA"
+                )}
               </Button>
             </form>
           </div>
