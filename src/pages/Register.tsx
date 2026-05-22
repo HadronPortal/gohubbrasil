@@ -1,44 +1,25 @@
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Link } from "react-router-dom";
 import { 
   ArrowLeft, 
-  Check, 
   Star, 
   Headphones, 
   Globe, 
   Wallet,
   Eye,
-  EyeOff
+  EyeOff,
+  Loader2
 } from "lucide-react";
+import { toast } from "sonner";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-
-  const handleSocialRegister = (provider: string) => {
-    setIsLoading(true);
-    toast.info(`Conectando ao ${provider}...`);
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success(`Cadastro com ${provider} realizado!`);
-      navigate("/dashboard");
-    }, 1500);
-  };
-
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Conta criada com sucesso!");
-      navigate("/dashboard");
-    }, 1500);
-  };
 
   const benefits = [
     {
@@ -63,9 +44,29 @@ const Register = () => {
     }
   ];
 
+  const handleSocialRegister = (provider: string) => {
+    setIsLoading(true);
+    toast.info(`Conectando ao ${provider}...`);
+    setTimeout(() => {
+      setIsLoading(false);
+      toast.success(`Cadastro com ${provider} realizado!`);
+      navigate("/dashboard");
+    }, 1500);
+  };
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      toast.success("Conta criada com sucesso!");
+      navigate("/dashboard");
+    }, 1500);
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col md:flex-row">
-      {/* Sidebar Benefits - Visible on MD and UP */}
+      {/* Sidebar Benefits */}
       <div className="hidden md:flex md:w-1/3 bg-[#F4F7F6] p-12 flex-col gap-12 border-r border-gray-100 overflow-y-auto">
         <Link to="/login" className="flex items-center gap-2 text-gray-600 hover:text-[#3498DB] transition-colors">
           <ArrowLeft size={16} />
@@ -96,7 +97,6 @@ const Register = () => {
       {/* Form Section */}
       <div className="flex-1 overflow-y-auto bg-white">
         <div className="max-w-2xl mx-auto py-12 px-6 lg:px-12">
-          {/* Header for mobile only */}
           <div className="md:hidden mb-8 text-center space-y-4">
             <h1 className="text-3xl font-bold text-[#2C3E50]">Painel Fácil</h1>
             <h2 className="text-xl font-bold text-gray-900">Comece seu teste grátis</h2>
@@ -144,15 +144,15 @@ const Register = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-700">Razão Social*</label>
-                  <Input placeholder="Nome da sua empresa" className="h-12 border-gray-200 focus:border-[#3498DB] focus:ring-[#3498DB]" />
+                  <Input required placeholder="Nome da sua empresa" className="h-12 border-gray-200 focus:border-[#3498DB] focus:ring-[#3498DB]" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-700">E-mail de conta*</label>
-                  <Input type="email" placeholder="exemplo@email.com" className="h-12 border-gray-200 focus:border-[#3498DB] focus:ring-[#3498DB]" />
+                  <Input required type="email" placeholder="exemplo@email.com" className="h-12 border-gray-200 focus:border-[#3498DB] focus:ring-[#3498DB]" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-700">Nº de WhatsApp*</label>
-                  <Input placeholder="(00) 00000-0000" className="h-12 border-gray-200 focus:border-[#3498DB] focus:ring-[#3498DB]" />
+                  <Input required placeholder="(00) 00000-0000" className="h-12 border-gray-200 focus:border-[#3498DB] focus:ring-[#3498DB]" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-700">CNPJ / CPF</label>
@@ -163,7 +163,7 @@ const Register = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-700">Qual seu segmento de trabalho?*</label>
-                  <select className="flex h-12 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:border-[#3498DB] focus:ring-1 focus:ring-[#3498DB]">
+                  <select required className="flex h-12 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:border-[#3498DB] focus:ring-1 focus:ring-[#3498DB]">
                     <option value="">Selecione uma opção</option>
                     <option value="ecommerce">Comércio (e-commerce)</option>
                     <option value="fisico">Comércio (loja física)</option>
@@ -173,7 +173,7 @@ const Register = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-700">Qual o tamanho da sua empresa?*</label>
-                  <select className="flex h-12 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:border-[#3498DB] focus:ring-1 focus:ring-[#3498DB]">
+                  <select required className="flex h-12 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:border-[#3498DB] focus:ring-1 focus:ring-[#3498DB]">
                     <option value="">Selecione uma opção</option>
                     <option value="mei">MEI</option>
                     <option value="micro">Micro</option>
@@ -188,6 +188,7 @@ const Register = () => {
                   <label className="text-sm font-bold text-gray-700">Digite uma senha*</label>
                   <div className="relative">
                     <Input 
+                      required
                       type={showPassword ? "text" : "password"} 
                       placeholder="Senha" 
                       className="h-12 border-gray-200 focus:border-[#3498DB] focus:ring-[#3498DB]" 
@@ -205,6 +206,7 @@ const Register = () => {
                   <label className="text-sm font-bold text-gray-700">Confirme sua senha*</label>
                   <div className="relative">
                     <Input 
+                      required
                       type={showConfirmPassword ? "text" : "password"} 
                       placeholder="Senha" 
                       className="h-12 border-gray-200 focus:border-[#3498DB] focus:ring-[#3498DB]" 
@@ -221,7 +223,7 @@ const Register = () => {
               </div>
 
               <div className="flex items-start space-x-2 pt-2">
-                <Checkbox id="terms" className="mt-1 border-gray-300 data-[state=checked]:bg-[#3498DB] data-[state=checked]:border-[#3498DB]" />
+                <Checkbox required id="terms" className="mt-1 border-gray-300 data-[state=checked]:bg-[#3498DB] data-[state=checked]:border-[#3498DB]" />
                 <label htmlFor="terms" className="text-xs text-gray-500 leading-normal cursor-pointer">
                   Declaro ter lido e aceitado os <a href="#" className="text-[#3498DB] hover:underline font-medium">termos e políticas de serviço</a>
                 </label>
