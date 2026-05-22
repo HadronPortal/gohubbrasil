@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -97,7 +98,7 @@ const Login = () => {
 
         <div className="text-center space-y-4">
           <p className="text-gray-600 text-sm">
-            Não tem uma conta? <a href="#" className="text-[#3498DB] font-bold hover:underline">Teste grátis por 30 dias</a>
+            Não tem uma conta? <Link to="/register" className="text-[#3498DB] font-bold hover:underline">Teste grátis por 30 dias</Link>
           </p>
           <div className="flex justify-center gap-4 text-xs text-gray-400">
             <a href="#" className="hover:text-gray-600">Central de Ajuda</a>
