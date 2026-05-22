@@ -14,7 +14,7 @@ const Login = () => {
         {/* Logo Section */}
         <div className="flex flex-col items-center gap-2">
           <h1 className="text-4xl font-bold text-[#2C3E50] tracking-tight">
-            Bling<span className="text-[#3498DB]">!</span>
+            Painel <span className="text-[#3498DB]">Fácil</span>
           </h1>
           <p className="text-gray-500 text-sm">O ERP que descomplica sua empresa</p>
         </div>
