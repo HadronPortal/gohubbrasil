@@ -9,12 +9,27 @@ import { Eye, EyeOff, Facebook, Mail } from "lucide-react";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulating login
-    navigate("/dashboard");
+    
+    if (!email || !password) {
+      toast.error("Por favor, preencha todos os campos.");
+      return;
+    }
+
+    setIsLoading(true);
+    
+    // Simulação de autenticação
+    setTimeout(() => {
+      setIsLoading(false);
+      toast.success("Login realizado com sucesso!");
+      navigate("/dashboard");
+    }, 1500);
   };
 
   return (
@@ -39,6 +54,9 @@ const Login = () => {
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                   <Input 
+                    type="text"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder="Seu e-mail ou nome de usuário" 
                     className="pl-10 h-12 bg-gray-50 border-gray-200 focus:border-[#3498DB] focus:ring-[#3498DB]"
                   />
@@ -53,6 +71,8 @@ const Login = () => {
                 <div className="relative">
                   <Input 
                     type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="Sua senha" 
                     className="h-12 bg-gray-50 border-gray-200 focus:border-[#3498DB] focus:ring-[#3498DB]"
                   />
@@ -70,8 +90,19 @@ const Login = () => {
                 <label htmlFor="remember" className="text-sm text-gray-600 cursor-pointer">Lembrar de mim</label>
               </div>
 
-              <Button type="submit" className="w-full h-12 bg-[#3498DB] hover:bg-[#2980B9] text-white font-bold text-base transition-all">
-                ENTRAR
+              <Button 
+                type="submit" 
+                disabled={isLoading}
+                className="w-full h-12 bg-[#3498DB] hover:bg-[#2980B9] text-white font-bold text-base transition-all"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ENTRANDO...
+                  </>
+                ) : (
+                  "ENTRAR"
+                )}
               </Button>
             </form>
 
