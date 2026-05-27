@@ -66,10 +66,9 @@ export default function Login() {
         <div className="flex flex-col items-center justify-center space-y-4">
           <div className="relative w-full flex justify-center">
             <img 
-              src="/new-logo.png" 
+              src="/barber-logo-original.png" 
               alt="Logo Barber Shop" 
               className="w-48 h-auto object-contain"
-              style={{ filter: "invert(81%) sepia(35%) saturate(847%) hue-rotate(352deg) brightness(101%) contrast(89%)" }}
             />
           </div>
         </div>
