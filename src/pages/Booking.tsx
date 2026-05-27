@@ -142,9 +142,9 @@ export default function Booking() {
 
         {/* Header Section */}
         <div>
-          <h1 className="text-[11px] font-light uppercase tracking-[0.2em] text-[#8a9ab5] m-0">OBRIGADO</h1>
+          <h1 className="text-[11px] font-light uppercase tracking-[0.2em] text-[#8a9ab5] m-0">THANKS</h1>
           <h2 className="text-4xl font-bold uppercase text-[#f0c040] font-oswald tracking-tight m-0 leading-tight">
-            {firstName.toUpperCase()}!
+            GUILHERME!
           </h2>
         </div>
 
