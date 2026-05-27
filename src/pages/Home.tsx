@@ -7,18 +7,12 @@ import { toast } from "sonner";
 
 // Custom Razor icon (Navalha)
 const Razor = ({ className }: { className?: string }) => (
-  <svg 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-    <path d="m9 12 2 2 4-4" />
-  </svg>
+  <img 
+    src="/navalha.png" 
+    alt="Navalha" 
+    className={`${className} brightness-0 invert-[.75] sepia-[.64] saturate-[.76] hue-rotate-[1deg] brightness-[.94] contrast-[.96]`}
+    style={{ filter: "invert(81%) sepia(35%) saturate(847%) hue-rotate(352deg) brightness(101%) contrast(89%)" }}
+  />
 );
 
 // Custom Comb icon (Pente)
