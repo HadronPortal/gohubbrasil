@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Scissors } from "lucide-react";
+import { Scissors, User } from "lucide-react";
 
 export default function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
