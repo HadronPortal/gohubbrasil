@@ -120,7 +120,7 @@ export default function Home() {
       <div className="w-full max-w-[390px] p-6 space-y-8">
         {/* Header */}
         <div className="flex justify-between items-center w-full">
-          <Button variant="ghost" size="icon" onClick={handleLogout} className="text-[#8a9ab5] hover:text-[#f0c040]">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-white hover:bg-white/10">
             <ChevronLeft className="w-6 h-6" />
           </Button>
           <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#2a3347] flex items-center justify-center overflow-hidden">
@@ -134,29 +134,26 @@ export default function Home() {
           <h2 className="text-4xl font-bold uppercase text-[#f0c040] font-oswald tracking-tight m-0 leading-tight">
             {firstName.toUpperCase()}!
           </h2>
-          <p className="text-[10px] text-[#8a9ab5] mt-1 max-w-[200px] leading-tight">Lorem ipsum dolor sit amet consectetur adipiscing elit</p>
+          <p className="text-[10px] text-[#8a9ab5] mt-1 max-w-[200px] leading-tight font-sans">Lorem ipsum dolor sit amet consectetur adipiscing elit</p>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-[#2a3347] gap-8">
+        <div className="flex gap-8 border-b border-[#2a3347] pb-2">
           {["SERVICES", "BARBERS", "PROMO"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-3 text-xs font-bold tracking-[0.15em] font-oswald uppercase transition-all relative ${
-                activeTab === tab ? "text-[#f0c040]" : "text-[#8a9ab5]"
+              className={`pb-2 text-[11px] font-bold tracking-[0.15em] font-oswald uppercase transition-all relative ${
+                activeTab === tab ? "text-[#f0c040] after:absolute after:bottom-[-2px] after:left-0 after:w-full after:h-[2px] after:bg-[#f0c040]" : "text-[#8a9ab5]"
               }`}
             >
               {tab}
-              {activeTab === tab && (
-                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[#f0c040]" />
-              )}
             </button>
           ))}
         </div>
 
         {/* Categories */}
-        <div className="flex justify-between items-center py-4">
+        <div className="flex justify-between items-center py-4 px-2">
           {[
             { id: "SCISSORS", icon: Scissors, label: "HAIRCUT" },
             { id: "RAZOR", icon: Razor, label: "SHAVING" },
@@ -165,10 +162,10 @@ export default function Home() {
             <div key={cat.id} className="flex flex-col items-center gap-3">
               <button
                 onClick={() => setActiveCategory(cat.id)}
-                className={`w-16 h-16 rounded-[4px] border flex items-center justify-center transition-all ${
+                className={`w-16 h-16 rounded-[4px] flex items-center justify-center transition-all ${
                   activeCategory === cat.id 
-                  ? "bg-[#161e2e] border-[#f0c040] text-[#f0c040]" 
-                  : "bg-[#141b2a] border-[#2a3347] text-[#8a9ab5]"
+                  ? "bg-[#161e2e] border border-[#f0c040] text-[#f0c040]" 
+                  : "bg-[#141b2a] border border-[#2a3347] text-[#8a9ab5]"
                 }`}
               >
                 <cat.icon className="w-8 h-8" />
@@ -191,19 +188,19 @@ export default function Home() {
               className="flex items-start gap-4 cursor-pointer group"
             >
               <div className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center transition-all ${
-                selectedServiceId === s.id ? "border-[#f0c040]" : "border-[#2a3347]"
+                selectedServiceId === s.id ? "border-[#f0c040] bg-[#f0c040]" : "border-[#2a3347]"
               }`}>
                 {selectedServiceId === s.id && (
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#f0c040]" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-white" />
                 )}
               </div>
               <div className="flex-1">
-                <h3 className={`text-sm font-bold tracking-wider font-oswald transition-all ${
-                  selectedServiceId === s.id ? "text-[#f0c040]" : "text-[#c8d4e8]"
+                <h3 className={`text-xs font-bold tracking-widest font-oswald uppercase transition-all ${
+                  selectedServiceId === s.id ? "text-[#f0c040]" : "text-white"
                 }`}>
                   {s.name}
                 </h3>
-                <p className="text-[11px] text-[#8a9ab5] mt-1 leading-relaxed">
+                <p className="text-[9px] text-[#8a9ab5] mt-1 leading-relaxed font-sans font-light">
                   Lorem ipsum dolor sit amet consectetur adipiscing elit
                 </p>
               </div>
@@ -213,7 +210,7 @@ export default function Home() {
       </div>
 
       {/* Footer Button */}
-      <div className="fixed bottom-0 w-full max-w-[390px] p-6 bg-[#1c2333]/90 backdrop-blur-sm">
+      <div className="fixed bottom-0 w-full max-w-[390px] p-6 bg-[#1c2333]/95">
         <Button
           onClick={handleContinue}
           className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-7 text-lg rounded-[4px] transition-all font-oswald uppercase tracking-[3px]"
