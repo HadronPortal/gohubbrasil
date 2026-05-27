@@ -150,8 +150,8 @@ export default function Booking() {
 
         {/* Appointment Header */}
         <div>
-          <h3 className="text-xs font-bold tracking-[0.25em] text-[#f0c040] font-oswald uppercase mb-6">
-            MARCAR UM HORÁRIO
+          <h3 className="text-sm font-bold tracking-[0.3em] text-[#f0c040] font-oswald uppercase mb-8 text-center">
+            BOOK AN APPOINTMENT
           </h3>
           
           <div className="flex justify-between items-center mb-4">
