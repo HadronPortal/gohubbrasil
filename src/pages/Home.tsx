@@ -160,10 +160,10 @@ export default function Home() {
             <div key={cat.id} className="flex flex-col items-center gap-3">
               <button
                 onClick={() => setActiveCategory(cat.id)}
-                className={`w-16 h-16 rounded-[8px] flex items-center justify-center transition-all ${
+                className={`w-16 h-16 rounded-[12px] flex items-center justify-center transition-all ${
                   activeCategory === cat.id 
                   ? "bg-[#22a6f0] text-white" 
-                  : "bg-[#141b2a] text-[#8a9ab5]"
+                  : "bg-white/5 border border-white/5 text-[#8a9ab5]"
                 }`}
               >
                 <cat.icon className="w-8 h-8" />
