@@ -113,7 +113,7 @@ export default function Home() {
   const firstName = userProfile?.full_name?.split(" ")[0] || "USUÁRIO";
 
   return (
-    <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24">
+    <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24 overflow-hidden">
       <div className="w-full max-w-[390px] p-6 space-y-8">
         {/* Header */}
         <div className="flex justify-between items-center">
