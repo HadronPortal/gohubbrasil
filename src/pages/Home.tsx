@@ -9,13 +9,12 @@ interface Service {
   id: string;
   name: string;
   price: number;
-  duration_min: number;
+  duration_minutes: number;
 }
 
 interface UserProfile {
   id: string;
-  name: string;
-  avatar_url: string;
+  full_name: string;
 }
 
 export default function Home() {
@@ -27,7 +26,6 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState("SCISSORS");
   const navigate = useNavigate();
 
-  // For this simplified multi-tenant demo, we'll use a fixed barbershop_id or find the first one
   const [barbershopId, setBarbershopId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,29 +39,25 @@ export default function Home() {
       return;
     }
 
-    // Fetch user profile
     const { data: profile } = await supabase
-      .from("users")
-      .select("id, name, avatar_url")
+      .from("profiles")
+      .select("id, full_name")
       .eq("id", session.user.id)
       .single();
     
-    if (profile) setUserProfile(profile);
+    if (profile) setUserProfile(profile as UserProfile);
 
-    // Fetch first barbershop to get its ID
     const { data: shops } = await supabase.from("barbershops").select("id").limit(1);
     if (shops && shops.length > 0) {
       const bId = shops[0].id;
       setBarbershopId(bId);
 
-      // Fetch services for this barbershop
       const { data: serviceData } = await supabase
         .from("services")
         .select("*")
-        .eq("barbershop_id", bId)
-        .eq("active", true);
+        .eq("barbershop_id", bId);
       
-      if (serviceData) setServices(serviceData);
+      if (serviceData) setServices(serviceData as Service[]);
     }
     
     setIsLoading(false);
@@ -86,7 +80,7 @@ export default function Home() {
     return <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8]">LOADING...</div>;
   }
 
-  const firstName = userProfile?.name?.split(" ")[0] || "USER";
+  const firstName = userProfile?.full_name?.split(" ")[0] || "USER";
 
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24">
@@ -97,11 +91,7 @@ export default function Home() {
             <LogOut className="w-5 h-5" />
           </Button>
           <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#2a3347] flex items-center justify-center overflow-hidden">
-            {userProfile?.avatar_url ? (
-              <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <User className="w-6 h-6 text-[#8a9ab5]" />
-            )}
+            <User className="w-6 h-6 text-[#8a9ab5]" />
           </div>
         </div>
 
@@ -174,7 +164,7 @@ export default function Home() {
                   {s.name}
                 </h3>
                 <p className="text-[11px] text-[#8a9ab5] mt-1 leading-relaxed">
-                  Professional service with high quality tools and products. Duration: {s.duration_min} min.
+                  Professional service with high quality tools and products. Duration: {s.duration_minutes} min.
                 </p>
               </div>
             </div>

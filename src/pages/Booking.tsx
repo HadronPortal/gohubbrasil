@@ -11,10 +11,6 @@ interface Barber {
   name: string;
 }
 
-interface Appointment {
-  starts_at: string;
-}
-
 export default function Booking() {
   const { id: barbershopId } = useParams();
   const [searchParams] = useSearchParams();
@@ -58,22 +54,17 @@ export default function Booking() {
       return;
     }
 
-    const { data: profile } = await supabase.from("users").select("*").eq("id", session.user.id).single();
+    const { data: profile } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
     if (profile) setUserProfile(profile);
 
     const { data: barberData } = await supabase
       .from("barbers")
-      .select("id, user_id, users(name)")
-      .eq("barbershop_id", barbershopId)
-      .eq("active", true);
+      .select("id, name")
+      .eq("barbershop_id", barbershopId);
     
     if (barberData) {
-      const formattedBarbers = barberData.map((b: any) => ({
-        id: b.id,
-        name: b.users?.name || "Unknown Barber"
-      }));
-      setBarbers(formattedBarbers);
-      if (formattedBarbers.length > 0) setSelectedBarberId(formattedBarbers[0].id);
+      setBarbers(barberData as Barber[]);
+      if (barberData.length > 0) setSelectedBarberId(barberData[0].id);
     }
   };
 
@@ -83,15 +74,14 @@ export default function Booking() {
 
     const { data: appointments } = await supabase
       .from("appointments")
-      .select("starts_at")
+      .select("appointment_time")
       .eq("barber_id", selectedBarberId)
-      .gte("starts_at", start)
-      .lt("starts_at", end)
-      .neq("status", "cancelled");
+      .gte("appointment_time", start)
+      .lt("appointment_time", end);
 
     if (appointments) {
       const slots = appointments.map(a => {
-        const date = new Date(a.starts_at);
+        const date = new Date(a.appointment_time);
         return format(date, "HH:mm");
       });
       setBookedSlots(slots);
@@ -110,17 +100,16 @@ export default function Booking() {
       if (!user) throw new Error("User not authenticated");
 
       const [hours, minutes] = selectedTime.split(":");
-      const startsAt = new Date(selectedDate);
-      startsAt.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      const appointmentTime = new Date(selectedDate);
+      appointmentTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
       const { error } = await supabase.from("appointments").insert({
         client_id: user.id,
         barbershop_id: barbershopId,
         service_id: serviceId,
         barber_id: selectedBarberId,
-        starts_at: startsAt.toISOString(),
-        status: 'pending',
-        whatsapp_sent: false
+        appointment_time: appointmentTime.toISOString(),
+        status: 'pending'
       });
 
       if (error) throw error;
@@ -134,7 +123,7 @@ export default function Booking() {
     }
   };
 
-  const firstName = userProfile?.name?.split(" ")[0] || "USER";
+  const firstName = userProfile?.full_name?.split(" ")[0] || "USER";
 
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24">
@@ -145,11 +134,7 @@ export default function Booking() {
             <ChevronLeft className="w-6 h-6" />
           </Button>
           <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#2a3347] flex items-center justify-center overflow-hidden">
-            {userProfile?.avatar_url ? (
-              <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <User className="w-6 h-6 text-[#8a9ab5]" />
-            )}
+            <User className="w-6 h-6 text-[#8a9ab5]" />
           </div>
         </div>
 
@@ -223,7 +208,7 @@ export default function Booking() {
           </div>
         </div>
 
-        {/* Barber Selection (Optional but good for UX) */}
+        {/* Barber Selection */}
         {barbers.length > 1 && (
           <div className="space-y-3">
              <h3 className="text-[11px] font-bold tracking-[0.2em] text-[#f0c040] font-oswald uppercase">
