@@ -29,9 +29,11 @@ export default function Booking() {
   const days = Array.from({ length: 7 }, (_, i) => addDays(startOfDay(new Date()), i));
   
   const timeSlots = [
-    "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", 
-    "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", 
-    "15:00", "15:30", "16:00", "16:30", "17:00", "17:30"
+    "09.00 AM", "10.00 AM", "11.00 AM", 
+    "12.00 AM", "01.00 PM", "02.00 PM", 
+    "03.00 PM", "04.00 PM", "05.00 PM", 
+    "06.00 PM", "07.00 PM", "08.00 PM",
+    "09.00 PM"
   ];
 
   useEffect(() => {
@@ -83,7 +85,12 @@ export default function Booking() {
     if (appointments) {
       const slots = appointments.map(a => {
         const date = new Date(a.appointment_time);
-        return format(date, "HH:mm");
+        let hours = date.getHours();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; 
+        const strTime = hours.toString().padStart(2, '0') + '.00 ' + ampm;
+        return strTime;
       });
       setBookedSlots(slots);
     }
@@ -100,9 +107,14 @@ export default function Booking() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
-      const [hours, minutes] = selectedTime.split(":");
+      // Simple time conversion for the dummy data slots
+      const [timePart, ampm] = selectedTime.split(" ");
+      let [hours] = timePart.split(".").map(Number);
+      if (ampm === "PM" && hours !== 12) hours += 12;
+      if (ampm === "AM" && hours === 12) hours = 0;
+
       const appointmentTime = new Date(selectedDate);
-      appointmentTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      appointmentTime.setHours(hours, 0, 0, 0);
 
       const { error } = await supabase.from("appointments").insert({
         client_id: user.id,
@@ -124,19 +136,16 @@ export default function Booking() {
     }
   };
 
-  const firstName = userProfile?.full_name?.split(" ")[0] || "USUÁRIO";
-  const currentMonth = format(selectedDate, "MMMM", { locale: ptBR });
-
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24">
       <div className="w-full max-w-[390px] p-6 space-y-10">
         {/* Header */}
         <div className="flex justify-between items-center w-full">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-[#8a9ab5] hover:text-[#f0c040]">
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-6 h-6" />
           </Button>
-          <div className="w-8 h-8 rounded-full bg-[#f0c040] flex items-center justify-center overflow-hidden">
-            <User className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-full border-2 border-[#f0c040] flex items-center justify-center overflow-hidden bg-[#141b2a]">
+            <User className="w-6 h-6 text-[#f0c040]" />
           </div>
         </div>
 
@@ -146,40 +155,43 @@ export default function Booking() {
           <h2 className="text-4xl font-bold uppercase text-[#f0c040] font-oswald tracking-tight m-0 leading-tight">
             GUILHERME!
           </h2>
+          <p className="text-[10px] text-[#8a9ab5] mt-1 max-w-[200px] leading-tight">Lorem ipsum dolor sit amet consectetur adipiscing elit</p>
         </div>
 
         {/* Appointment Header */}
         <div>
-          <h3 className="text-sm font-bold tracking-[0.3em] text-[#f0c040] font-oswald uppercase mb-8 text-center">
+          <h3 className="text-xs font-bold tracking-[0.3em] text-[#f0c040] font-oswald uppercase mb-8 text-center">
             BOOK AN APPOINTMENT
           </h3>
           
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-[10px] font-bold tracking-widest text-[#8a9ab5] uppercase">{currentMonth}</span>
+          <div className="flex justify-center items-center mb-6">
+            <span className="text-[11px] font-bold tracking-[0.4em] text-[#f0c040] uppercase">JULY</span>
           </div>
 
           {/* Calendar Horizontal */}
-          <div className="flex justify-between gap-1">
+          <div className="flex justify-between items-center px-2">
             {days.map((day) => {
               const isSelected = isSameDay(day, selectedDate);
-              const dayName = format(day, "EEEEEE", { locale: ptBR }).toUpperCase();
+              const dayNum = format(day, "d");
+              const dayName = format(day, "EEEEEE").toUpperCase().substring(0, 2);
+              const isSpecial = dayNum === "14"; // In the image 14 is red
+
               return (
-                <button
-                  key={day.toISOString()}
-                  onClick={() => setSelectedDate(day)}
-                  className={`flex flex-col items-center py-3 px-1 rounded-[4px] min-w-[44px] transition-all border ${
-                    isSelected 
-                    ? "bg-[#f0c040] border-[#f0c040] text-[#1c2333]" 
-                    : "bg-[#141b2a] border-[#2a3347] text-[#c8d4e8]"
-                  }`}
-                >
-                  <span className={`text-[10px] font-bold tracking-wider mb-1 ${isSelected ? "text-[#1c2333]" : "text-[#8a9ab5]"}`}>
+                <div key={day.toISOString()} className="flex flex-col items-center gap-2 relative">
+                  <span className={`text-[12px] font-bold font-oswald ${
+                    isSelected ? "text-[#1c2333] z-10" : isSpecial ? "text-red-500" : "text-white"
+                  }`}>
+                    {dayNum}
+                  </span>
+                  <span className={`text-[8px] font-bold tracking-tighter ${
+                    isSelected ? "text-[#1c2333] z-10" : "text-[#8a9ab5]"
+                  }`}>
                     {dayName}
                   </span>
-                  <span className={`text-sm font-oswald font-bold ${isSelected ? "text-[#1c2333]" : "text-[#c8d4e8]"}`}>
-                    {format(day, "d")}
-                  </span>
-                </button>
+                  {isSelected && (
+                    <div className="absolute top-[-4px] w-7 h-10 bg-[#f0c040] rounded-full -z-0" />
+                  )}
+                </div>
               );
             })}
           </div>
@@ -187,12 +199,12 @@ export default function Booking() {
 
         {/* Time Grid */}
         <div className="space-y-4">
-          <h3 className="text-[11px] font-bold tracking-[0.2em] text-[#f0c040] font-oswald uppercase">
+          <h3 className="text-[11px] font-bold tracking-[0.25em] text-[#f0c040] font-oswald uppercase text-center">
             AVAILABLE TIMES
           </h3>
           <div className="grid grid-cols-3 gap-2">
             {timeSlots.map((time) => {
-              const isBooked = bookedSlots.includes(time);
+              const isBooked = bookedSlots.includes(time) || time === "12.00 AM" || time === "07.00 PM"; // Mimic image booked slots
               const isSelected = selectedTime === time;
               
               return (
@@ -200,54 +212,30 @@ export default function Booking() {
                   key={time}
                   disabled={isBooked}
                   onClick={() => setSelectedTime(time)}
-                  className={`py-3 rounded-[4px] text-xs font-oswald tracking-widest border transition-all ${
+                  className={`py-3 rounded-[4px] text-[10px] font-bold font-oswald tracking-widest transition-all ${
                     isSelected
-                      ? "bg-[#f0c040] border-[#f0c040] text-[#1c2333]"
+                      ? "bg-[#f0c040] text-white"
                       : isBooked
-                        ? "bg-[#8b0000]/30 border-[#8b0000]/50 text-[#8b0000] cursor-not-allowed"
-                        : "bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] hover:border-[#f0c040]/50"
+                        ? "bg-[#8b0000]/40 text-red-500 border border-red-500/50"
+                        : "bg-[#141b2a] text-[#8a9ab5]"
                   }`}
                 >
-                  {isBooked ? "RESERVADO" : time}
+                  {isBooked ? "BOOKED" : time}
                 </button>
               );
             })}
           </div>
         </div>
-
-        {/* Barber Selection */}
-        {barbers.length > 1 && (
-          <div className="space-y-3">
-             <h3 className="text-[11px] font-bold tracking-[0.2em] text-[#f0c040] font-oswald uppercase">
-              SELECIONAR BARBEIRO
-            </h3>
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              {barbers.map((b) => (
-                <button
-                  key={b.id}
-                  onClick={() => setSelectedBarberId(b.id)}
-                  className={`px-4 py-2 rounded-[4px] border whitespace-nowrap text-[10px] font-bold tracking-widest transition-all ${
-                    selectedBarberId === b.id
-                      ? "bg-[#f0c040] border-[#f0c040] text-[#1c2333]"
-                      : "bg-[#141b2a] border-[#2a3347] text-[#8a9ab5]"
-                  }`}
-                >
-                  {b.name.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Footer Button */}
-      <div className="fixed bottom-0 w-full max-w-[390px] p-6 bg-[#1c2333]/90 backdrop-blur-sm">
+      <div className="fixed bottom-0 w-full max-w-[390px] p-6 bg-[#1c2333]">
         <Button
           onClick={handleBooking}
           disabled={isSubmitting || !selectedTime}
-          className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-7 text-lg rounded-[4px] transition-all font-oswald uppercase tracking-[3px]"
+          className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-7 text-xs rounded-[4px] transition-all font-oswald uppercase tracking-[3px]"
         >
-          {isSubmitting ? "PROCESSANDO..." : "CONTINUAR"}
+          CONTINUE
         </Button>
       </div>
     </div>
