@@ -65,22 +65,20 @@ export default function Login() {
         {/* Logo Section - exactly like reference */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center gap-4">
-            <div className="relative w-10 h-10 flex items-center justify-center">
-               <div className="absolute inset-0 bg-white/20 rounded-full" />
-               <User className="w-5 h-5 text-white" />
+            <div className="relative w-10 h-20 flex flex-col items-center">
+               <div className="w-full h-full bg-gradient-to-b from-red-500 via-white to-blue-500 rounded-full" />
             </div>
-            <div className="flex-1 text-center">
-              <h1 className="text-2xl font-bold tracking-[0.2em] text-white font-oswald m-0">BARBERSHOP</h1>
+            <div className="border-y-2 border-white px-6 py-2">
+              <h1 className="text-3xl font-bold tracking-[0.2em] text-white font-oswald m-0">BARBERSHOP</h1>
             </div>
-            <div className="relative w-10 h-10 flex items-center justify-center">
-               <div className="absolute inset-0 bg-white/20 rounded-full" />
-               <User className="w-5 h-5 text-white" />
+            <div className="relative w-10 h-20 flex flex-col items-center">
+               <div className="w-full h-full bg-gradient-to-b from-red-500 via-white to-blue-500 rounded-full" />
             </div>
           </div>
           <div className="flex flex-col items-center">
-            <div className="h-[1px] w-full bg-white/10 mb-2" />
-            <Scissors className="w-5 h-5 text-white/40" />
-            <div className="h-[1px] w-full bg-white/10 mt-2" />
+            <div className="h-[1px] w-48 bg-white/20 mb-2" />
+            <Scissors className="w-6 h-6 text-white/40" />
+            <div className="h-[1px] w-48 bg-white/20 mt-2" />
           </div>
         </div>
 
