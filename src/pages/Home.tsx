@@ -137,19 +137,16 @@ export default function Home() {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-[#2a3347] gap-8">
+        <div className="flex justify-between items-center bg-[#141b2a] p-1 rounded-full w-full max-w-[320px] mx-auto">
           {["SERVIÇOS", "BARBEIROS", "PROMO"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-3 text-xs font-bold tracking-[0.15em] font-oswald uppercase transition-all relative ${
-                activeTab === tab ? "text-[#f0c040]" : "text-[#8a9ab5]"
+              className={`flex-1 py-2 text-[10px] font-bold tracking-[0.1em] font-oswald uppercase transition-all rounded-full ${
+                activeTab === tab ? "bg-[#f0c040] text-[#1c2333]" : "text-[#8a9ab5]"
               }`}
             >
               {tab}
-              {activeTab === tab && (
-                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[#f0c040]" />
-              )}
             </button>
           ))}
         </div>
