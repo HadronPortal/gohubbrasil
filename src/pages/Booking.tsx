@@ -188,7 +188,7 @@ export default function Booking() {
         {/* Time Grid */}
         <div className="space-y-4">
           <h3 className="text-[11px] font-bold tracking-[0.2em] text-[#f0c040] font-oswald uppercase">
-            HORÁRIOS DISPONÍVEIS
+            AVAILABLE TIMES
           </h3>
           <div className="grid grid-cols-3 gap-2">
             {timeSlots.map((time) => {
