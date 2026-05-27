@@ -113,6 +113,8 @@ export default function Home() {
     return <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8]">LOADING...</div>;
   }
 
+  const firstName = userProfile?.full_name?.split(" ")[0] || "USER";
+
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24">
       <div className="w-full max-w-[390px] p-6 space-y-8">
@@ -121,28 +123,28 @@ export default function Home() {
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-white hover:bg-white/10">
             <ChevronLeft className="w-6 h-6" />
           </Button>
-          <div className="w-10 h-10 rounded-full bg-[#22a6f0] flex items-center justify-center overflow-hidden">
-            <User className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#2a3347] flex items-center justify-center overflow-hidden">
+            <User className="w-6 h-6 text-[#8a9ab5]" />
           </div>
         </div>
 
         {/* Welcome */}
         <div>
-          <h1 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8a9ab5] m-0">WELCOME</h1>
-          <h2 className="text-4xl font-bold uppercase text-white font-oswald tracking-tight m-0 leading-tight">
-            STEVE!
+          <h1 className="text-[11px] font-light uppercase tracking-[0.2em] text-[#8a9ab5] m-0">WELCOME</h1>
+          <h2 className="text-4xl font-bold uppercase text-[#f0c040] font-oswald tracking-tight m-0 leading-tight">
+            {firstName.toUpperCase()}!
           </h2>
-          <p className="text-[10px] text-[#8a9ab5] mt-1 max-w-[200px] leading-tight">Lorem ipsum dolor sit amet consectetur adipiscing elit</p>
+          <p className="text-[10px] text-[#8a9ab5] mt-1 max-w-[200px] leading-tight font-sans">Lorem ipsum dolor sit amet consectetur adipiscing elit</p>
         </div>
 
-        {/* Tabs - exactly like image */}
+        {/* Tabs */}
         <div className="flex gap-8 border-b border-[#2a3347] pb-2">
           {["SERVICES", "BARBERS", "PROMO"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`text-[11px] font-bold tracking-[0.2em] font-oswald uppercase transition-all relative pb-2 ${
-                activeTab === tab ? "text-[#22a6f0] after:absolute after:bottom-[-2px] after:left-0 after:w-full after:h-[3px] after:bg-[#22a6f0] after:rounded-full" : "text-[#8a9ab5]"
+              className={`pb-2 text-[11px] font-bold tracking-[0.15em] font-oswald uppercase transition-all relative ${
+                activeTab === tab ? "text-[#f0c040] after:absolute after:bottom-[-2px] after:left-0 after:w-full after:h-[2px] after:bg-[#f0c040]" : "text-[#8a9ab5]"
               }`}
             >
               {tab}
@@ -150,7 +152,7 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Categories - Icons exactly like image */}
+        {/* Categories */}
         <div className="flex justify-between items-center py-4 px-2">
           {[
             { id: "SCISSORS", icon: Scissors, label: "HAIRCUT" },
@@ -160,16 +162,16 @@ export default function Home() {
             <div key={cat.id} className="flex flex-col items-center gap-3">
               <button
                 onClick={() => setActiveCategory(cat.id)}
-                className={`w-16 h-16 rounded-[12px] flex items-center justify-center transition-all ${
+                className={`w-16 h-16 rounded-[4px] flex items-center justify-center transition-all ${
                   activeCategory === cat.id 
-                  ? "bg-[#22a6f0] text-white" 
-                  : "bg-white/5 border border-white/5 text-[#8a9ab5]"
+                  ? "bg-[#161e2e] border border-[#f0c040] text-[#f0c040]" 
+                  : "bg-[#141b2a] border border-[#2a3347] text-[#8a9ab5]"
                 }`}
               >
                 <cat.icon className="w-8 h-8" />
               </button>
               <span className={`text-[8px] font-bold tracking-[0.2em] font-oswald uppercase ${
-                activeCategory === cat.id ? "text-[#22a6f0]" : "text-[#8a9ab5]"
+                activeCategory === cat.id ? "text-[#f0c040]" : "text-[#8a9ab5]"
               }`}>
                 {cat.label}
               </span>
@@ -177,28 +179,28 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Services List - Selection circle exactly like image */}
-        <div className="space-y-6 pt-2">
+        {/* Services List */}
+        <div className="space-y-6 pt-4">
           {services.map((s) => (
             <div 
               key={s.id}
               onClick={() => setSelectedServiceId(s.id)}
-              className="flex items-center gap-5 cursor-pointer group"
+              className="flex items-start gap-4 cursor-pointer group"
             >
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                selectedServiceId === s.id ? "border-[#22a6f0] bg-[#22a6f0]" : "border-white/10 bg-white/5"
+              <div className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center transition-all ${
+                selectedServiceId === s.id ? "border-[#f0c040] bg-[#f0c040]" : "border-[#2a3347]"
               }`}>
                 {selectedServiceId === s.id && (
                   <div className="w-1.5 h-1.5 rounded-full bg-white" />
                 )}
               </div>
               <div className="flex-1">
-                <h3 className={`text-[11px] font-bold tracking-widest font-oswald uppercase transition-all ${
-                  selectedServiceId === s.id ? "text-white" : "text-white/80"
+                <h3 className={`text-xs font-bold tracking-widest font-oswald uppercase transition-all ${
+                  selectedServiceId === s.id ? "text-[#f0c040]" : "text-white"
                 }`}>
                   {s.name}
                 </h3>
-                <p className="text-[9px] text-[#8a9ab5] mt-0.5 leading-tight">
+                <p className="text-[9px] text-[#8a9ab5] mt-1 leading-relaxed font-sans font-light">
                   Lorem ipsum dolor sit amet consectetur adipiscing elit
                 </p>
               </div>
@@ -208,10 +210,10 @@ export default function Home() {
       </div>
 
       {/* Footer Button */}
-      <div className="fixed bottom-0 w-full max-w-[390px] p-6 bg-[#1c2333]">
+      <div className="fixed bottom-0 w-full max-w-[390px] p-6 bg-[#1c2333]/95">
         <Button
           onClick={handleContinue}
-          className="w-full bg-[#22a6f0] hover:bg-[#1a88c7] text-white font-bold py-7 text-xs rounded-xl transition-all font-oswald uppercase tracking-[3px] shadow-lg shadow-[#22a6f0]/20"
+          className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-7 text-lg rounded-[4px] transition-all font-oswald uppercase tracking-[3px]"
         >
           CONTINUE
         </Button>

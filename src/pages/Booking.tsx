@@ -107,7 +107,6 @@ export default function Booking() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
-      // Simple time conversion
       const [timePart, ampm] = selectedTime.split(" ");
       let [hours] = timePart.split(".").map(Number);
       if (ampm === "PM" && hours !== 12) hours += 12;
@@ -136,6 +135,8 @@ export default function Booking() {
     }
   };
 
+  const firstName = userProfile?.full_name?.split(" ")[0] || "USER";
+
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24">
       <div className="w-full max-w-[390px] p-6 space-y-10">
@@ -144,50 +145,50 @@ export default function Booking() {
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-white hover:bg-white/10">
             <ChevronLeft className="w-6 h-6" />
           </Button>
-          <div className="w-10 h-10 rounded-full bg-[#22a6f0] flex items-center justify-center overflow-hidden">
-            <User className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#2a3347] flex items-center justify-center overflow-hidden">
+            <User className="w-6 h-6 text-[#8a9ab5]" />
           </div>
         </div>
 
         {/* Header Section */}
         <div>
           <h1 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8a9ab5] m-0">THANKS</h1>
-          <h2 className="text-4xl font-bold uppercase text-[#22a6f0] font-oswald tracking-tight m-0 leading-tight">
-            STEVE!
+          <h2 className="text-4xl font-bold uppercase text-[#f0c040] font-oswald tracking-tight m-0 leading-tight">
+            {firstName.toUpperCase()}!
           </h2>
-          <p className="text-[10px] text-[#8a9ab5] mt-1 max-w-[200px] leading-tight">Lorem ipsum dolor sit amet consectetur adipiscing elit</p>
+          <p className="text-[10px] text-[#8a9ab5] mt-1 max-w-[200px] leading-tight font-sans">Lorem ipsum dolor sit amet consectetur adipiscing elit</p>
         </div>
 
         {/* Appointment Header */}
         <div>
-          <h3 className="text-sm font-bold tracking-[0.3em] text-[#22a6f0] font-oswald uppercase mb-8 text-center">
+          <h3 className="text-sm font-bold tracking-[0.1em] text-[#f0c040] font-oswald uppercase mb-10 text-center">
             BOOK AN APPOINTMENT
           </h3>
           
           <div className="flex justify-center items-center mb-6">
-            <span className="text-[11px] font-bold tracking-[0.4em] text-[#22a6f0] uppercase">JULY</span>
+            <span className="text-[12px] font-bold tracking-[0.4em] text-[#8a9ab5] uppercase">JULY</span>
           </div>
 
           {/* Calendar Horizontal */}
           <div className="flex justify-between items-center px-2">
             {[13, 14, 15, 16, 17, 18, 19].map((day) => {
               const isSelected = day === 16;
-              const isSpecial = day === 14;
+              const isMO = day === 14; 
 
               return (
                 <div key={day} className="flex flex-col items-center gap-2 relative">
-                  <span className={`text-[12px] font-bold font-oswald transition-all ${
-                    isSelected ? "text-[#1c2333] z-10" : isSpecial ? "text-[#f06060]" : "text-white"
+                  <span className={`text-[12px] font-bold font-oswald z-10 transition-all ${
+                    isSelected ? "text-[#1c2333]" : isMO ? "text-red-500" : "text-white"
                   }`}>
                     {day}
                   </span>
-                  <span className={`text-[8px] font-bold tracking-tighter transition-all ${
-                    isSelected ? "text-[#1c2333] z-10" : "text-[#8a9ab5]"
+                  <span className={`text-[8px] font-bold tracking-tighter z-10 transition-all ${
+                    isSelected ? "text-[#1c2333]" : "text-[#8a9ab5]"
                   }`}>
                     {day === 13 ? "SU" : day === 14 ? "MO" : day === 15 ? "TU" : day === 16 ? "WE" : day === 17 ? "TH" : day === 18 ? "FR" : "SA"}
                   </span>
                   {isSelected && (
-                    <div className="absolute top-[-5px] w-8 h-12 bg-[#22a6f0] rounded-full -z-0" />
+                    <div className="absolute top-[-5px] w-8 h-12 bg-[#f0c040] rounded-full z-0" />
                   )}
                 </div>
               );
@@ -197,7 +198,7 @@ export default function Booking() {
 
         {/* Time Grid */}
         <div className="space-y-4 pt-4">
-          <h3 className="text-[11px] font-bold tracking-[0.25em] text-[#22a6f0] font-oswald uppercase text-center">
+          <h3 className="text-[11px] font-bold tracking-[0.1em] text-[#f0c040] font-oswald uppercase text-center">
             AVAILABLE TIMES
           </h3>
           <div className="grid grid-cols-3 gap-2">
@@ -212,10 +213,10 @@ export default function Booking() {
                   onClick={() => setSelectedTime(time)}
                   className={`py-3 rounded-[4px] text-[10px] font-bold font-oswald tracking-widest transition-all ${
                     isSelected
-                      ? "bg-[#22a6f0] text-white"
+                      ? "bg-[#f0c040] text-[#1c2333]"
                       : isBooked
-                        ? "bg-[#f06060]/20 text-[#f06060] border border-[#f06060]/30"
-                        : "bg-white/5 border border-white/5 text-[#8a9ab5]"
+                        ? "bg-[#8b0000]/20 text-red-500 border border-red-500/30"
+                        : "bg-[#141b2a] border border-white/5 text-[#8a9ab5]"
                   }`}
                 >
                   {isBooked ? "BOOKED" : time}
@@ -227,13 +228,13 @@ export default function Booking() {
       </div>
 
       {/* Footer Button */}
-      <div className="fixed bottom-0 w-full max-w-[390px] p-6 bg-[#1c2333]">
+      <div className="fixed bottom-0 w-full max-w-[390px] p-6 bg-[#1c2333]/95">
         <Button
           onClick={handleBooking}
           disabled={isSubmitting || !selectedTime}
-          className="w-full bg-[#22a6f0] hover:bg-[#1a88c7] text-white font-bold py-7 text-xs rounded-xl transition-all font-oswald uppercase tracking-[3px] shadow-lg shadow-[#22a6f0]/20"
+          className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-7 text-lg rounded-[4px] transition-all font-oswald uppercase tracking-[3px]"
         >
-          CONTINUE
+          {isSubmitting ? "PROCESSING..." : "CONTINUE"}
         </Button>
       </div>
     </div>
