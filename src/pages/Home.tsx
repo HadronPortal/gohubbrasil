@@ -119,12 +119,12 @@ export default function Home() {
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24">
       <div className="w-full max-w-[390px] p-6 space-y-8">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center w-full">
           <Button variant="ghost" size="icon" onClick={handleLogout} className="text-[#8a9ab5] hover:text-[#f0c040]">
-            <LogOut className="w-5 h-5" />
+            <ChevronLeft className="w-5 h-5" />
           </Button>
-          <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#2a3347] flex items-center justify-center overflow-hidden">
-            <User className="w-6 h-6 text-[#8a9ab5]" />
+          <div className="w-8 h-8 rounded-full bg-[#f0c040] flex items-center justify-center overflow-hidden">
+            <User className="w-5 h-5 text-white" />
           </div>
         </div>
 
