@@ -10,7 +10,7 @@ const Razor = ({ className }: { className?: string }) => (
   <img 
     src="/navalha.png" 
     alt="Navalha" 
-    className={`${className} brightness-0 invert-[.75] sepia-[.64] saturate-[.76] hue-rotate-[1deg] brightness-[.94] contrast-[.96]`}
+    className={`${className} scale-125`}
     style={{ filter: "invert(81%) sepia(35%) saturate(847%) hue-rotate(352deg) brightness(101%) contrast(89%)" }}
   />
 );
@@ -162,13 +162,9 @@ export default function Home() {
           ].map((cat, index) => (
             <div
               key={cat.id}
-              className={`w-16 h-16 rounded-[4px] border flex items-center justify-center transition-all ${
-                index === 0 
-                ? "bg-[#161e2e] border-[#f0c040] text-[#f0c040]" 
-                : "bg-[#141b2a] border-[#2a3347] text-[#8a9ab5]"
-              }`}
+              className="w-16 h-16 rounded-[4px] border bg-[#161e2e] border-[#f0c040] text-[#f0c040] flex items-center justify-center transition-all"
             >
-              <cat.icon className="w-6 h-6" />
+              <cat.icon className="w-6 h-6 stroke-[3px]" />
             </div>
           ))}
         </div>
