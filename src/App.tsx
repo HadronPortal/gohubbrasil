@@ -1,12 +1,31 @@
-import { useState } from 'react'
-import './App.css'
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Login from "./pages/Login";
+import Home from "./pages/Home";
+import Booking from "./pages/Booking";
+import { Toaster } from "sonner";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Home />,
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/booking/:id",
+    element: <Booking />,
+  },
+]);
 
 function App() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <h1 className="text-2xl font-bold">Projeto Reiniciado</h1>
-    </div>
-  )
+    <>
+      <RouterProvider router={router} />
+      <Toaster position="top-center" richColors />
+    </>
+  );
 }
 
-export default App
+export default App;
