@@ -55,8 +55,8 @@ export default function Home() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("SERVIÇOS");
-  const [activeCategory, setActiveCategory] = useState("SCISSORS");
+  const [activeTab, setActiveTab] = useState("SERVICES");
+  const [activeCategory, setActiveCategory] = useState("RAZOR");
   const navigate = useNavigate();
 
   const [barbershopId, setBarbershopId] = useState<string | null>(null);
@@ -110,10 +110,8 @@ export default function Home() {
   };
 
   if (isLoading) {
-    return <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8]">CARREGANDO...</div>;
+    return <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8]">LOADING...</div>;
   }
-
-  const firstName = userProfile?.full_name?.split(" ")[0] || "USUÁRIO";
 
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24">
@@ -121,10 +119,10 @@ export default function Home() {
         {/* Header */}
         <div className="flex justify-between items-center w-full">
           <Button variant="ghost" size="icon" onClick={handleLogout} className="text-[#8a9ab5] hover:text-[#f0c040]">
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-6 h-6" />
           </Button>
-          <div className="w-8 h-8 rounded-full bg-[#f0c040] flex items-center justify-center overflow-hidden">
-            <User className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-full border-2 border-[#f0c040] flex items-center justify-center overflow-hidden bg-[#141b2a]">
+            <User className="w-6 h-6 text-[#f0c040]" />
           </div>
         </div>
 
@@ -134,16 +132,17 @@ export default function Home() {
           <h2 className="text-4xl font-bold uppercase text-[#f0c040] font-oswald tracking-tight m-0 leading-tight">
             GUILHERME!
           </h2>
+          <p className="text-[10px] text-[#8a9ab5] mt-1 max-w-[200px] leading-tight">Lorem ipsum dolor sit amet consectetur adipiscing elit</p>
         </div>
 
         {/* Tabs */}
-        <div className="flex justify-between items-center bg-[#141b2a] p-1 rounded-full w-full max-w-[320px] mx-auto">
-          {["SERVIÇOS", "BARBEIROS", "PROMO"].map((tab) => (
+        <div className="flex gap-8 border-b border-[#2a3347] pb-2">
+          {["SERVICES", "BARBERS", "PROMO"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2 text-[10px] font-bold tracking-[0.1em] font-oswald uppercase transition-all rounded-full ${
-                activeTab === tab ? "bg-[#f0c040] text-[#1c2333]" : "text-[#8a9ab5]"
+              className={`text-[11px] font-bold tracking-[0.2em] font-oswald uppercase transition-all relative pb-2 ${
+                activeTab === tab ? "text-[#f0c040] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-[#f0c040]" : "text-[#8a9ab5]"
               }`}
             >
               {tab}
@@ -152,24 +151,24 @@ export default function Home() {
         </div>
 
         {/* Categories */}
-        <div className="flex justify-between items-center pt-2 px-4">
+        <div className="flex justify-between items-center py-4 px-2">
           {[
-            { id: "SCISSORS", icon: Scissors, label: "CORTE" },
-            { id: "RAZOR", icon: Razor, label: "BARBA" },
-            { id: "COMB", icon: Comb, label: "PENTEADO" },
+            { id: "SCISSORS", icon: Scissors, label: "HAIRCUT" },
+            { id: "RAZOR", icon: Razor, label: "SHAVING" },
+            { id: "COMB", icon: Comb, label: "HAIR STYLE" },
           ].map((cat) => (
             <div key={cat.id} className="flex flex-col items-center gap-3">
               <button
                 onClick={() => setActiveCategory(cat.id)}
-                className={`w-20 h-24 rounded-[12px] border flex items-center justify-center transition-all ${
+                className={`w-16 h-16 rounded-[8px] flex items-center justify-center transition-all ${
                   activeCategory === cat.id 
-                  ? "bg-[#f0c040] border-[#f0c040] text-white" 
-                  : "bg-[#141b2a] border-[#2a3347] text-[#f0c040]"
+                  ? "bg-[#f0c040] text-white" 
+                  : "bg-[#141b2a] text-[#8a9ab5]"
                 }`}
               >
-                <cat.icon className="w-10 h-10" />
+                <cat.icon className="w-8 h-8" />
               </button>
-              <span className={`text-[10px] font-bold tracking-[0.2em] font-oswald ${
+              <span className={`text-[8px] font-bold tracking-[0.2em] font-oswald uppercase ${
                 activeCategory === cat.id ? "text-[#f0c040]" : "text-[#8a9ab5]"
               }`}>
                 {cat.label}
@@ -179,7 +178,7 @@ export default function Home() {
         </div>
 
         {/* Services List */}
-        <div className="space-y-6 pt-4">
+        <div className="space-y-5 pt-2">
           {services.map((s) => (
             <div 
               key={s.id}
@@ -194,13 +193,13 @@ export default function Home() {
                 )}
               </div>
               <div className="flex-1">
-                <h3 className={`text-sm font-bold tracking-wider font-oswald transition-all ${
-                  selectedServiceId === s.id ? "text-[#f0c040]" : "text-[#c8d4e8]"
+                <h3 className={`text-xs font-bold tracking-widest font-oswald uppercase transition-all ${
+                  selectedServiceId === s.id ? "text-[#f0c040]" : "text-white"
                 }`}>
                   {s.name}
                 </h3>
-                <p className="text-[11px] text-[#8a9ab5] mt-1 leading-relaxed">
-                  Serviço profissional com ferramentas e produtos de alta qualidade. Duração: {s.duration_minutes} min.
+                <p className="text-[9px] text-[#8a9ab5] mt-1 leading-relaxed">
+                  Lorem ipsum dolor sit amet consectetur adipiscing elit
                 </p>
               </div>
             </div>
@@ -209,12 +208,12 @@ export default function Home() {
       </div>
 
       {/* Footer Button */}
-      <div className="fixed bottom-0 w-full max-w-[390px] p-6 bg-[#1c2333]/90 backdrop-blur-sm">
+      <div className="fixed bottom-0 w-full max-w-[390px] p-6 bg-[#1c2333]">
         <Button
           onClick={handleContinue}
-          className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-7 text-lg rounded-[4px] transition-all font-oswald uppercase tracking-[3px]"
+          className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-7 text-xs rounded-[4px] transition-all font-oswald uppercase tracking-[3px]"
         >
-          CONTINUAR
+          CONTINUE
         </Button>
       </div>
     </div>
