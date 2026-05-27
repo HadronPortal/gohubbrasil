@@ -2,8 +2,18 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Scissors } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { toast } from "sonner";
+
+// Custom Scissors icon (Tesoura)
+const CustomScissors = ({ className }: { className?: string }) => (
+  <img 
+    src="/tesouras.png" 
+    alt="Tesoura" 
+    className={`${className} scale-125`}
+    style={{ filter: "invert(81%) sepia(35%) saturate(847%) hue-rotate(352deg) brightness(101%) contrast(89%)" }}
+  />
+);
 
 // Custom Razor icon (Navalha)
 const Razor = ({ className }: { className?: string }) => (
@@ -144,7 +154,7 @@ export default function Home() {
         {/* Categorias (Apenas Visual) */}
         <div className="flex justify-between items-center pt-2">
           {[
-            { id: "SCISSORS", icon: Scissors },
+            { id: "SCISSORS", icon: CustomScissors },
             { id: "RAZOR", icon: Razor },
             { id: "COMB", icon: Comb },
           ].map((cat, index) => (
