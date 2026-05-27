@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Scissors, Zap, Award } from "lucide-react";
+import { LogOut, User, Scissors } from "lucide-react";
+import { HandMetal } from "lucide-react"; // Navalha alternativa (ou Razor se disponível, mas lucide-react não tem Razor padrão)
+import { ChevronDown } from "lucide-react"; // Pente alternativa (Comb não existe no lucide-react v0.284 padrão, usaremos ícones customizados ou similares)
+
 import { toast } from "sonner";
 
 interface Service {
