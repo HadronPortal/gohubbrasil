@@ -68,7 +68,7 @@ export default function Login() {
             <div className="relative w-12 h-24 flex flex-col items-center">
                <div className="w-full h-full bg-gradient-to-b from-red-500 via-white to-blue-500 rounded-full" />
             </div>
-            <div className="border-2 border-[#f0c040] px-6 py-3">
+            <div className="border-2 border-white px-6 py-3">
               <h1 className="text-3xl font-bold tracking-[0.25em] text-white font-oswald m-0">BARBERSHOP</h1>
             </div>
             <div className="relative w-12 h-24 flex flex-col items-center">
@@ -129,7 +129,7 @@ export default function Login() {
 
           <Button 
             type="submit" 
-            className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-white font-bold py-8 text-lg rounded-[4px] transition-all font-oswald uppercase tracking-[3px]"
+            className="w-full bg-[#22a6f0] hover:bg-[#1a88c7] text-white font-bold py-8 text-lg rounded-[4px] transition-all font-oswald uppercase tracking-[3px]"
             disabled={isLoading}
           >
             {isLoading ? "LOADING..." : isSignUp ? "SIGN UP" : "LOG IN"}
@@ -143,9 +143,9 @@ export default function Login() {
               className="text-[10px] text-[#8a9ab5] uppercase tracking-wider font-bold"
             >
               {isSignUp ? (
-                <>New User? <span className="text-[#f0c040]">LOG IN</span></>
+                <>New User? <span className="text-[#22a6f0]">LOG IN</span></>
               ) : (
-                <>New User? <span className="text-[#f0c040]">SIGN UP</span></>
+                <>New User? <span className="text-[#22a6f0]">SIGN UP</span></>
               )}
             </button>
           </div>
