@@ -65,36 +65,16 @@ export default function Login() {
         {/* Logo Section */}
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center gap-4">
-            <div className="relative w-12 h-24 flex flex-col items-center overflow-hidden">
-               <div className="w-full h-full bg-white relative flex flex-col">
-                  {/* Barber pole stripes */}
-                  <div className="w-[200%] h-8 bg-[#ff4b4b] -rotate-45 -translate-x-2" />
-                  <div className="w-[200%] h-8 bg-white -rotate-45 -translate-x-2" />
-                  <div className="w-[200%] h-8 bg-[#22a6f0] -rotate-45 -translate-x-2" />
-                  <div className="w-[200%] h-8 bg-white -rotate-45 -translate-x-2" />
-               </div>
-               {/* Pole caps */}
-               <div className="absolute top-0 w-14 h-4 bg-zinc-300 rounded-t-full border-b border-zinc-400" />
-               <div className="absolute bottom-0 w-14 h-4 bg-zinc-300 rounded-b-full border-t border-zinc-400" />
+            <div className="w-2 h-16 bg-gradient-to-b from-red-500 via-white to-blue-500" />
+            <div className="border-2 border-[#f0c040] px-4 py-2">
+              <h1 className="text-3xl font-bold tracking-[0.2em] text-[#f0c040] font-oswald m-0">BARBEARIA</h1>
             </div>
-            <div className="border-2 border-[#f0c040] px-6 py-3 bg-[#1c2333] z-10">
-              <h1 className="text-2xl font-bold tracking-[0.2em] text-white font-oswald m-0">BARBERSHOP</h1>
-            </div>
-            <div className="relative w-12 h-24 flex flex-col items-center overflow-hidden">
-               <div className="w-full h-full bg-white relative flex flex-col">
-                  <div className="w-[200%] h-8 bg-[#ff4b4b] -rotate-45 -translate-x-2" />
-                  <div className="w-[200%] h-8 bg-white -rotate-45 -translate-x-2" />
-                  <div className="w-[200%] h-8 bg-[#22a6f0] -rotate-45 -translate-x-2" />
-                  <div className="w-[200%] h-8 bg-white -rotate-45 -translate-x-2" />
-               </div>
-               <div className="absolute top-0 w-14 h-4 bg-zinc-300 rounded-t-full border-b border-zinc-400" />
-               <div className="absolute bottom-0 w-14 h-4 bg-zinc-300 rounded-b-full border-t border-zinc-400" />
-            </div>
+            <div className="w-2 h-16 bg-gradient-to-b from-red-500 via-white to-blue-500" />
           </div>
           <div className="flex flex-col items-center">
-            <div className="h-[1px] w-48 bg-[#2a3347] mb-2" />
+            <div className="h-[1px] w-32 bg-[#2a3347] mb-2" />
             <Scissors className="w-5 h-5 text-[#8a9ab5]" />
-            <div className="h-[1px] w-48 bg-[#2a3347] mt-2" />
+            <div className="h-[1px] w-32 bg-[#2a3347] mt-2" />
           </div>
         </div>
 
@@ -105,7 +85,7 @@ export default function Login() {
                 <Input
                   id="fullName"
                   type="text"
-                  placeholder="FULL NAME"
+                  placeholder="NOME COMPLETO"
                   className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] h-14 rounded-[4px] placeholder:text-[#8a9ab5] font-light"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -134,7 +114,7 @@ export default function Login() {
             <Input
               id="password"
               type="password"
-              placeholder="PASSWORD"
+              placeholder="SENHA"
               className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] h-14 rounded-[4px] placeholder:text-[#8a9ab5] font-light"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -145,23 +125,23 @@ export default function Login() {
 
           <Button 
             type="submit" 
-            className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-8 text-lg rounded-[4px] transition-all font-oswald uppercase tracking-[3px]"
+            className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-7 text-lg rounded-[4px] transition-all font-oswald uppercase tracking-[3px]"
             disabled={isLoading}
           >
-            {isLoading ? "LOADING..." : isSignUp ? "SIGN UP" : "LOG IN"}
+            {isLoading ? "CARREGANDO..." : isSignUp ? "CRIAR CONTA" : "ENTRAR"}
           </Button>
 
           <div className="flex justify-between items-center px-1">
-            <button type="button" className="text-[10px] text-[#8a9ab5] uppercase tracking-wider font-light">Forgot Password?</button>
+            <button type="button" className="text-[11px] text-[#8a9ab5] uppercase tracking-wider font-light">Esqueceu a senha?</button>
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-[10px] text-[#8a9ab5] uppercase tracking-wider font-light"
+              className="text-[11px] text-[#8a9ab5] uppercase tracking-wider font-light"
             >
               {isSignUp ? (
-                <>Already a user? <span className="text-[#f0c040]">LOG IN</span></>
+                <>Já tem conta? <span className="text-[#f0c040]">ENTRAR</span></>
               ) : (
-                <>New User? <span className="text-[#f0c040]">SIGN UP</span></>
+                <>Novo aqui? <span className="text-[#f0c040]">CADASTRAR</span></>
               )}
             </button>
           </div>

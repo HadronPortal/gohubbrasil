@@ -32,7 +32,7 @@ export default {
           foreground: "#8a9ab5",
         },
         destructive: {
-          DEFAULT: "#8b0000",
+          DEFAULT: "#8b0000", // Dark red for booked
           foreground: "#ffffff",
         },
         muted: {

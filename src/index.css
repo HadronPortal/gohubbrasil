@@ -44,12 +44,10 @@ h1, h2, h3, h4, h5, h6, .font-oswald {
   letter-spacing: 0.1em;
 }
 
-.letter-spacing-wide {
-  letter-spacing: 0.15em;
-}
-
-.letter-spacing-btn {
-  letter-spacing: 3px;
+.btn-oswald {
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 3px !important;
 }
 
 ::-webkit-scrollbar {

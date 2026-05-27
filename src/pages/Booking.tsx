@@ -29,11 +29,9 @@ export default function Booking() {
   const days = Array.from({ length: 7 }, (_, i) => addDays(startOfDay(new Date()), i));
   
   const timeSlots = [
-    "09.00 AM", "10.00 AM", "11.00 AM", 
-    "12.00 AM", "01.00 PM", "02.00 PM", 
-    "03.00 PM", "04.00 PM", "05.00 PM", 
-    "06.00 PM", "07.00 PM", "08.00 PM",
-    "09.00 PM"
+    "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", 
+    "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", 
+    "15:00", "15:30", "16:00", "16:30", "17:00", "17:30"
   ];
 
   useEffect(() => {
@@ -85,12 +83,7 @@ export default function Booking() {
     if (appointments) {
       const slots = appointments.map(a => {
         const date = new Date(a.appointment_time);
-        let hours = date.getHours();
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12;
-        hours = hours ? hours : 12; 
-        const strTime = hours.toString().padStart(2, '0') + '.00 ' + ampm;
-        return strTime;
+        return format(date, "HH:mm");
       });
       setBookedSlots(slots);
     }
@@ -107,13 +100,9 @@ export default function Booking() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
-      const [timePart, ampm] = selectedTime.split(" ");
-      let [hours] = timePart.split(".").map(Number);
-      if (ampm === "PM" && hours !== 12) hours += 12;
-      if (ampm === "AM" && hours === 12) hours = 0;
-
+      const [hours, minutes] = selectedTime.split(":");
       const appointmentTime = new Date(selectedDate);
-      appointmentTime.setHours(hours, 0, 0, 0);
+      appointmentTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
       const { error } = await supabase.from("appointments").insert({
         client_id: user.id,
@@ -135,14 +124,15 @@ export default function Booking() {
     }
   };
 
-  const firstName = userProfile?.full_name?.split(" ")[0] || "USER";
+  const firstName = userProfile?.full_name?.split(" ")[0] || "USUÁRIO";
+  const currentMonth = format(selectedDate, "MMMM", { locale: ptBR });
 
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24">
       <div className="w-full max-w-[390px] p-6 space-y-10">
         {/* Header */}
-        <div className="flex justify-between items-center w-full">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-white hover:bg-white/10">
+        <div className="flex justify-between items-center">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-[#8a9ab5] hover:text-[#f0c040]">
             <ChevronLeft className="w-6 h-6" />
           </Button>
           <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#2a3347] flex items-center justify-center overflow-hidden">
@@ -152,58 +142,57 @@ export default function Booking() {
 
         {/* Header Section */}
         <div>
-          <h1 className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8a9ab5] m-0">THANKS</h1>
+          <h1 className="text-[11px] font-light uppercase tracking-[0.2em] text-[#8a9ab5] m-0">OBRIGADO</h1>
           <h2 className="text-4xl font-bold uppercase text-[#f0c040] font-oswald tracking-tight m-0 leading-tight">
             {firstName.toUpperCase()}!
           </h2>
-          <p className="text-[10px] text-[#8a9ab5] mt-1 max-w-[200px] leading-tight font-sans">Lorem ipsum dolor sit amet consectetur adipiscing elit</p>
         </div>
 
         {/* Appointment Header */}
         <div>
-          <h3 className="text-sm font-bold tracking-[0.1em] text-[#f0c040] font-oswald uppercase mb-10 text-center">
-            BOOK AN APPOINTMENT
+          <h3 className="text-xs font-bold tracking-[0.25em] text-[#f0c040] font-oswald uppercase mb-6">
+            MARCAR UM HORÁRIO
           </h3>
           
-          <div className="flex justify-center items-center mb-6">
-            <span className="text-[12px] font-bold tracking-[0.4em] text-[#8a9ab5] uppercase">JULY</span>
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-[10px] font-bold tracking-widest text-[#8a9ab5] uppercase">{currentMonth}</span>
           </div>
 
           {/* Calendar Horizontal */}
-          <div className="flex justify-between items-center px-2">
-            {[13, 14, 15, 16, 17, 18, 19].map((day) => {
-              const isSelected = day === 16;
-              const isMO = day === 14; 
-
+          <div className="flex justify-between gap-1">
+            {days.map((day) => {
+              const isSelected = isSameDay(day, selectedDate);
+              const dayName = format(day, "EEEEEE", { locale: ptBR }).toUpperCase();
               return (
-                <div key={day} className="flex flex-col items-center gap-2 relative">
-                  <span className={`text-[12px] font-bold font-oswald z-10 transition-all ${
-                    isSelected ? "text-[#1c2333]" : isMO ? "text-red-500" : "text-white"
-                  }`}>
-                    {day}
+                <button
+                  key={day.toISOString()}
+                  onClick={() => setSelectedDate(day)}
+                  className={`flex flex-col items-center py-3 px-1 rounded-[4px] min-w-[44px] transition-all border ${
+                    isSelected 
+                    ? "bg-[#f0c040] border-[#f0c040] text-[#1c2333]" 
+                    : "bg-[#141b2a] border-[#2a3347] text-[#c8d4e8]"
+                  }`}
+                >
+                  <span className={`text-[10px] font-bold tracking-wider mb-1 ${isSelected ? "text-[#1c2333]" : "text-[#8a9ab5]"}`}>
+                    {dayName}
                   </span>
-                  <span className={`text-[8px] font-bold tracking-tighter z-10 transition-all ${
-                    isSelected ? "text-[#1c2333]" : "text-[#8a9ab5]"
-                  }`}>
-                    {day === 13 ? "SU" : day === 14 ? "MO" : day === 15 ? "TU" : day === 16 ? "WE" : day === 17 ? "TH" : day === 18 ? "FR" : "SA"}
+                  <span className={`text-sm font-oswald font-bold ${isSelected ? "text-[#1c2333]" : "text-[#c8d4e8]"}`}>
+                    {format(day, "d")}
                   </span>
-                  {isSelected && (
-                    <div className="absolute top-[-5px] w-8 h-12 bg-[#f0c040] rounded-full z-0" />
-                  )}
-                </div>
+                </button>
               );
             })}
           </div>
         </div>
 
         {/* Time Grid */}
-        <div className="space-y-4 pt-4">
-          <h3 className="text-[11px] font-bold tracking-[0.1em] text-[#f0c040] font-oswald uppercase text-center">
-            AVAILABLE TIMES
+        <div className="space-y-4">
+          <h3 className="text-[11px] font-bold tracking-[0.2em] text-[#f0c040] font-oswald uppercase">
+            HORÁRIOS DISPONÍVEIS
           </h3>
           <div className="grid grid-cols-3 gap-2">
             {timeSlots.map((time) => {
-              const isBooked = bookedSlots.includes(time) || time === "12.00 AM" || time === "07.00 PM"; 
+              const isBooked = bookedSlots.includes(time);
               const isSelected = selectedTime === time;
               
               return (
@@ -211,30 +200,54 @@ export default function Booking() {
                   key={time}
                   disabled={isBooked}
                   onClick={() => setSelectedTime(time)}
-                  className={`py-3 rounded-[4px] text-[10px] font-bold font-oswald tracking-widest transition-all ${
+                  className={`py-3 rounded-[4px] text-xs font-oswald tracking-widest border transition-all ${
                     isSelected
-                      ? "bg-[#f0c040] text-[#1c2333]"
+                      ? "bg-[#f0c040] border-[#f0c040] text-[#1c2333]"
                       : isBooked
-                        ? "bg-[#8b0000]/20 text-red-500 border border-red-500/30"
-                        : "bg-[#141b2a] border border-white/5 text-[#8a9ab5]"
+                        ? "bg-[#8b0000]/30 border-[#8b0000]/50 text-[#8b0000] cursor-not-allowed"
+                        : "bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] hover:border-[#f0c040]/50"
                   }`}
                 >
-                  {isBooked ? "BOOKED" : time}
+                  {isBooked ? "RESERVADO" : time}
                 </button>
               );
             })}
           </div>
         </div>
+
+        {/* Barber Selection */}
+        {barbers.length > 1 && (
+          <div className="space-y-3">
+             <h3 className="text-[11px] font-bold tracking-[0.2em] text-[#f0c040] font-oswald uppercase">
+              SELECIONAR BARBEIRO
+            </h3>
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {barbers.map((b) => (
+                <button
+                  key={b.id}
+                  onClick={() => setSelectedBarberId(b.id)}
+                  className={`px-4 py-2 rounded-[4px] border whitespace-nowrap text-[10px] font-bold tracking-widest transition-all ${
+                    selectedBarberId === b.id
+                      ? "bg-[#f0c040] border-[#f0c040] text-[#1c2333]"
+                      : "bg-[#141b2a] border-[#2a3347] text-[#8a9ab5]"
+                  }`}
+                >
+                  {b.name.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Footer Button */}
-      <div className="fixed bottom-0 w-full max-w-[390px] p-6 bg-[#1c2333]/95">
+      <div className="fixed bottom-0 w-full max-w-[390px] p-6 bg-[#1c2333]/90 backdrop-blur-sm">
         <Button
           onClick={handleBooking}
           disabled={isSubmitting || !selectedTime}
           className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-7 text-lg rounded-[4px] transition-all font-oswald uppercase tracking-[3px]"
         >
-          {isSubmitting ? "PROCESSING..." : "CONTINUE"}
+          {isSubmitting ? "PROCESSANDO..." : "CONTINUAR"}
         </Button>
       </div>
     </div>
