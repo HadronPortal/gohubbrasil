@@ -41,7 +41,7 @@ export default function Login() {
           if (profileError) throw profileError;
         }
 
-        toast.success("Account created successfully! You can now log in.");
+        toast.success("Conta criada com sucesso! Você já pode entrar.");
         setIsSignUp(false);
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -67,7 +67,7 @@ export default function Login() {
           <div className="flex items-center justify-center gap-4">
             <div className="w-2 h-16 bg-gradient-to-b from-red-500 via-white to-blue-500" />
             <div className="border-2 border-[#f0c040] px-4 py-2">
-              <h1 className="text-3xl font-bold tracking-[0.2em] text-[#f0c040] font-oswald m-0">BARBERSHOP</h1>
+              <h1 className="text-3xl font-bold tracking-[0.2em] text-[#f0c040] font-oswald m-0">BARBEARIA</h1>
             </div>
             <div className="w-2 h-16 bg-gradient-to-b from-red-500 via-white to-blue-500" />
           </div>
@@ -85,7 +85,7 @@ export default function Login() {
                 <Input
                   id="fullName"
                   type="text"
-                  placeholder="FULL NAME"
+                  placeholder="NOME COMPLETO"
                   className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] h-14 rounded-[4px] placeholder:text-[#8a9ab5] font-light"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -114,7 +114,7 @@ export default function Login() {
             <Input
               id="password"
               type="password"
-              placeholder="PASSWORD"
+              placeholder="SENHA"
               className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] h-14 rounded-[4px] placeholder:text-[#8a9ab5] font-light"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -128,20 +128,20 @@ export default function Login() {
             className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-7 text-lg rounded-[4px] transition-all font-oswald uppercase tracking-[3px]"
             disabled={isLoading}
           >
-            {isLoading ? "LOADING..." : isSignUp ? "SIGN UP" : "LOG IN"}
+            {isLoading ? "CARREGANDO..." : isSignUp ? "CRIAR CONTA" : "ENTRAR"}
           </Button>
 
           <div className="flex justify-between items-center px-1">
-            <button type="button" className="text-[11px] text-[#8a9ab5] uppercase tracking-wider font-light">Forgot Password?</button>
+            <button type="button" className="text-[11px] text-[#8a9ab5] uppercase tracking-wider font-light">Esqueceu a senha?</button>
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
               className="text-[11px] text-[#8a9ab5] uppercase tracking-wider font-light"
             >
               {isSignUp ? (
-                <>Already a user? <span className="text-[#f0c040]">LOG IN</span></>
+                <>Já tem conta? <span className="text-[#f0c040]">ENTRAR</span></>
               ) : (
-                <>New User? <span className="text-[#f0c040]">SIGN UP</span></>
+                <>Novo aqui? <span className="text-[#f0c040]">CADASTRAR</span></>
               )}
             </button>
           </div>

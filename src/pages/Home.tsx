@@ -22,7 +22,7 @@ export default function Home() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("SERVICES");
+  const [activeTab, setActiveTab] = useState("SERVIÇOS");
   const [activeCategory, setActiveCategory] = useState("SCISSORS");
   const navigate = useNavigate();
 
@@ -70,17 +70,17 @@ export default function Home() {
 
   const handleContinue = () => {
     if (!selectedServiceId) {
-      toast.error("Please select a service first");
+      toast.error("Por favor, selecione um serviço primeiro");
       return;
     }
     navigate(`/booking/${barbershopId}?serviceId=${selectedServiceId}`);
   };
 
   if (isLoading) {
-    return <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8]">LOADING...</div>;
+    return <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8]">CARREGANDO...</div>;
   }
 
-  const firstName = userProfile?.full_name?.split(" ")[0] || "USER";
+  const firstName = userProfile?.full_name?.split(" ")[0] || "USUÁRIO";
 
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24">
@@ -97,15 +97,15 @@ export default function Home() {
 
         {/* Welcome */}
         <div>
-          <h1 className="text-[11px] font-light uppercase tracking-[0.2em] text-[#8a9ab5] m-0">Welcome</h1>
+          <h1 className="text-[11px] font-light uppercase tracking-[0.2em] text-[#8a9ab5] m-0">BEM-VINDO</h1>
           <h2 className="text-4xl font-bold uppercase text-[#f0c040] font-oswald tracking-tight m-0 leading-tight">
-            {firstName}!
+            {firstName.toUpperCase()}!
           </h2>
         </div>
 
         {/* Tabs */}
         <div className="flex border-b border-[#2a3347] gap-8">
-          {["SERVICES", "BARBERS", "PROMO"].map((tab) => (
+          {["SERVIÇOS", "BARBEIROS", "PROMO"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -164,7 +164,7 @@ export default function Home() {
                   {s.name}
                 </h3>
                 <p className="text-[11px] text-[#8a9ab5] mt-1 leading-relaxed">
-                  Professional service with high quality tools and products. Duration: {s.duration_minutes} min.
+                  Serviço profissional com ferramentas e produtos de alta qualidade. Duração: {s.duration_minutes} min.
                 </p>
               </div>
             </div>
@@ -178,7 +178,7 @@ export default function Home() {
           onClick={handleContinue}
           className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-7 text-lg rounded-[4px] transition-all font-oswald uppercase tracking-[3px]"
         >
-          CONTINUE
+          CONTINUAR
         </Button>
       </div>
     </div>
