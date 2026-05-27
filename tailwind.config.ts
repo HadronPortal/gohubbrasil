@@ -20,19 +20,19 @@ export default {
       colors: {
         border: "#2a3347",
         input: "#141b2a",
-        ring: "#f0c040",
+        ring: "#22a6f0",
         background: "#1c2333",
         foreground: "#c8d4e8",
         primary: {
-          DEFAULT: "#f0c040",
-          foreground: "#1c2333",
+          DEFAULT: "#22a6f0",
+          foreground: "#ffffff",
         },
         secondary: {
           DEFAULT: "#141b2a",
           foreground: "#8a9ab5",
         },
         destructive: {
-          DEFAULT: "#8b0000", // Dark red for booked
+          DEFAULT: "#f06060",
           foreground: "#ffffff",
         },
         muted: {
@@ -40,8 +40,8 @@ export default {
           foreground: "#8a9ab5",
         },
         accent: {
-          DEFAULT: "#f0c040",
-          foreground: "#1c2333",
+          DEFAULT: "#22a6f0",
+          foreground: "#ffffff",
         },
         popover: {
           DEFAULT: "#1c2333",
