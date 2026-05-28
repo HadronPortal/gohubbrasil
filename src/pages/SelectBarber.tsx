@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, User } from "lucide-react";
+import { ChevronLeft, User, Settings } from "lucide-react";
 import { toast } from "sonner";
 
 interface Barber {
@@ -99,9 +99,22 @@ export default function SelectBarber() {
       <div className="w-full max-w-[390px] p-6 space-y-10">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-[#8a9ab5] hover:text-[#f0c040]">
-            <ChevronLeft className="w-6 h-6" />
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-[#8a9ab5] hover:text-[#f0c040]">
+              <ChevronLeft className="w-6 h-6" />
+            </Button>
+            {userProfile?.role === "owner" && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => navigate("/admin")} 
+                className="text-[#f0c040] hover:bg-[#f0c040]/10"
+                title="Painel Admin"
+              >
+                <Settings className="w-5 h-5" />
+              </Button>
+            )}
+          </div>
           <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#2a3347] flex items-center justify-center overflow-hidden">
             {userProfile?.avatar_url ? (
               <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
