@@ -119,7 +119,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
         currentUserId = authData.user.id;
       }
 
-      let finalAvatarUrl = avatarPreview || "";
+      let finalAvatarUrl = avatarPreview;
       if (avatarFile) {
         const fileExt = avatarFile.name.split('.').pop();
         const identifier = currentUserId || editingBarber?.id || Math.random().toString(36).substring(7);
