@@ -57,7 +57,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
         id: b.id,
         name: b.name,
         active: b.active,
-        avatar_url: b.profiles?.avatar_url,
+        avatar_url: b.profiles?.avatar_url || b.photo_url,
         user_id: b.user_id,
         bio: b.bio,
         commission_pct: b.commission_pct,
