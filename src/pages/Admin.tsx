@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Scissors, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Scissors, LogOut, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import AdminBarbers from "@/components/admin/AdminBarbers";
