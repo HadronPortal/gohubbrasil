@@ -16,11 +16,11 @@ export default function Booking() {
   const { id: barbershopId } = useParams();
   const [searchParams] = useSearchParams();
   const serviceId = searchParams.get("serviceId");
+  const barberIdFromUrl = searchParams.get("barberId");
   const navigate = useNavigate();
   
   const [userProfile, setUserProfile] = useState<any>(null);
-  const [barbers, setBarbers] = useState<Barber[]>([]);
-  const [selectedBarberId, setSelectedBarberId] = useState<string | null>(null);
+  const [selectedBarberId, setSelectedBarberId] = useState<string | null>(barberIdFromUrl);
   const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
@@ -58,15 +58,7 @@ export default function Booking() {
     const { data: profile } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
     if (profile) setUserProfile(profile);
 
-    const { data: barberData } = await supabase
-      .from("barbers")
-      .select("id, name")
-      .eq("barbershop_id", barbershopId);
-    
-    if (barberData) {
-      setBarbers(barberData as Barber[]);
-      if (barberData.length > 0) setSelectedBarberId(barberData[0].id);
-    }
+    // No longer need to fetch barbers here as it is passed from the previous screen
   };
 
   const fetchBookedSlots = async () => {
@@ -215,29 +207,6 @@ export default function Booking() {
           </div>
         </div>
 
-        {/* Barber Selection */}
-        {barbers.length > 1 && (
-          <div className="space-y-3">
-             <h3 className="text-[11px] font-bold tracking-[0.2em] text-[#f0c040] font-oswald uppercase">
-              SELECIONAR BARBEIRO
-            </h3>
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              {barbers.map((b) => (
-                <button
-                  key={b.id}
-                  onClick={() => setSelectedBarberId(b.id)}
-                  className={`px-4 py-2 rounded-[4px] border whitespace-nowrap text-[10px] font-bold tracking-widest transition-all ${
-                    selectedBarberId === b.id
-                      ? "bg-[#f0c040] border-[#f0c040] text-[#1c2333]"
-                      : "bg-[#141b2a] border-[#2a3347] text-[#8a9ab5]"
-                  }`}
-                >
-                  {b.name.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Footer Button */}

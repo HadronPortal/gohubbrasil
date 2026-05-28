@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, User } from "lucide-react";
+import { ChevronLeft, User } from "lucide-react";
 import { toast } from "sonner";
 
-// Custom Scissors icon (Tesoura)
+// Custom Icons (same as in Home.tsx previously)
 const CustomScissors = ({ className }: { className?: string }) => (
   <img 
     src="/tesouras.png" 
@@ -15,7 +15,6 @@ const CustomScissors = ({ className }: { className?: string }) => (
   />
 );
 
-// Custom Razor icon (Navalha)
 const Razor = ({ className }: { className?: string }) => (
   <img 
     src="/navalha.png" 
@@ -25,7 +24,6 @@ const Razor = ({ className }: { className?: string }) => (
   />
 );
 
-// Custom Comb icon (Pente)
 const Comb = ({ className }: { className?: string }) => (
   <img 
     src="/pente-de-cabelo.png" 
@@ -42,27 +40,26 @@ interface Service {
   duration_minutes: number;
 }
 
-interface UserProfile {
-  id: string;
-  full_name: string;
-}
-
-export default function Home() {
+export default function Services() {
+  const [searchParams] = useSearchParams();
+  const barberId = searchParams.get("barberId");
+  const barbershopId = searchParams.get("barbershopId");
+  
   const [services, setServices] = useState<Service[]>([]);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("SERVIÇOS");
-  const [activeCategory, setActiveCategory] = useState("SCISSORS");
   const navigate = useNavigate();
 
-  const [barbershopId, setBarbershopId] = useState<string | null>(null);
-
   useEffect(() => {
-    checkUserAndFetchData();
-  }, []);
+    if (!barberId || !barbershopId) {
+      navigate("/");
+      return;
+    }
+    fetchData();
+  }, [barberId, barbershopId]);
 
-  const checkUserAndFetchData = async () => {
+  const fetchData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       navigate("/login");
@@ -71,31 +68,20 @@ export default function Home() {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("id, full_name")
+      .select("id, full_name, avatar_url")
       .eq("id", session.user.id)
       .single();
     
-    if (profile) setUserProfile(profile as UserProfile);
+    if (profile) setUserProfile(profile);
 
-    const { data: shops } = await supabase.from("barbershops").select("id").limit(1);
-    if (shops && shops.length > 0) {
-      const bId = shops[0].id;
-      setBarbershopId(bId);
-
-      const { data: serviceData } = await supabase
-        .from("services")
-        .select("*")
-        .eq("barbershop_id", bId);
-      
-      if (serviceData) setServices(serviceData as Service[]);
-    }
+    const { data: serviceData } = await supabase
+      .from("services")
+      .select("*")
+      .eq("barbershop_id", barbershopId);
+    
+    if (serviceData) setServices(serviceData as Service[]);
     
     setIsLoading(false);
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/login");
   };
 
   const handleContinue = () => {
@@ -103,64 +89,47 @@ export default function Home() {
       toast.error("Por favor, selecione um serviço primeiro");
       return;
     }
-    navigate(`/booking/${barbershopId}?serviceId=${selectedServiceId}`);
+    navigate(`/booking/${barbershopId}?serviceId=${selectedServiceId}&barberId=${barberId}`);
   };
 
   if (isLoading) {
     return <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8]">CARREGANDO...</div>;
   }
 
-  const firstName = userProfile?.full_name?.split(" ")[0] || "USUÁRIO";
-
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24 overflow-hidden">
-      <div className="w-full max-w-[390px] p-6 space-y-8">
+      <div className="w-full max-w-[390px] p-6 space-y-10">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <Button variant="ghost" size="icon" onClick={handleLogout} className="text-[#8a9ab5] hover:text-[#f0c040]">
-            <LogOut className="w-5 h-5" />
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-[#8a9ab5] hover:text-[#f0c040]">
+            <ChevronLeft className="w-6 h-6" />
           </Button>
           <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#2a3347] flex items-center justify-center overflow-hidden">
-            <User className="w-6 h-6 text-[#8a9ab5]" />
+             {userProfile?.avatar_url ? (
+              <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-6 h-6 text-[#8a9ab5]" />
+            )}
           </div>
         </div>
 
-        {/* Welcome */}
+        {/* Title */}
         <div>
-          <h1 className="text-[11px] font-light uppercase tracking-[0.2em] text-[#8a9ab5] m-0">BEM-VINDO</h1>
-          <h2 className="text-4xl font-bold uppercase text-[#f0c040] font-oswald tracking-tight m-0 leading-tight">
-            {firstName.toUpperCase()}!
-          </h2>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex border-b border-[#2a3347] gap-8">
-          {["SERVIÇOS", "BARBEIROS", "PROMO"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`pb-3 text-xs font-bold tracking-[0.15em] font-oswald uppercase transition-all relative ${
-                activeTab === tab ? "text-[#f0c040]" : "text-[#8a9ab5]"
-              }`}
-            >
-              {tab}
-              {activeTab === tab && (
-                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[#f0c040]" />
-              )}
-            </button>
-          ))}
+          <h3 className="text-xs font-bold tracking-[0.25em] text-[#f0c040] font-oswald uppercase">
+            ESCOLHA O SERVIÇO
+          </h3>
         </div>
 
         {/* Categorias (Apenas Visual) */}
-        <div className="flex justify-between items-center pt-2">
+        <div className="flex justify-between items-center">
           {[
             { id: "SCISSORS", icon: CustomScissors },
             { id: "RAZOR", icon: Razor },
             { id: "COMB", icon: Comb },
-          ].map((cat, index) => (
+          ].map((cat) => (
             <div
               key={cat.id}
-              className="w-16 h-16 rounded-[4px] border bg-[#161e2e] border-[#f0c040] text-[#f0c040] flex items-center justify-center transition-all"
+              className="w-16 h-16 rounded-[4px] border bg-[#161e2e] border-[#f0c040] text-[#f0c040] flex items-center justify-center"
             >
               <cat.icon className="w-6 h-6 stroke-[3px]" />
             </div>
@@ -189,7 +158,7 @@ export default function Home() {
                   {s.name}
                 </h3>
                 <p className="text-[11px] text-[#8a9ab5] mt-1 leading-relaxed">
-                  Serviço profissional com ferramentas e produtos de alta qualidade. Duração: {s.duration_minutes} min.
+                  Duração: {s.duration_minutes} min.
                 </p>
               </div>
             </div>
