@@ -35,7 +35,7 @@ export default function SelectBarber() {
     // Fetch profile for welcome message
     const { data: profile } = await supabase
       .from("profiles")
-      .select("id, full_name, avatar_url")
+      .select("id, full_name, avatar_url, role")
       .eq("id", session.user.id)
       .single();
     
