@@ -115,12 +115,26 @@ export default function SelectBarber() {
               </Button>
             )}
           </div>
-          <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#2a3347] flex items-center justify-center overflow-hidden">
-            {userProfile?.avatar_url ? (
-              <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <User className="w-6 h-6 text-[#8a9ab5]" />
-            )}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#2a3347] flex items-center justify-center overflow-hidden">
+              {userProfile?.avatar_url ? (
+                <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-6 h-6 text-[#8a9ab5]" />
+              )}
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={async () => {
+                await supabase.auth.signOut();
+                navigate("/login");
+              }} 
+              className="text-[#8a9ab5] hover:text-[#f0c040]"
+              title="Sair"
+            >
+              <LogOut className="w-5 h-5" />
+            </Button>
           </div>
         </div>
 
