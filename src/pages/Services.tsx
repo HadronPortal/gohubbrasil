@@ -120,49 +120,49 @@ export default function Services() {
           </h3>
         </div>
 
-        {/* Categorias (Apenas Visual) */}
-        <div className="flex justify-between items-center">
-          {[
-            { id: "SCISSORS", icon: CustomScissors },
-            { id: "RAZOR", icon: Razor },
-            { id: "COMB", icon: Comb },
-          ].map((cat) => (
-            <div
-              key={cat.id}
-              className="w-16 h-16 rounded-[4px] border bg-[#161e2e] border-[#f0c040] text-[#f0c040] flex items-center justify-center"
-            >
-              <cat.icon className="w-6 h-6 stroke-[3px]" />
-            </div>
-          ))}
-        </div>
-
         {/* Services List */}
         <div className="space-y-6 pt-4">
-          {services.map((s) => (
-            <div 
-              key={s.id}
-              onClick={() => setSelectedServiceId(s.id)}
-              className="flex items-start gap-4 cursor-pointer group"
-            >
-              <div className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center transition-all ${
-                selectedServiceId === s.id ? "border-[#f0c040]" : "border-[#2a3347]"
-              }`}>
-                {selectedServiceId === s.id && (
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#f0c040]" />
-                )}
-              </div>
-              <div className="flex-1">
-                <h3 className={`text-sm font-bold tracking-wider font-oswald transition-all ${
-                  selectedServiceId === s.id ? "text-[#f0c040]" : "text-[#c8d4e8]"
+          {services.map((s) => {
+            const isSelected = selectedServiceId === s.id;
+            
+            // Determine icon based on service name
+            const Icon = s.name.toLowerCase().includes("barba") 
+              ? Razor 
+              : (s.name.toLowerCase().includes("corte") ? CustomScissors : Comb);
+
+            return (
+              <div 
+                key={s.id}
+                onClick={() => setSelectedServiceId(s.id)}
+                className={`flex items-center gap-4 p-4 rounded-[4px] cursor-pointer transition-all border ${
+                  isSelected ? "bg-[#161e2e] border-[#f0c040]" : "bg-[#141b2a] border-[#2a3347]"
+                }`}
+              >
+                <div className={`w-12 h-12 flex items-center justify-center rounded-full ${
+                  isSelected ? "text-[#f0c040]" : "text-[#8a9ab5]"
                 }`}>
-                  {s.name}
-                </h3>
-                <p className="text-[11px] text-[#8a9ab5] mt-1 leading-relaxed">
-                  Duração: {s.duration_minutes} min.
-                </p>
+                  <Icon className="w-6 h-6" />
+                </div>
+                <div className="flex-1">
+                  <h3 className={`text-sm font-bold tracking-wider font-oswald uppercase ${
+                    isSelected ? "text-[#f0c040]" : "text-[#c8d4e8]"
+                  }`}>
+                    {s.name}
+                  </h3>
+                  <p className="text-[10px] text-[#8a9ab5] uppercase tracking-wider">
+                    {s.duration_minutes} min.
+                  </p>
+                </div>
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                  isSelected ? "border-[#f0c040]" : "border-[#2a3347]"
+                }`}>
+                  {isSelected && (
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#f0c040]" />
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
