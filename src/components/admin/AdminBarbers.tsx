@@ -47,6 +47,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
         user_id,
         bio,
         commission_pct,
+        photo_url,
         profiles:user_id (avatar_url, whatsapp)
       `)
       .eq("barbershop_id", barbershopId);
