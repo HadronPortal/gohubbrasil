@@ -216,8 +216,12 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
         <div className="space-y-4">
           <Input placeholder="NOME COMPLETO" value={name} onChange={e => setName(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
           <Input placeholder="WHATSAPP" type="tel" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
-          <Input placeholder="E-MAIL" type="email" value={email} onChange={e => setEmail(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
-          <Input placeholder="SENHA INICIAL" type="password" value={password} onChange={e => setPassword(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
+          {!editingBarber && (
+            <>
+              <Input placeholder="E-MAIL" type="email" value={email} onChange={e => setEmail(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
+              <Input placeholder="SENHA INICIAL" type="password" value={password} onChange={e => setPassword(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
+            </>
+          )}
           <Input placeholder="ESPECIALIDADE (EX: CORTE CLÁSSICO)" value={bio} onChange={e => setBio(e.target.value)} className="bg-[#141b2a] border-[#2a3347] h-12" />
           <div className="flex gap-4">
             <div className="flex-1 space-y-1">
