@@ -128,27 +128,24 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
       }
 
       if (!editingBarber) {
-        // 2. Use Edge Function to create barber without session swap
-        const { data, error: functionError } = await supabase.functions.invoke('manage-barbers', {
-          body: {
-            action: 'create',
-            barberData: {
-              email,
-              password,
-              name,
-              whatsapp,
-              bio,
-              commission,
-              active,
-              avatar_url: finalAvatarUrl
-            }
-          }
+        // 2. Use RPC to create barber
+        const { data, error: rpcError } = await supabase.rpc('create_barber', {
+          p_email: email,
+          p_password: password,
+          p_name: name,
+          p_phone: whatsapp,
+          p_bio: bio,
+          p_commission_pct: parseFloat(commission) || 0,
+          p_avatar_url: finalAvatarUrl,
+          p_barbershop_id: barbershopId
         });
 
-        if (functionError) throw functionError;
-        if (data.error) throw new Error(data.error);
+        if (rpcError) throw rpcError;
         
-        currentUserId = data.user.id;
+        const result = data as any;
+        if (!result.success) throw new Error(result.error);
+        
+        currentUserId = result.user_id;
       } else {
         // Update Profile only if user exists
         if (currentUserId) {
