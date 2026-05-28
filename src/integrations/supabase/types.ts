@@ -74,6 +74,7 @@ export type Database = {
           active: boolean | null
           barbershop_id: string
           bio: string | null
+          commission_pct: number | null
           created_at: string | null
           id: string
           name: string
@@ -84,6 +85,7 @@ export type Database = {
           active?: boolean | null
           barbershop_id: string
           bio?: string | null
+          commission_pct?: number | null
           created_at?: string | null
           id?: string
           name: string
@@ -94,6 +96,7 @@ export type Database = {
           active?: boolean | null
           barbershop_id?: string
           bio?: string | null
+          commission_pct?: number | null
           created_at?: string | null
           id?: string
           name?: string
@@ -147,6 +150,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          barbershop_id: string | null
           created_at: string | null
           full_name: string | null
           id: string
@@ -156,6 +160,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          barbershop_id?: string | null
           created_at?: string | null
           full_name?: string | null
           id: string
@@ -165,6 +170,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          barbershop_id?: string | null
           created_at?: string | null
           full_name?: string | null
           id?: string
@@ -172,7 +178,15 @@ export type Database = {
           updated_at?: string | null
           whatsapp?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       services: {
         Row: {
