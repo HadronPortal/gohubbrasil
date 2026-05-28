@@ -250,7 +250,11 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
       
       <div className="space-y-4">
         {barbers.map(barber => (
-          <div key={barber.id} className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] flex items-center gap-4">
+          <div 
+            key={barber.id} 
+            onClick={() => handleEdit(barber)}
+            className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] flex items-center gap-4 cursor-pointer hover:border-[#f0c040]/50 transition-all"
+          >
             <div className="w-12 h-12 rounded-full border border-[#f0c040] overflow-hidden flex items-center justify-center bg-[#1c2333]">
               {barber.avatar_url ? (
                 <img src={barber.avatar_url} alt={barber.name} className="w-full h-full object-cover" />
