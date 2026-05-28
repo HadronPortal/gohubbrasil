@@ -135,19 +135,21 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
         finalAvatarUrl = publicUrl;
       }
 
-      // Update Profile
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({
-          full_name: name,
-          whatsapp,
-          avatar_url: finalAvatarUrl,
-          role: 'barber',
-          barbershop_id: barbershopId || undefined
-        })
-        .eq("id", currentUserId);
+      // Update Profile only if user exists
+      if (currentUserId) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({
+            full_name: name,
+            whatsapp,
+            avatar_url: finalAvatarUrl,
+            role: 'barber',
+            barbershop_id: barbershopId || undefined
+          })
+          .eq("id", currentUserId);
 
-      if (profileError) throw profileError;
+        if (profileError) throw profileError;
+      }
 
       // Create or Update Barber entry
       if (editingBarber) {
