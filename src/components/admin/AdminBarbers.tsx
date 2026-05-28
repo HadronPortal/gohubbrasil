@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Camera, Plus, UserPlus } from "lucide-react";
+import { Camera, Plus, UserPlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 
@@ -186,6 +186,30 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
 
       toast.success(editingBarber ? "Barbeiro atualizado!" : "Barbeiro cadastrado!");
       resetForm();
+      // Force refresh data
+      setTimeout(() => {
+        fetchBarbers();
+      }, 500);
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Tem certeza que deseja excluir este barbeiro?")) return;
+    
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from("barbers")
+        .delete()
+        .eq("id", id);
+      
+      if (error) throw error;
+      toast.success("Barbeiro removido!");
       fetchBarbers();
     } catch (error: any) {
       toast.error(error.message);
@@ -275,6 +299,15 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
                 {barber.active ? "ATIVO" : "INATIVO"}
               </span>
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              type="button"
+              onClick={(e) => handleDelete(barber.id, e)}
+              className="text-[#8a9ab5] hover:text-red-500 transition-colors"
+            >
+              <Trash2 className="w-5 h-5" />
+            </Button>
           </div>
         ))}
       </div>
