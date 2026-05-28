@@ -143,7 +143,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
           whatsapp,
           avatar_url: finalAvatarUrl,
           role: 'barber',
-          barbershop_id: barbershopId
+          barbershop_id: barbershopId || undefined
         })
         .eq("id", currentUserId);
 
