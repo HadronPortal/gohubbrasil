@@ -71,28 +71,34 @@ export type Database = {
       }
       barbers: {
         Row: {
+          active: boolean | null
           barbershop_id: string
           bio: string | null
           created_at: string | null
           id: string
           name: string
           photo_url: string | null
+          user_id: string | null
         }
         Insert: {
+          active?: boolean | null
           barbershop_id: string
           bio?: string | null
           created_at?: string | null
           id?: string
           name: string
           photo_url?: string | null
+          user_id?: string | null
         }
         Update: {
+          active?: boolean | null
           barbershop_id?: string
           bio?: string | null
           created_at?: string | null
           id?: string
           name?: string
           photo_url?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -100,6 +106,13 @@ export type Database = {
             columns: ["barbershop_id"]
             isOneToOne: false
             referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "barbers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -133,6 +146,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string | null
           full_name: string | null
           id: string
@@ -141,6 +155,7 @@ export type Database = {
           whatsapp: string | null
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string | null
           full_name?: string | null
           id: string
@@ -149,6 +164,7 @@ export type Database = {
           whatsapp?: string | null
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string | null
           full_name?: string | null
           id?: string
