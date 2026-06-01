@@ -15,82 +15,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  
   const profileLoaded = useRef(false);
-  const fetchingUserId = useRef<string | null>(null);
 
   const fetchProfile = useCallback(async (userId: string) => {
-    // Flag to not fetch twice for the same user
-    if (profileLoaded.current && fetchingUserId.current === userId) return;
+    if (profileLoaded.current) return;
     
-    profileLoaded.current = true;
-    fetchingUserId.current = userId;
-    
+    console.log("AuthProvider: Fetching profile for:", userId);
     const { data, error } = await supabase
       .from('users')
       .select('role, barbershop_id, name, avatar_url')
       .eq('id', userId)
       .single();
     
-    if (data) {
-      console.log('fetchProfile chamado, role:', data?.role);
-      setProfile(data);
-    } else {
-      console.log('fetchProfile chamado, erro ou sem dados, definindo como client');
-      setProfile({ role: 'client', name: 'USUÁRIO' });
-    }
+    console.log('fetchProfile resultado:', data);
+    setProfile(data || { role: 'client' });
+    profileLoaded.current = true;
+    setLoading(false);
   }, []);
 
   const refreshProfile = useCallback(async () => {
     if (user) {
-      profileLoaded.current = false; // Reset to allow explicit refresh
+      profileLoaded.current = false;
       await fetchProfile(user.id);
     }
   }, [user, fetchProfile]);
 
+  const signOut = useCallback(async () => {
+    console.log("AuthProvider: Signing out...");
+    await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
+    profileLoaded.current = false;
+    setLoading(false);
+  }, []);
+
   useEffect(() => {
     let mounted = true;
 
-    async function initializeAuth() {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!mounted) return;
-
-        if (session?.user) {
-          setUser(session.user);
-          setLoading(false);
-          await fetchProfile(session.user.id);
-        } else {
-          setLoading(false);
-        }
-      } catch (err) {
-        console.error("Auth init error:", err);
-        if (mounted) setLoading(false);
+    // Initial session check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      if (session?.user) {
+        setUser(session.user);
+        fetchProfile(session.user.id);
+      } else {
+        setLoading(false);
       }
-    }
+    });
 
-    initializeAuth();
-
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
-      
-      const currentUser = session?.user ?? null;
-      
-      if (event === 'SIGNED_IN') {
-        setUser(currentUser);
-        setLoading(false);
-        if (currentUser) {
-          await fetchProfile(currentUser.id);
-        }
+      console.log("AuthProvider: Auth event:", event);
+
+      if (event === 'SIGNED_IN' && session?.user) {
+        setUser(session.user);
+        await fetchProfile(session.user.id);
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
         setProfile(null);
         profileLoaded.current = false;
-        fetchingUserId.current = null;
         setLoading(false);
-      } else if (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
-        setUser(currentUser);
+      } else if (session?.user) {
+        setUser(session.user);
       }
     });
 
@@ -100,9 +87,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [fetchProfile]);
 
-  const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
-  }, []);
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8] font-oswald tracking-[0.2em]">
+        CARREGANDO...
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider value={{ user, profile, loading, signOut, refreshProfile }}>
