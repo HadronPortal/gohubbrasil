@@ -9,32 +9,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   const loadProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
+    // Note: Reverted to 'users' table as per explicit user instruction, 
+    // though previously 'profiles' was used. Using the columns requested.
+    const { data } = await supabase
+      .from('users')
+      .select('id, role, barbershop_id, name, phone, avatar_url')
       .eq('id', userId)
       .maybeSingle()
 
     if (data) {
-      const isOwner = data.role === 'owner' || data.is_owner === true || data.owner === true
-      const isAdmin = isOwner || data.role === 'admin'
+      const roleStr = String(data.role || '').toLowerCase()
+      const isOwner = roleStr === 'owner'
+      const isAdmin = isOwner || roleStr === 'admin'
       
-      const normalizedProfile = {
+      setProfile({
         ...data,
-        name: data.full_name, // name as alias for full_name
         isOwner,
         isAdmin
-      }
-      setProfile(normalizedProfile)
+      })
     } else {
-      // Default profile for authenticated users without a profile entry
       setProfile({ role: 'client', isOwner: false, isAdmin: false })
     }
     setLoading(false)
   }
 
   useEffect(() => {
-    // 1. Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user)
@@ -44,7 +43,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     })
 
-    // 2. Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null)

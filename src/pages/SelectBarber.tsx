@@ -52,7 +52,7 @@ export default function SelectBarber() {
           bio,
           user_id,
           photo_url,
-          profiles:user_id (
+          users:user_id (
             avatar_url
           )
         `)
@@ -67,7 +67,7 @@ export default function SelectBarber() {
           id: b.id,
           name: b.name,
           bio: b.bio || "CORTE & BARBA",
-          avatar_url: b.photo_url || b.profiles?.avatar_url,
+          avatar_url: b.photo_url || b.users?.avatar_url,
           initials: b.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().substring(0, 2)
         }));
         setBarbers(mappedBarbers);
@@ -93,7 +93,7 @@ export default function SelectBarber() {
     );
   }
 
-  const firstName = profile?.name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || user?.user_metadata?.full_name?.split(" ")[0] || "USUÁRIO";
+  const firstName = profile?.name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || "USUÁRIO";
 
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24 overflow-hidden">

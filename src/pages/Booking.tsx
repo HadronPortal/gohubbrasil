@@ -98,7 +98,7 @@ export default function Booking() {
     }
   };
 
-  const firstName = profile?.name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || user?.user_metadata?.full_name?.split(" ")[0] || "USUÁRIO";
+  const firstName = profile?.name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || "USUÁRIO";
   const currentMonth = format(selectedDate, "MMMM", { locale: ptBR });
 
   return (

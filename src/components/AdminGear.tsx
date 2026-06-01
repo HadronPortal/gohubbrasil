@@ -12,7 +12,7 @@ export const AdminGear: React.FC = () => {
       <button 
         onClick={() => navigate('/admin')}
         style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px' }}
-        aria-label="Configurações de Administrador"
+        aria-label="Painel Administrativo"
       >
         <Settings size={24} color="#f0c040" />
       </button>
