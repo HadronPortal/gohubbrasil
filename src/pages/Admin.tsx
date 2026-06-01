@@ -18,7 +18,7 @@ export default function Admin() {
     if (!loading) {
       if (!user) {
         navigate("/login");
-      } else if (profile && profile.role !== "owner" && profile.role !== "admin") {
+      } else if (profile && !profile.isAdmin) {
         toast.error("Acesso restrito");
         navigate("/");
       }
