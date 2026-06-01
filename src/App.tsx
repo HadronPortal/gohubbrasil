@@ -32,10 +32,10 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <>
+    <AuthProvider>
       <RouterProvider router={router} />
       <Toaster position="top-center" richColors />
-    </>
+    </AuthProvider>
   );
 }
 
