@@ -83,7 +83,7 @@ export default function SelectBarber() {
     return <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8]">CARREGANDO...</div>;
   }
 
-  const firstName = profile?.name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || "USUÁRIO";
+  const firstName = profile?.name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || user?.user_metadata?.full_name?.split(" ")[0] || "USUÁRIO";
 
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24 overflow-hidden">
