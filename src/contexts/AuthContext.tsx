@@ -18,7 +18,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string) => {
     try {
-      console.log("AuthProvider: Fetching profile for:", userId);
       const { data, error } = await supabase
         .from("profiles")
         .select("role, barbershop_id, full_name, avatar_url")
@@ -26,15 +25,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .single();
 
       if (error) {
-        if (error.code === "PGRST116") {
-          console.log("AuthProvider: No profile found in DB for user:", userId);
-          return null;
-        }
-        console.error("AuthProvider: Error fetching profile from DB:", error);
+        console.error("AuthProvider: Error fetching profile:", error);
         return null;
       }
       
-      console.log("AuthProvider: Profile found:", data);
       return data ? { ...data, name: data.full_name } : null;
     } catch (err) {
       console.error("AuthProvider: Unexpected error in fetchProfile:", err);
@@ -52,50 +46,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let mounted = true;
 
-    async function initializeAuth() {
+    // Initial session check
+    const checkSession = async () => {
       try {
-        console.log("AuthProvider: Initializing...");
-        // Get session once
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error("AuthProvider: Session error:", sessionError);
-        }
-
+        const { data: { session } } = await supabase.auth.getSession();
         if (!mounted) return;
 
         if (session?.user) {
-          console.log("AuthProvider: Session found for user:", session.user.id);
           setUser(session.user);
           const p = await fetchProfile(session.user.id);
           if (mounted) setProfile(p);
-        } else {
-          console.log("AuthProvider: No session found during init");
         }
       } catch (err) {
-        console.error("AuthProvider: Auth initialization exception:", err);
+        console.error("AuthProvider: Init error", err);
       } finally {
-        if (mounted) {
-          console.log("AuthProvider: Initialization complete, setting loading false");
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
-    }
+    };
 
-    initializeAuth();
+    checkSession();
 
-    // The subscription should not reset loading to true unless it's a real login event
+    // Listen for changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("AuthProvider: Auth change event:", event);
       if (!mounted) return;
-
-      const currentUser = session?.user ?? null;
       
-      // Only trigger a profile fetch if the user has changed
-      if (currentUser?.id !== user?.id) {
-        setUser(currentUser);
-        if (currentUser) {
-          const p = await fetchProfile(currentUser.id);
+      const newUser = session?.user ?? null;
+      
+      // Only update if user actually changed to avoid cycles
+      if (newUser?.id !== user?.id) {
+        setUser(newUser);
+        if (newUser) {
+          const p = await fetchProfile(newUser.id);
           if (mounted) setProfile(p);
         } else {
           if (mounted) setProfile(null);
@@ -109,7 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [user?.id]); // Adding user?.id to dependencies to track changes safely
+  }, []); // Empty dependency array is critical to avoid re-running the effect
 
   const signOut = async () => {
     await supabase.auth.signOut();
