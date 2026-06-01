@@ -227,7 +227,8 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
       }
 
       toast.success("Barbeiro removido!");
-      fetchBarbers();
+      // Atualizar estado local sem nova chamada ao supabase
+      setBarbers(prev => prev.filter(b => b.id !== id));
     } catch (error: any) {
       toast.error(error.message);
     } finally {
