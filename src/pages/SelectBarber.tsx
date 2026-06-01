@@ -40,12 +40,18 @@ export default function SelectBarber() {
       .single();
     
     // Set profile data, using auth metadata as fallback for the name
+    // We check both "admin" and "owner" as the user might have set either in the DB
     const userData = profile || {
       id: session.user.id,
       name: session.user.user_metadata?.name || session.user.user_metadata?.full_name,
       avatar_url: session.user.user_metadata?.avatar_url,
       role: "client"
     };
+    
+    // Normalize role for the UI: treat both 'admin' and 'owner' as having admin privileges
+    if (userData.role === 'admin') {
+      userData.role = 'owner';
+    }
     
     setUserProfile(userData);
 
