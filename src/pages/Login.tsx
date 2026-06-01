@@ -24,6 +24,12 @@ export default function Login() {
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              name: fullName,
+              phone: whatsapp,
+            },
+          },
         });
 
         if (authError) throw authError;
@@ -36,6 +42,7 @@ export default function Login() {
               full_name: fullName,
               whatsapp: whatsapp,
               role: "client",
+              barbershop_id: null,
             });
 
           if (profileError) throw profileError;
