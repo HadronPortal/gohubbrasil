@@ -4,8 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, User } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { AdminGear } from "@/components/AdminGear";
 
-// Custom Icons (same as in Home.tsx previously)
+// Custom Icons
 const CustomScissors = ({ className }: { className?: string }) => (
   <img 
     src="/tesouras.png" 
@@ -44,9 +46,9 @@ export default function Services() {
   const [searchParams] = useSearchParams();
   const barberId = searchParams.get("barberId");
   const barbershopId = searchParams.get("barbershopId");
+  const { profile } = useAuth();
   
   const [services, setServices] = useState<Service[]>([]);
-  const [userProfile, setUserProfile] = useState<any>(null);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -60,27 +62,6 @@ export default function Services() {
   }, [barberId, barbershopId]);
 
   const fetchData = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/login");
-      return;
-    }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id, name, avatar_url")
-      .eq("id", session.user.id)
-      .single();
-    
-    // Set profile data, using auth metadata as fallback for the name
-    const userData = profile || {
-      id: session.user.id,
-      name: session.user.user_metadata?.name || session.user.user_metadata?.full_name,
-      avatar_url: session.user.user_metadata?.avatar_url,
-    };
-    
-    setUserProfile(userData);
-
     const { data: serviceData } = await supabase
       .from("services")
       .select("*")
@@ -108,12 +89,15 @@ export default function Services() {
       <div className="w-full max-w-[390px] p-6 space-y-10">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-[#8a9ab5] hover:text-[#f0c040]">
-            <ChevronLeft className="w-6 h-6" />
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-[#8a9ab5] hover:text-[#f0c040]">
+              <ChevronLeft className="w-6 h-6" />
+            </Button>
+            <AdminGear />
+          </div>
           <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#2a3347] flex items-center justify-center overflow-hidden">
-             {userProfile?.avatar_url ? (
-              <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+             {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
             ) : (
               <User className="w-6 h-6 text-[#8a9ab5]" />
             )}

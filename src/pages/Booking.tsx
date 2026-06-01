@@ -6,11 +6,8 @@ import { toast } from "sonner";
 import { ChevronLeft, User } from "lucide-react";
 import { format, addDays, startOfDay, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
-
-interface Barber {
-  id: string;
-  name: string;
-}
+import { useAuth } from "@/contexts/AuthContext";
+import { AdminGear } from "@/components/AdminGear";
 
 export default function Booking() {
   const { id: barbershopId } = useParams();
@@ -18,8 +15,8 @@ export default function Booking() {
   const serviceId = searchParams.get("serviceId");
   const barberIdFromUrl = searchParams.get("barberId");
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
   
-  const [userProfile, setUserProfile] = useState<any>(null);
   const [selectedBarberId, setSelectedBarberId] = useState<string | null>(barberIdFromUrl);
   const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -39,36 +36,13 @@ export default function Booking() {
       navigate("/");
       return;
     }
-    fetchInitialData();
-  }, [barbershopId]);
+  }, [serviceId]);
 
   useEffect(() => {
     if (selectedBarberId && selectedDate) {
       fetchBookedSlots();
     }
   }, [selectedBarberId, selectedDate]);
-
-  const fetchInitialData = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/login");
-      return;
-    }
-
-    const { data: profile } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
-    
-    // Set profile data, using auth metadata as fallback for the name
-    const userData = profile || {
-      id: session.user.id,
-      name: session.user.user_metadata?.name || session.user.user_metadata?.full_name,
-      avatar_url: session.user.user_metadata?.avatar_url,
-      role: "client"
-    };
-    
-    setUserProfile(userData);
-
-    // No longer need to fetch barbers here as it is passed from the previous screen
-  };
 
   const fetchBookedSlots = async () => {
     const start = selectedDate.toISOString();
@@ -98,7 +72,6 @@ export default function Booking() {
 
     setIsSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
       const [hours, minutes] = selectedTime.split(":");
@@ -125,7 +98,7 @@ export default function Booking() {
     }
   };
 
-  const firstName = userProfile?.name?.split(" ")[0] || "USUÁRIO";
+  const firstName = profile?.name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || "USUÁRIO";
   const currentMonth = format(selectedDate, "MMMM", { locale: ptBR });
 
   return (
@@ -133,11 +106,18 @@ export default function Booking() {
       <div className="w-full max-w-[390px] p-6 space-y-10">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-[#8a9ab5] hover:text-[#f0c040]">
-            <ChevronLeft className="w-6 h-6" />
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-[#8a9ab5] hover:text-[#f0c040]">
+              <ChevronLeft className="w-6 h-6" />
+            </Button>
+            <AdminGear />
+          </div>
           <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#2a3347] flex items-center justify-center overflow-hidden">
-            <User className="w-6 h-6 text-[#8a9ab5]" />
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-6 h-6 text-[#8a9ab5]" />
+            )}
           </div>
         </div>
 

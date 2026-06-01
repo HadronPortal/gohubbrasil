@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, User, Settings, LogOut } from "lucide-react";
+import { ChevronLeft, User, LogOut } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { AdminGear } from "@/components/AdminGear";
 
 interface Barber {
   id: string;
@@ -16,52 +18,20 @@ interface Barber {
 export default function SelectBarber() {
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [selectedBarberId, setSelectedBarberId] = useState<string | null>(null);
-  const [userProfile, setUserProfile] = useState<any>(null);
   const [barbershopId, setBarbershopId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { user, profile, loading: authLoading, signOut } = useAuth();
 
   useEffect(() => {
-    fetchBarbers();
-  }, []);
+    if (!authLoading && !user) {
+      navigate("/login");
+    } else if (user) {
+      fetchBarbers();
+    }
+  }, [user, authLoading]);
 
   const fetchBarbers = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/login");
-      return;
-    }
-
-    // Fetch profile for welcome message
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id, full_name, avatar_url, role")
-      .eq("id", session.user.id)
-      .single();
-    
-    // Normalize profile to handle field name differences
-    const normalizedProfile = profile ? {
-      ...profile,
-      name: profile.full_name
-    } : null;
-    
-    // Set profile data, using auth metadata as fallback for the name
-    const userData = normalizedProfile || {
-      id: session.user.id,
-      name: session.user.user_metadata?.name || session.user.user_metadata?.full_name,
-      avatar_url: session.user.user_metadata?.avatar_url,
-      role: "client"
-    };
-    
-    console.log("User Data loaded:", userData);
-    
-    // Normalize role for the UI
-    if (userData.role === 'admin' || userData.role === 'owner') {
-      userData.role = 'owner';
-    }
-    
-    setUserProfile(userData);
-
     // Get the first barbershop (assuming one for now, as in Home.tsx)
     const { data: shops } = await supabase.from("barbershops").select("id").limit(1);
     if (shops && shops.length > 0) {
@@ -77,7 +47,7 @@ export default function SelectBarber() {
           bio,
           user_id,
           photo_url,
-          users:user_id (
+          profiles:user_id (
             avatar_url
           )
         `)
@@ -92,7 +62,7 @@ export default function SelectBarber() {
           id: b.id,
           name: b.name,
           bio: b.bio || "CORTE & BARBA",
-          avatar_url: b.photo_url || b.users?.avatar_url,
+          avatar_url: b.photo_url || b.profiles?.avatar_url,
           initials: b.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().substring(0, 2)
         }));
         setBarbers(mappedBarbers);
@@ -109,11 +79,11 @@ export default function SelectBarber() {
     navigate(`/services?barberId=${selectedBarberId}&barbershopId=${barbershopId}`);
   };
 
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8]">CARREGANDO...</div>;
   }
 
-  const firstName = userProfile?.name?.split(" ")[0] || "USUÁRIO";
+  const firstName = profile?.name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || "USUÁRIO";
 
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24 overflow-hidden">
@@ -124,22 +94,12 @@ export default function SelectBarber() {
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-[#8a9ab5] hover:text-[#f0c040]">
               <ChevronLeft className="w-6 h-6" />
             </Button>
-            {(userProfile?.role === "owner" || userProfile?.role === "admin") && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => navigate("/admin")} 
-                className="text-[#f0c040] hover:bg-[#f0c040]/10"
-                title="Painel Admin"
-              >
-                <Settings className="w-5 h-5" />
-              </Button>
-            )}
+            <AdminGear />
           </div>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#2a3347] flex items-center justify-center overflow-hidden">
-              {userProfile?.avatar_url ? (
-                <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
               ) : (
                 <User className="w-6 h-6 text-[#8a9ab5]" />
               )}
@@ -148,7 +108,7 @@ export default function SelectBarber() {
               variant="ghost" 
               size="icon" 
               onClick={async () => {
-                await supabase.auth.signOut();
+                await signOut();
                 navigate("/login");
               }} 
               className="text-[#8a9ab5] hover:text-[#f0c040]"

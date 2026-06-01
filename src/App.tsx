@@ -5,6 +5,7 @@ import Services from "./pages/Services";
 import Booking from "./pages/Booking";
 import Admin from "./pages/Admin";
 import { Toaster } from "sonner";
+import { AuthProvider } from "./contexts/AuthContext";
 
 const router = createBrowserRouter([
   {
@@ -31,10 +32,10 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <>
+    <AuthProvider>
       <RouterProvider router={router} />
       <Toaster position="top-center" richColors />
-    </>
+    </AuthProvider>
   );
 }
 

@@ -7,50 +7,34 @@ import { toast } from "sonner";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import AdminBarbers from "@/components/admin/AdminBarbers";
 import AdminServices from "@/components/admin/AdminServices";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState<"agenda" | "barbeiros" | "servicos">("agenda");
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [barbershopId, setBarbershopId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, profile, loading, signOut } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/login");
-      return;
+    if (!loading) {
+      if (!user) {
+        navigate("/login");
+      } else if (profile && profile.role !== "owner" && profile.role !== "admin") {
+        toast.error("Acesso restrito");
+        navigate("/");
+      }
     }
-
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, barbershop_id")
-      .eq("id", session.user.id)
-      .single();
-
-    if (!profile || (profile.role !== "owner" && profile.role !== "admin")) {
-      toast.error("Acesso restrito");
-      navigate("/");
-      return;
-    }
-
-    setUserRole(profile.role);
-    setBarbershopId(profile.barbershop_id);
-    setIsLoading(false);
-  };
+  }, [user, profile, loading, navigate]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     navigate("/login");
   };
 
-  if (isLoading) {
+  if (loading) {
     return <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8]">CARREGANDO...</div>;
   }
+
+  const barbershopId = profile?.barbershop_id;
 
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24 overflow-x-hidden">
