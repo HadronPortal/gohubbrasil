@@ -46,7 +46,7 @@ export default function Services() {
   const [searchParams] = useSearchParams();
   const barberId = searchParams.get("barberId");
   const barbershopId = searchParams.get("barbershopId");
-  const { profile } = useAuth();
+  const { profile, loading: authLoading } = useAuth();
   
   const [services, setServices] = useState<Service[]>([]);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
@@ -80,9 +80,11 @@ export default function Services() {
     navigate(`/booking/${barbershopId}?serviceId=${selectedServiceId}&barberId=${barberId}`);
   };
 
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8]">CARREGANDO...</div>;
   }
+
+  console.log('profile completo:', profile);
 
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24 overflow-hidden">
