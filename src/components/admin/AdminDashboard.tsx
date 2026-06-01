@@ -13,7 +13,7 @@ interface Appointment {
   id: string;
   appointment_time: string;
   status: string;
-  users: { name: string };
+  profiles: { full_name: string };
   services: { name: string };
   barbers: { name: string };
 }
@@ -44,7 +44,7 @@ export default function AdminDashboard({ barbershopId }: { barbershopId: string 
         id, 
         appointment_time, 
         status, 
-        users:client_id (name),
+        profiles:client_id (full_name),
         services:service_id (name, price),
         barbers:barber_id (name)
       `)
@@ -130,7 +130,7 @@ export default function AdminDashboard({ barbershopId }: { barbershopId: string 
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="text-sm font-bold text-[#c8d4e8] font-oswald uppercase tracking-wider">
-                      {appt.users?.name || "CLIENTE"}
+                      {appt.profiles?.full_name || "CLIENTE"}
                     </h4>
                     <p className="text-[10px] text-[#8a9ab5] uppercase tracking-widest mt-0.5">
                       {appt.services?.name} • {appt.barbers?.name}
