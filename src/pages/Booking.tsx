@@ -56,7 +56,16 @@ export default function Booking() {
     }
 
     const { data: profile } = await supabase.from("users").select("*").eq("id", session.user.id).single();
-    if (profile) setUserProfile(profile);
+    
+    // Set profile data, using auth metadata as fallback for the name
+    const userData = profile || {
+      id: session.user.id,
+      name: session.user.user_metadata?.name || session.user.user_metadata?.full_name,
+      avatar_url: session.user.user_metadata?.avatar_url,
+      role: "client"
+    };
+    
+    setUserProfile(userData);
 
     // No longer need to fetch barbers here as it is passed from the previous screen
   };
