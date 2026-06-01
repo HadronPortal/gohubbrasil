@@ -48,7 +48,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
         bio,
         commission_pct,
         photo_url,
-        profiles:user_id (avatar_url, whatsapp)
+        users:user_id (avatar_url, phone)
       `)
       .eq("barbershop_id", barbershopId);
 
@@ -57,11 +57,11 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
         id: b.id,
         name: b.name,
         active: b.active,
-        avatar_url: b.profiles?.avatar_url || b.photo_url,
+        avatar_url: b.users?.avatar_url || b.photo_url,
         user_id: b.user_id,
         bio: b.bio,
         commission_pct: b.commission_pct,
-        whatsapp: b.profiles?.whatsapp
+        whatsapp: b.users?.phone
       })));
     }
     setIsLoading(false);
@@ -173,10 +173,10 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
         // Update Profile only if user exists
         if (currentUserId) {
           const { error: profileError } = await supabase
-            .from("profiles")
+            .from("users")
             .update({
-              full_name: name,
-              whatsapp,
+              name,
+              phone: whatsapp,
               avatar_url: finalAvatarUrl,
               role: 'barber',
               barbershop_id: barbershopId || undefined
