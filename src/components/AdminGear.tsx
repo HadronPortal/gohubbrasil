@@ -4,9 +4,11 @@ import { Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const AdminGear: React.FC = () => {
-  const { profile } = useAuth();
+  const auth = useAuth();
+  const profile = auth?.profile;
   const navigate = useNavigate();
 
+  console.log('AdminGear check - profile completo:', profile);
   console.log('role atual:', profile?.role);
   console.log('é owner?', profile?.role === 'owner');
 
@@ -23,4 +25,5 @@ export const AdminGear: React.FC = () => {
 
   return null;
 };
+
 
