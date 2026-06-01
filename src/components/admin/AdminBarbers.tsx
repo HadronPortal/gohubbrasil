@@ -175,7 +175,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
           const { error: profileError } = await supabase
             .from("profiles")
             .update({
-              name,
+              full_name: name,
               whatsapp,
               avatar_url: finalAvatarUrl,
               role: 'barber',
