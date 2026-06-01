@@ -72,7 +72,14 @@ export default function Services() {
       .eq("id", session.user.id)
       .single();
     
-    if (profile) setUserProfile(profile);
+    // Set profile data, using auth metadata as fallback for the name
+    const userData = profile || {
+      id: session.user.id,
+      name: session.user.user_metadata?.name || session.user.user_metadata?.full_name,
+      avatar_url: session.user.user_metadata?.avatar_url,
+    };
+    
+    setUserProfile(userData);
 
     const { data: serviceData } = await supabase
       .from("services")
