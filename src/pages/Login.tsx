@@ -36,11 +36,11 @@ export default function Login() {
 
         if (authData.user) {
           const { error: profileError } = await supabase
-            .from("profiles")
+            .from("users")
             .insert({
               id: authData.user.id,
-              full_name: fullName,
-              whatsapp: whatsapp,
+              name: fullName,
+              phone: whatsapp,
               role: "client",
               barbershop_id: null,
             });

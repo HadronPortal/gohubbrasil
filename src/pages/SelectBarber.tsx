@@ -34,8 +34,8 @@ export default function SelectBarber() {
 
     // Fetch profile for welcome message
     const { data: profile } = await supabase
-      .from("profiles")
-      .select("id, full_name, avatar_url, role")
+      .from("users")
+      .select("id, name, avatar_url, role")
       .eq("id", session.user.id)
       .single();
     
@@ -47,7 +47,6 @@ export default function SelectBarber() {
       const bId = shops[0].id;
       setBarbershopId(bId);
 
-      // Join with profiles (aliased as 'users' in user prompt, but we use profiles table)
       // We need to fetch barbers and their associated profile info
       const { data: barberData, error } = await supabase
         .from("barbers")
@@ -57,7 +56,7 @@ export default function SelectBarber() {
           bio,
           user_id,
           photo_url,
-          profiles:user_id (
+          users:user_id (
             avatar_url
           )
         `)
@@ -72,7 +71,7 @@ export default function SelectBarber() {
           id: b.id,
           name: b.name,
           bio: b.bio || "CORTE & BARBA",
-          avatar_url: b.photo_url || b.profiles?.avatar_url,
+          avatar_url: b.photo_url || b.users?.avatar_url,
           initials: b.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().substring(0, 2)
         }));
         setBarbers(mappedBarbers);
@@ -93,7 +92,7 @@ export default function SelectBarber() {
     return <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8]">CARREGANDO...</div>;
   }
 
-  const firstName = userProfile?.full_name?.split(" ")[0] || "USUÁRIO";
+  const firstName = userProfile?.name?.split(" ")[0] || "USUÁRIO";
 
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24 overflow-hidden">

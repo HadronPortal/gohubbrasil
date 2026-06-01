@@ -55,7 +55,7 @@ export default function Booking() {
       return;
     }
 
-    const { data: profile } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
+    const { data: profile } = await supabase.from("users").select("*").eq("id", session.user.id).single();
     if (profile) setUserProfile(profile);
 
     // No longer need to fetch barbers here as it is passed from the previous screen
@@ -116,7 +116,7 @@ export default function Booking() {
     }
   };
 
-  const firstName = userProfile?.full_name?.split(" ")[0] || "USUÁRIO";
+  const firstName = userProfile?.name?.split(" ")[0] || "USUÁRIO";
   const currentMonth = format(selectedDate, "MMMM", { locale: ptBR });
 
   return (
