@@ -79,7 +79,7 @@ export default function SelectBarber() {
     navigate(`/services?barberId=${selectedBarberId}&barbershopId=${barbershopId}`);
   };
 
-  if (isLoading || authLoading) {
+  if (authLoading) {
     return <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8]">CARREGANDO...</div>;
   }
 
