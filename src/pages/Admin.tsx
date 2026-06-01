@@ -11,30 +11,46 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState<"agenda" | "barbeiros" | "servicos">("agenda");
-  const { user, profile, loading } = useAuth();
+  const [barbershopId, setBarbershopId] = useState<string | null>(null);
+  const [loadingBarbershop, setLoadingBarbershop] = useState(true);
+  const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading) {
+    if (!authLoading) {
       if (!user) {
         navigate("/login");
-      } else if (profile && !profile.isAdmin) {
+        return;
+      }
+      
+      if (profile && !profile.isAdmin) {
         toast.error("Acesso restrito");
         navigate("/");
+        return;
       }
+
+      const fetchBarbershopId = async () => {
+        if (profile?.barbershop_id) {
+          setBarbershopId(profile.barbershop_id);
+          setLoadingBarbershop(false);
+          return;
+        }
+
+        const { data } = await supabase.from("barbershops").select("id").limit(1).single();
+        if (data) {
+          setBarbershopId(data.id);
+        }
+        setLoadingBarbershop(false);
+      };
+
+      fetchBarbershopId();
     }
-  }, [user, profile, loading, navigate]);
+  }, [user, profile, authLoading, navigate]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/login");
-  };
-
-  if (loading) {
-    return <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8]">CARREGANDO...</div>;
+  if (authLoading || loadingBarbershop) {
+    return <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8] font-oswald tracking-[0.2em]">CARREGANDO...</div>;
   }
 
-  const barbershopId = profile?.barbershop_id;
 
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24 overflow-x-hidden">
