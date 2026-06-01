@@ -21,7 +21,12 @@ export default function SelectBarber() {
   const [barbershopId, setBarbershopId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const { user, profile, loading: authLoading, signOut } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
+  
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/login");
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
