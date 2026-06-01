@@ -158,9 +158,16 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
           }
         });
         
-        if (signUpError) throw signUpError;
-        
-        toast.success("Barbeiro cadastrado com sucesso!");
+        if (signUpError) {
+          if (signUpError.status === 400 || signUpError.message?.toLowerCase().includes("already registered")) {
+            await supabase.auth.resetPasswordForEmail(email);
+            toast.success("Barbeiro cadastrado! Usuário já existia, e-mail de redefinição enviado.");
+          } else {
+            throw signUpError;
+          }
+        } else {
+          toast.success("Barbeiro cadastrado com sucesso!");
+        }
         currentUserId = result.barber_id; // Temporary ID association
       } else {
         // Update Profile only if user exists
@@ -211,6 +218,9 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    const barber = barbers.find(b => b.id === id);
+    if (!barber) return;
+
     if (!confirm("Tem certeza? Agendamentos futuros pendentes serão cancelados.")) return;
     
     setIsLoading(true);
@@ -222,13 +232,21 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
       if (error) throw error;
 
       const result = data as { success: boolean; error?: string };
-      if (!result.success) {
+      if (result.success) {
+        if (barber.user_id) {
+          try {
+            // @ts-ignore - admin is used here as requested by user
+            await supabase.auth.admin.deleteUser(barber.user_id);
+          } catch (authError) {
+            console.error("Erro ao deletar usuário do Auth:", authError);
+          }
+        }
+        
+        toast.success("Barbeiro removido!");
+        setBarbers(prev => prev.filter(b => b.id !== id));
+      } else {
         throw new Error(result.error || "Erro ao excluir barbeiro.");
       }
-
-      toast.success("Barbeiro removido!");
-      // Atualizar estado local sem nova chamada ao supabase
-      setBarbers(prev => prev.filter(b => b.id !== id));
     } catch (error: any) {
       toast.error(error.message);
     } finally {
