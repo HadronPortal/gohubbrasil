@@ -22,24 +22,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isFetchingProfile.current) return null;
     isFetchingProfile.current = true;
     
+    // Create a timeout promise to ensure we don't hang forever
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("Profile fetch timeout")), 5000)
+    );
+
     try {
       console.log("AuthProvider: Fetching profile for:", userId);
-      const { data, error } = await supabase
+      
+      const fetchPromise = supabase
         .from("profiles")
         .select("role, barbershop_id, full_name, avatar_url")
         .eq("id", userId)
         .single();
 
+      // Race the fetch against the timeout
+      const result = await Promise.race([fetchPromise, timeoutPromise]) as any;
+      const { data, error } = result;
+
       if (error) {
-        console.error("AuthProvider: Error fetching profile:", error);
-        return null;
+        console.error("AuthProvider: Error fetching profile from DB:", error);
+        return { role: 'client', name: 'USUÁRIO' }; // Default to client on error
       }
       
       console.log("AuthProvider: Profile found:", data);
-      return data ? { ...data, name: data.full_name } : null;
+      return data ? { ...data, name: data.full_name } : { role: 'client', name: 'USUÁRIO' };
     } catch (err) {
       console.error("AuthProvider: Unexpected error in fetchProfile:", err);
-      return null;
+      return { role: 'client', name: 'USUÁRIO' }; // Default to client on exception
     } finally {
       isFetchingProfile.current = false;
     }
@@ -61,25 +71,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     async function initialize() {
       try {
         console.log("AuthProvider: Checking initial session...");
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
+        if (sessionError) throw sessionError;
         if (!mounted) return;
 
         if (session?.user) {
-          console.log("AuthProvider: Session found during init", session.user.id);
           setUser(session.user);
+          // Don't wait for profile to set loading false - point 3 of request
+          setLoading(false); 
           const p = await fetchProfileData(session.user.id);
           if (mounted) setProfile(p);
         } else {
-          console.log("AuthProvider: No session found during init");
+          setLoading(false);
         }
       } catch (err) {
         console.error("AuthProvider: Initialization error", err);
-      } finally {
-        if (mounted) {
-          console.log("AuthProvider: Init complete, loading -> false");
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
     }
 
@@ -90,16 +98,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!mounted) return;
 
       const currentUser = session?.user ?? null;
+      setUser(currentUser);
       
-      // Update states
       if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED') {
-        setUser(currentUser);
         if (currentUser) {
+          // Always ensure loading is false even if we're still fetching profile
+          setLoading(false);
           const p = await fetchProfileData(currentUser.id);
           if (mounted) setProfile(p);
         }
       } else if (event === 'SIGNED_OUT') {
-        setUser(null);
         setProfile(null);
       }
       
