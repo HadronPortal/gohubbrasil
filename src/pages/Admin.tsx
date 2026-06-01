@@ -26,7 +26,7 @@ export default function Admin() {
   }, [user, profile, loading, navigate]);
 
   const handleLogout = async () => {
-    await signOut();
+    await supabase.auth.signOut();
     navigate("/login");
   };
 
