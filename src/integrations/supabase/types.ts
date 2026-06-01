@@ -231,19 +231,32 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_barber: {
-        Args: {
-          p_avatar_url: string
-          p_barbershop_id: string
-          p_bio: string
-          p_commission_pct: number
-          p_email: string
-          p_name: string
-          p_password: string
-          p_phone: string
-        }
-        Returns: Json
-      }
+      create_barber:
+        | {
+            Args: {
+              p_avatar_url: string
+              p_barbershop_id: string
+              p_bio: string
+              p_commission_pct: number
+              p_email: string
+              p_name: string
+              p_phone: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_avatar_url: string
+              p_barbershop_id: string
+              p_bio: string
+              p_commission_pct: number
+              p_email: string
+              p_name: string
+              p_password: string
+              p_phone: string
+            }
+            Returns: Json
+          }
     }
     Enums: {
       [_ in never]: never

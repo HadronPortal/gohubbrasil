@@ -128,10 +128,9 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
       }
 
       if (!editingBarber) {
-        // 2. Use RPC to create barber
-        const { data, error: rpcError } = await supabase.rpc('create_barber', {
+        // 2. Use RPC to create barber record
+        const { data: rpcData, error: rpcError } = await supabase.rpc('create_barber', {
           p_email: email,
-          p_password: password,
           p_name: name,
           p_phone: whatsapp,
           p_bio: bio,
@@ -142,31 +141,27 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
 
         if (rpcError) throw rpcError;
         
-        const result = data as any;
-        if (!result.success) throw new Error(result.error);
-        
-        // 3. If pending_auth is true, call signUp to trigger email and link auth
-        if (result.pending_auth) {
-          const { error: signUpError } = await supabase.auth.signUp({
-            email: email,
-            password: password,
-            options: {
-              data: {
-                name: name,
-                role: 'barber',
-                existing_user_id: result.user_id
-              }
+        const result = rpcData as { success: boolean; error?: string; barber_id?: string };
+        if (!result.success) throw new Error(result.error || "Erro ao cadastrar barbeiro no banco.");
+
+        // 3. Create Auth user
+        const { error: signUpError } = await supabase.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            data: {
+              name: name,
+              role: 'barber',
+              barbershop_id: barbershopId,
+              barber_id: result.barber_id
             }
-          });
-          
-          if (signUpError) throw signUpError;
-          
-          toast.success("Barbeiro cadastrado! Ele receberá um e-mail para ativar o acesso.");
-        } else {
-          toast.success("Barbeiro cadastrado!");
-        }
+          }
+        });
         
-        currentUserId = result.user_id;
+        if (signUpError) throw signUpError;
+        
+        toast.success("Barbeiro cadastrado com sucesso!");
+        currentUserId = result.barber_id; // Temporary ID association
       } else {
         // Update Profile only if user exists
         if (currentUserId) {
