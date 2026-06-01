@@ -79,8 +79,13 @@ export default function SelectBarber() {
     navigate(`/services?barberId=${selectedBarberId}&barbershopId=${barbershopId}`);
   };
 
-  if (authLoading) {
-    return <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8]">CARREGANDO...</div>;
+  // O AuthProvider agora gerencia o loading global
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#1c2333] flex items-center justify-center text-[#c8d4e8] font-oswald tracking-[0.2em]">
+        CARREGANDO...
+      </div>
+    );
   }
 
   const firstName = profile?.name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || user?.user_metadata?.full_name?.split(" ")[0] || "USUÁRIO";
