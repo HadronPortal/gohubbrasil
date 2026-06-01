@@ -124,7 +124,7 @@ export default function SelectBarber() {
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-[#8a9ab5] hover:text-[#f0c040]">
               <ChevronLeft className="w-6 h-6" />
             </Button>
-            {userProfile?.role === "owner" && (
+            {(userProfile?.role === "owner" || userProfile?.role === "admin") && (
               <Button 
                 variant="ghost" 
                 size="icon" 
