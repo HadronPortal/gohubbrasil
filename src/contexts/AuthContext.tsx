@@ -18,21 +18,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log("Fetching profile for:", userId);
       const { data, error } = await supabase
         .from("profiles")
-        .select("role, barbershop_id, full_name")
+        .select("role, barbershop_id, full_name, avatar_url")
         .eq("id", userId)
         .single();
 
       if (error) {
-        console.error("Error fetching profile:", error);
+        if (error.code === "PGRST116") {
+          console.log("No profile found in DB for user:", userId);
+          return null;
+        }
+        console.error("Error fetching profile from DB:", error);
         return null;
       }
       
-      // Map full_name to name for consistency with user request
+      console.log("Profile found:", data);
       return data ? { ...data, name: data.full_name } : null;
     } catch (err) {
-      console.error("Unexpected error fetching profile:", err);
+      console.error("Unexpected error in fetchProfile:", err);
       return null;
     }
   };
@@ -45,28 +50,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Check active sessions
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id).then(setProfile);
-      }
-      setLoading(false);
-    });
+    let mounted = true;
 
-    // Listen for auth changes
+    async function initializeAuth() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!mounted) return;
+
+        if (session?.user) {
+          setUser(session.user);
+          const p = await fetchProfile(session.user.id);
+          if (mounted) setProfile(p);
+        }
+      } catch (err) {
+        console.error("Auth initialization error:", err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    initializeAuth();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        const p = await fetchProfile(session.user.id);
-        setProfile(p);
+      console.log("Auth change event:", event);
+      if (!mounted) return;
+
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      
+      if (currentUser) {
+        const p = await fetchProfile(currentUser.id);
+        if (mounted) setProfile(p);
       } else {
-        setProfile(null);
+        if (mounted) setProfile(null);
       }
-      setLoading(false);
+      
+      if (mounted) setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
