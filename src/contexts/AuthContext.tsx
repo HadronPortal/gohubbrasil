@@ -32,21 +32,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .eq("id", userId)
           .single(),
         new Promise<any>((_, reject) => 
-          setTimeout(() => reject(new Error("timeout")), 3000)
+          setTimeout(() => reject(new Error("timeout")), 10000)
         )
       ]);
 
       if (error || !data) {
-        console.warn("AuthProvider: Profile error or not found, defaulting to client:", error);
-        return { role: 'client', name: 'USUÁRIO' };
+        console.warn("AuthProvider: Profile error or not found, using fallback if needed:", error);
+        return null;
       }
       
-      console.log('Perfil do usuário:', data);
-      console.log('Role:', data?.role);
+      console.log('Perfil do usuário carregado:', data);
       return data;
     } catch (err) {
-      console.error("AuthProvider: fetchProfile timeout or exception, defaulting to client");
-      return { role: 'client', name: 'USUÁRIO' };
+      console.error("AuthProvider: fetchProfile timeout or exception");
+      return null;
     } finally {
       isFetchingProfile.current = false;
     }
@@ -55,7 +54,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshProfile = useCallback(async () => {
     if (user) {
       const p = await fetchProfileData(user.id);
-      setProfile(p);
+      if (p) {
+        setProfile(p);
+      } else {
+        setProfile((prev: any) => prev || { role: 'client', name: 'USUÁRIO' });
+      }
     }
   }, [user, fetchProfileData]);
 
@@ -74,15 +77,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (session?.user) {
           setUser(session.user);
-          setLoading(false); // Point 3: Don't block navigation
+          setLoading(false); 
           const p = await fetchProfileData(session.user.id);
-          if (mounted) setProfile(p);
+          if (mounted) {
+            if (p) {
+              setProfile(p);
+            } else {
+              setProfile((prev: any) => prev || { role: 'client', name: 'USUÁRIO' });
+            }
+          }
         } else {
           setLoading(false);
         }
       } catch (err) {
         console.error("AuthProvider: Init error", err);
-        if (mounted) setLoading(false);
+        if (mounted) {
+          setLoading(false);
+          setProfile((prev: any) => prev || { role: 'client', name: 'USUÁRIO' });
+        }
       }
     }
 
@@ -92,16 +104,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!mounted) return;
 
       const currentUser = session?.user ?? null;
-      setUser(currentUser);
+      
+      // Update user only if different
+      setUser((prev: any) => prev?.id === currentUser?.id ? prev : currentUser);
       
       if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED') {
         if (currentUser) {
           setLoading(false);
           const p = await fetchProfileData(currentUser.id);
-          if (mounted) setProfile(p);
+          if (mounted) {
+            if (p) {
+              setProfile(p);
+            } else {
+              setProfile((prev: any) => prev || { role: 'client', name: 'USUÁRIO' });
+            }
+          }
         }
       } else if (event === 'SIGNED_OUT') {
         setProfile(null);
+        setUser(null);
       }
       
       if (mounted) setLoading(false);
