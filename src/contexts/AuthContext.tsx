@@ -9,27 +9,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   const loadProfile = async (userId: string) => {
-    // Note: Reverted to 'users' table as per explicit user instruction, 
-    // though previously 'profiles' was used. Using the columns requested.
     const { data } = await supabase
       .from('users')
       .select('id, role, barbershop_id, name, phone, avatar_url')
       .eq('id', userId)
       .maybeSingle()
 
+    let finalProfile = null;
     if (data) {
       const roleStr = String(data.role || '').toLowerCase()
       const isOwner = roleStr === 'owner'
       const isAdmin = isOwner || roleStr === 'admin'
       
-      setProfile({
+      finalProfile = {
         ...data,
         isOwner,
         isAdmin
-      })
+      }
+      
+      console.log("AUTH PROFILE DEBUG", {
+        userId: userId,
+        profile: finalProfile,
+        role: data.role,
+        isAdmin,
+        isOwner
+      });
     } else {
-      setProfile({ role: 'client', isOwner: false, isAdmin: false })
+      finalProfile = { role: 'client', isOwner: false, isAdmin: false };
+      console.log("AUTH PROFILE DEBUG (No profile found)", {
+        userId: userId,
+        profile: finalProfile
+      });
     }
+    setProfile(finalProfile)
     setLoading(false)
   }
 
