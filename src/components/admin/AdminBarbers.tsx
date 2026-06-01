@@ -145,6 +145,27 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
         const result = data as any;
         if (!result.success) throw new Error(result.error);
         
+        // 3. If pending_auth is true, call signUp to trigger email and link auth
+        if (result.pending_auth) {
+          const { error: signUpError } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+              data: {
+                name: name,
+                role: 'barber',
+                existing_user_id: result.user_id
+              }
+            }
+          });
+          
+          if (signUpError) throw signUpError;
+          
+          toast.success("Barbeiro cadastrado! Ele receberá um e-mail para ativar o acesso.");
+        } else {
+          toast.success("Barbeiro cadastrado!");
+        }
+        
         currentUserId = result.user_id;
       } else {
         // Update Profile only if user exists
@@ -178,7 +199,9 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
         if (barberError) throw barberError;
       }
 
-      toast.success(editingBarber ? "Barbeiro atualizado!" : "Barbeiro cadastrado!");
+      if (editingBarber) {
+        toast.success("Barbeiro atualizado!");
+      }
       resetForm();
       // Force refresh data
       setTimeout(() => {
