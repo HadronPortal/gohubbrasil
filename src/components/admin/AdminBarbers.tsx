@@ -211,16 +211,21 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm("Tem certeza que deseja excluir este barbeiro?")) return;
+    if (!confirm("Tem certeza? Agendamentos futuros pendentes serão cancelados.")) return;
     
     setIsLoading(true);
     try {
-      const { error } = await supabase
-        .from("barbers")
-        .delete()
-        .eq("id", id);
+      const { data, error } = await supabase.rpc('delete_barber', {
+        p_barber_id: id
+      });
       
       if (error) throw error;
+
+      const result = data as { success: boolean; error?: string };
+      if (!result.success) {
+        throw new Error(result.error || "Erro ao excluir barbeiro.");
+      }
+
       toast.success("Barbeiro removido!");
       fetchBarbers();
     } catch (error: any) {
