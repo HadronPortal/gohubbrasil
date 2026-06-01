@@ -39,7 +39,15 @@ export default function SelectBarber() {
       .eq("id", session.user.id)
       .single();
     
-    if (profile) setUserProfile(profile);
+    // Set profile data, using auth metadata as fallback for the name
+    const userData = profile || {
+      id: session.user.id,
+      name: session.user.user_metadata?.name || session.user.user_metadata?.full_name,
+      avatar_url: session.user.user_metadata?.avatar_url,
+      role: "client"
+    };
+    
+    setUserProfile(userData);
 
     // Get the first barbershop (assuming one for now, as in Home.tsx)
     const { data: shops } = await supabase.from("barbershops").select("id").limit(1);
