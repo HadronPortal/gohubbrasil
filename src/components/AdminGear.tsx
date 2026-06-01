@@ -7,10 +7,15 @@ export const AdminGear: React.FC = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
 
-  // Condition exactly as requested by user
+  console.log('role atual:', profile?.role);
+  console.log('é owner?', profile?.role === 'owner');
+
   if (profile?.role === 'owner') {
     return (
-      <button onClick={() => navigate('/admin')} className="p-2">
+      <button 
+        onClick={() => navigate('/admin')}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px' }}
+      >
         <Settings size={24} color="#f0c040" />
       </button>
     );
@@ -18,3 +23,4 @@ export const AdminGear: React.FC = () => {
 
   return null;
 };
+
