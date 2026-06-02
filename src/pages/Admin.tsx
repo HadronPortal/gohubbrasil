@@ -24,7 +24,7 @@ export default function Admin() {
         return;
       }
       
-      if (profile && !profile.isAdmin) {
+      if (profile && !isAdmin) {
         toast.error("Acesso restrito");
         navigate("/");
         return;
