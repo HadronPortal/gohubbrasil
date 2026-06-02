@@ -194,9 +194,10 @@ export default function SuperAdmin() {
           barbershopPhone: formData.get("barbershop_phone") as string,
           logoUrl,
           description: formData.get("description") as string,
+          paymentStatus: formData.get("payment_status") as string || "pending",
           ownerName: formData.get("owner_name") as string,
           ownerEmail: formData.get("owner_email") as string,
-           ownerPhone: formData.get("owner_phone") as string,
+          ownerPhone: formData.get("owner_phone") as string,
           ownerPassword: formData.get("owner_password") as string,
           ownerIsBarber: ownerIsBarber
         }
@@ -208,9 +209,10 @@ export default function SuperAdmin() {
         toast.error(response.error || "Erro ao criar barbearia.");
       } else {
         toast.success("Barbearia cadastrada com sucesso");
+        setIsCreateModalOpen(false);
         (e.target as HTMLFormElement).reset();
         setLogoFile(null);
-         setLogoPreview(null);
+        setLogoPreview(null);
         setOwnerIsBarber(false);
         fetchBarbershops();
       }
