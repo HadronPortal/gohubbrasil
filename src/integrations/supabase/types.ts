@@ -288,6 +288,10 @@ export type Database = {
         Returns: Json
       }
       delete_barber: { Args: { p_barber_id: string }; Returns: Json }
+      delete_barbershop_safe: {
+        Args: { p_barbershop_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
