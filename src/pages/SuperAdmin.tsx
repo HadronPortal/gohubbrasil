@@ -245,6 +245,7 @@ export default function SuperAdmin() {
           address: formData.get("address") as string,
           phone: formData.get("phone") as string,
           description: formData.get("description") as string,
+          payment_status: formData.get("payment_status") as string,
           logo_url: logoUrl
         })
         .eq("id", editingBarbershop.id);
