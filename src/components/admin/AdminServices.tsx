@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Plus, X, Pencil, Trash2 } from "lucide-react";
+import { Plus, X, Pencil, Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 
@@ -17,6 +17,7 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
   const [isAdding, setIsAdding] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
 
   // Form state
   const [name, setName] = useState("");
@@ -47,19 +48,24 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
     setIsAdding(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza que deseja excluir este serviço?")) return;
+  const handleDeleteClick = (id: string) => {
+    setServiceToDelete(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!serviceToDelete) return;
     
     setIsLoading(true);
     try {
       const { error } = await supabase
         .from("services")
         .delete()
-        .eq("id", id);
+        .eq("id", serviceToDelete);
 
       if (error) throw error;
       toast.success("Serviço excluído com sucesso!");
       fetchServices();
+      setServiceToDelete(null);
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -136,7 +142,7 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => handleDelete(service.id)}
+                onClick={() => handleDeleteClick(service.id)}
                 className="text-[#8a9ab5] hover:text-red-500 transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
@@ -184,6 +190,40 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
                 {isLoading ? "SALVANDO..." : "SALVAR SERVIÇO"}
               </Button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Confirmation Modal */}
+      {serviceToDelete && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-6">
+          <div className="bg-[#1c2333] border border-[#2a3347] w-full max-w-[340px] p-8 rounded-[4px] space-y-6 relative animate-in zoom-in-95 duration-200 text-center">
+            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="w-8 h-8 text-red-500" />
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold text-[#f0c040] font-oswald uppercase tracking-wider">CONFIRMAR EXCLUSÃO</h3>
+              <p className="text-sm text-[#8a9ab5] leading-relaxed">
+                Tem certeza que deseja excluir este serviço? Esta ação não pode ser desfeita.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              <Button 
+                onClick={() => setServiceToDelete(null)}
+                className="bg-transparent border border-[#2a3347] hover:bg-[#2a3347] text-[#8a9ab5] font-bold py-6 font-oswald uppercase tracking-wider"
+              >
+                CANCELAR
+              </Button>
+              <Button 
+                onClick={confirmDelete}
+                className="bg-red-500 hover:bg-red-600 text-white font-bold py-6 font-oswald uppercase tracking-wider"
+                disabled={isLoading}
+              >
+                {isLoading ? "EXCLUINDO..." : "EXCLUIR"}
+              </Button>
+            </div>
           </div>
         </div>
       )}
