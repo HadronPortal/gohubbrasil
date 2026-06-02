@@ -45,7 +45,26 @@ export default function Login() {
         });
 
         if (error) throw error;
-        navigate("/");
+        
+        // Fetch profile to redirect based on role
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) {
+          const { data: profileData } = await supabase
+            .from("users")
+            .select("role")
+            .eq("id", authUser.id)
+            .single();
+          
+          if (profileData?.role === "superadmin") {
+            navigate("/super-admin");
+          } else if (profileData?.role === "owner" || profileData?.role === "admin") {
+            navigate("/admin");
+          } else {
+            navigate("/");
+          }
+        } else {
+          navigate("/");
+        }
       }
     } catch (error: any) {
       toast.error(error.message);
