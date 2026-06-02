@@ -37,13 +37,20 @@ export default function SelectBarber() {
   }, [user, authLoading]);
 
   const fetchBarbers = async () => {
-    // Get the first barbershop (assuming one for now, as in Home.tsx)
-    const { data: shops } = await supabase.from("barbershops").select("id").limit(1);
-    if (shops && shops.length > 0) {
-      const bId = shops[0].id;
+    // Priority: use the barbershop_id from the user's profile, then fallback to the first barbershop
+    let bId = profile?.barbershop_id;
+    
+    if (!bId) {
+      const { data: shops } = await supabase.from("barbershops").select("id").limit(1);
+      if (shops && shops.length > 0) {
+        bId = shops[0].id;
+      }
+    }
+
+    if (bId) {
       setBarbershopId(bId);
 
-      // We need to fetch barbers and their associated profile info
+      // Fetch barbers joined with their user info
       const { data: barberData, error } = await supabase
         .from("barbers")
         .select(`
@@ -52,7 +59,7 @@ export default function SelectBarber() {
           bio,
           user_id,
           photo_url,
-          users:user_id (
+          users (
             avatar_url
           )
         `)
