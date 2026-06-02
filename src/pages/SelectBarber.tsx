@@ -95,7 +95,7 @@ export default function SelectBarber() {
         })
         .filter((b): b is Barber => b !== null);
 
-      console.log("BARBERS DEBUG", { 
+      console.log("CLIENT BARBERS DEBUG", { 
         barbershopId: barbershopId, 
         barbers: barbersData, 
         users: usersData, 

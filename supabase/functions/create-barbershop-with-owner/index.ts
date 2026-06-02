@@ -85,7 +85,9 @@ serve(async (req) => {
       email_confirm: true,
       user_metadata: { 
         name: ownerName,
-        role: 'owner'
+        phone: ownerPhone,
+        role: 'owner',
+        barbershop_id: barbershop.id
       }
     })
 
@@ -96,6 +98,7 @@ serve(async (req) => {
     }
 
     // 6. Create/Update public.users profile for owner
+    // We use upsert to ensure it overrides any trigger that might have created it as a client
     const { error: pError } = await supabaseAdmin
       .from('users')
       .upsert({

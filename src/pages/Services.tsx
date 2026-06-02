@@ -85,6 +85,8 @@ export default function Services() {
       .select("*")
       .eq("barbershop_id", barbershopId);
     
+    console.log("CLIENT SERVICES DEBUG", { barbershopId, services: serviceData });
+
     if (serviceData) setServices(serviceData as Service[]);
     
     setIsLoading(false);
