@@ -46,6 +46,8 @@ serve(async (req) => {
       barbershopPhone, 
       logoUrl, 
       description,
+      paymentStatus,
+      paymentDueDate,
       ownerName, 
       ownerEmail, 
       ownerPhone, 
@@ -72,6 +74,8 @@ serve(async (req) => {
         phone: barbershopPhone,
         logo_url: logoUrl,
         description: description,
+        payment_status: paymentStatus || "pending",
+        payment_due_date: paymentDueDate || null,
         slug: slug
       })
       .select()
