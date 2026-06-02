@@ -61,7 +61,7 @@ export default function Login() {
             navigate("/admin");
           } else {
             // Check if there's a saved barbershop to decide where to send the client
-            const savedBarbershopId = localStorage.getItem("selectedBarbershopId");
+            const savedBarbershopId = localStorage.getItem(`selectedBarbershopId:${authUser.id}`);
             if (savedBarbershopId) {
               navigate("/client-home");
             } else {

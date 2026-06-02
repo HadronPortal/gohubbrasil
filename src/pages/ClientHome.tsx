@@ -143,8 +143,8 @@ export default function ClientHome() {
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
 
-  const barbershopId = localStorage.getItem("selectedBarbershopId");
-  const barbershopName = localStorage.getItem("selectedBarbershopName");
+  const barbershopId = user ? localStorage.getItem(`selectedBarbershopId:${user.id}`) : null;
+  const barbershopName = user ? localStorage.getItem(`selectedBarbershopName:${user.id}`) : null;
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -261,15 +261,22 @@ export default function ClientHome() {
   };
 
   const switchBarbershop = () => {
-    localStorage.removeItem("selectedBarbershopId");
-    localStorage.removeItem("selectedBarbershopName");
+    if (user) {
+      localStorage.removeItem(`selectedBarbershopId:${user.id}`);
+      localStorage.removeItem(`selectedBarbershopName:${user.id}`);
+    }
     navigate("/");
   };
 
   const signOut = async () => {
+    if (user) {
+      // Don't clear on logout per requirement: "A barbearia escolhida deve ficar salva até ele clicar em 'Trocar estabelecimento'"
+      // BUT if the user wants it to be session based it would be different.
+      // The requirement says "Não limpar essa escolha quando: ... recarrega a página". 
+      // It doesn't explicitly say about logout, but "até ele clicar em 'Trocar estabelecimento'" suggests persistence across logins.
+      // So I will NOT remove it on signOut to maintain the persistence requirement.
+    }
     await supabase.auth.signOut();
-    localStorage.removeItem("selectedBarbershopId");
-    localStorage.removeItem("selectedBarbershopName");
     navigate("/login");
   };
 
