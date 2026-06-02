@@ -179,8 +179,8 @@ export default function AdminDashboard({ barbershopId }: { barbershopId: string 
                       {appt.serviceName} • {appt.barberName}
                     </p>
                   </div>
-                  <span className={`text-[9px] font-bold px-2 py-1 rounded-[2px] border uppercase tracking-widest ${getStatusColor(appt.status)}`}>
-                    {appt.status}
+                  <span className={`text-[9px] font-bold px-2 py-1 rounded-[2px] border uppercase tracking-widest ${getStatusInfo(appt.status).color}`}>
+                    {getStatusInfo(appt.status).label}
                   </span>
                 </div>
                 <div className="pt-2 border-t border-[#2a3347]/50 flex justify-between items-center">
