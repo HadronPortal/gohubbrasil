@@ -115,7 +115,7 @@ export type Database = {
             foreignKeyName: "barbers_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -146,47 +146,6 @@ export type Database = {
           name?: string
         }
         Relationships: []
-      }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          barbershop_id: string | null
-          created_at: string | null
-          full_name: string | null
-          id: string
-          role: string | null
-          updated_at: string | null
-          whatsapp: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          barbershop_id?: string | null
-          created_at?: string | null
-          full_name?: string | null
-          id: string
-          role?: string | null
-          updated_at?: string | null
-          whatsapp?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          barbershop_id?: string | null
-          created_at?: string | null
-          full_name?: string | null
-          id?: string
-          role?: string | null
-          updated_at?: string | null
-          whatsapp?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_barbershop_id_fkey"
-            columns: ["barbershop_id"]
-            isOneToOne: false
-            referencedRelation: "barbershops"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       services: {
         Row: {
@@ -219,6 +178,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "services_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          avatar_url: string | null
+          barbershop_id: string | null
+          created_at: string | null
+          id: string
+          name: string | null
+          phone: string | null
+          role: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          barbershop_id?: string | null
+          created_at?: string | null
+          id: string
+          name?: string | null
+          phone?: string | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          barbershop_id?: string | null
+          created_at?: string | null
+          id?: string
+          name?: string | null
+          phone?: string | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_barbershop_id_fkey"
             columns: ["barbershop_id"]
             isOneToOne: false
             referencedRelation: "barbershops"
