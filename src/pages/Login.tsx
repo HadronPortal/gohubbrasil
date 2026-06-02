@@ -22,34 +22,21 @@ export default function Login() {
 
     try {
       if (isSignUp) {
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        const { error: authError } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: {
               name: fullName,
               phone: whatsapp,
+              role: "client",
             },
           },
         });
 
         if (authError) throw authError;
 
-        if (authData.user) {
-          const { error: profileError } = await supabase
-            .from("users")
-            .insert({
-              id: authData.user.id,
-              name: fullName,
-              phone: whatsapp,
-              role: "client",
-              barbershop_id: null,
-            });
-
-          if (profileError) throw profileError;
-        }
-
-        toast.success("Conta criada com sucesso! Você já pode entrar.");
+        toast.success("Conta criada com sucesso!");
         setIsSignUp(false);
       } else {
         const { error } = await supabase.auth.signInWithPassword({
