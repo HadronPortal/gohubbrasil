@@ -52,8 +52,15 @@ serve(async (req) => {
       ownerEmail, 
       ownerPhone, 
       ownerPassword,
-      ownerIsBarber
+      ownerIsBarber: rawOwnerIsBarber
     } = await req.json()
+
+    const ownerIsBarber =
+      rawOwnerIsBarber === true ||
+      rawOwnerIsBarber === "true" ||
+      rawOwnerIsBarber === "on";
+
+    console.log("OWNER IS BARBER DEBUG", { ownerIsBarber, raw: rawOwnerIsBarber });
 
     // Generate slug
     const slug = barbershopName
@@ -122,24 +129,19 @@ serve(async (req) => {
       throw pError
     }
 
-    // 7. If owner is also a barber, create barber record
-    if (ownerIsBarber === true) {
-      const { error: barberError } = await supabaseAdmin
-        .from('barbers')
-        .upsert({
-          user_id: authUser.user.id,
-          barbershop_id: barbershop.id,
-          active: true,
-          bio: "Proprietário",
-          commission_pct: 0
-        }, {
-          onConflict: 'user_id,barbershop_id' // Assuming there might be a unique constraint or we just want to avoid duplicates
-        })
-      
-      if (barberError) {
-        console.error("Error creating barber for owner:", barberError)
-        // We don't necessarily want to fail the whole process if this fails, 
-        // but the user asked for it to be created.
+    // 7. If owner is also a barber, create barber record using RPC
+    if (ownerIsBarber) {
+      const { data: barberData, error: barberError } = await supabaseAdmin.rpc(
+        "ensure_owner_is_barber",
+        {
+          p_owner_user_id: authUser.user.id,
+          p_barbershop_id: barbershop.id,
+        }
+      );
+
+      if (barberError) throw barberError;
+      if (barberData?.success === false) {
+        throw new Error(barberData.error || "Erro ao criar dono como barbeiro.");
       }
     }
 
