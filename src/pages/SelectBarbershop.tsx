@@ -31,21 +31,9 @@ export default function SelectBarbershop() {
     if (!authLoading && !user) {
       navigate("/login");
     } else if (user && profile) {
-      // Se for superadmin, redireciona para o painel do superadmin
-      if (profile.isSuperAdmin) {
-        navigate("/super-admin");
-        return;
-      }
-      
-      // Se for dono (owner) ou admin, redireciona para o painel admin
-      if (profile.isOwner || profile.role === 'admin') {
-        navigate("/admin");
-        return;
-      }
-
       // Se for cliente e já tiver barbearia selecionada, vai para o painel do cliente
       const savedBarbershopId = localStorage.getItem("selectedBarbershopId");
-      if (savedBarbershopId && profile.role === 'client') {
+      if (savedBarbershopId) {
         navigate("/client-home");
         return;
       }
