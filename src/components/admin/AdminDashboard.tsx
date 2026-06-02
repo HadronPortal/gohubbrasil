@@ -42,16 +42,16 @@ export default function AdminDashboard({ barbershopId }: { barbershopId: string 
       .from("appointments")
       .select(`
         id, 
-        appointment_time, 
+        starts_at, 
         status, 
         users:client_id (name),
         services:service_id (name, price),
         barbers:barber_id (name)
       `)
       .eq("barbershop_id", barbershopId)
-      .gte("appointment_time", start)
-      .lte("appointment_time", end)
-      .order("appointment_time", { ascending: true });
+      .gte("starts_at", start)
+      .lte("starts_at", end)
+      .order("starts_at", { ascending: true });
 
     if (appts) {
       setAppointments(appts as any);
