@@ -262,15 +262,15 @@ export default function ClientHome() {
               MEUS AGENDAMENTOS
             </h3>
             {appointments.length > 0 && (
-              <span className="text-[10px] text-[#8a9ab5] uppercase tracking-widest">{appointments.length} ATIVO(S)</span>
+              <span className="text-[10px] text-[#8a9ab5] uppercase tracking-widest">{upcomingAppointments.length} PRÓXIMO(S)</span>
             )}
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-8">
             {appointments.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 px-4 bg-[#141b2a] border border-[#2a3347] rounded-[4px] text-center space-y-4">
                 <Scissors className="w-10 h-10 text-[#2a3347]" />
-                <p className="text-xs text-[#8a9ab5] uppercase tracking-widest">Você não possui agendamentos ativos.</p>
+                <p className="text-xs text-[#8a9ab5] uppercase tracking-widest">Você não possui agendamentos.</p>
                 <Button 
                   variant="link" 
                   onClick={() => navigate(`/barbers?barbershopId=${barbershopId}`)}
@@ -280,69 +280,37 @@ export default function ClientHome() {
                 </Button>
               </div>
             ) : (
-              appointments.map((appt) => (
-                <div 
-                  key={appt.id}
-                  className="bg-[#141b2a] border border-[#2a3347] rounded-[4px] p-5 space-y-4 relative overflow-hidden group"
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                        <h4 className="text-xs font-bold text-[#f0c040] uppercase tracking-widest font-oswald">
-                          {appt.service_name}
-                        </h4>
-                      </div>
-                      <p className="text-[10px] text-[#8a9ab5] uppercase tracking-wider font-medium">
-                        {appt.barbershop?.name}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-[#c8d4e8] font-oswald leading-none">
-                        R$ {appt.price_charged.toFixed(2)}
-                      </div>
-                    </div>
+              <>
+                {/* Upcoming */}
+                {upcomingAppointments.length > 0 && (
+                  <div className="space-y-4">
+                    <h4 className="text-[9px] font-bold text-[#8a9ab5] uppercase tracking-[0.2em] mb-2">Próximos</h4>
+                    {upcomingAppointments.map((appt) => (
+                      <AppointmentCard 
+                        key={appt.id} 
+                        appt={appt} 
+                        onCancel={() => setCancellingId(appt.id)} 
+                        isPast={false}
+                      />
+                    ))}
                   </div>
+                )}
 
-                  <div className="grid grid-cols-2 gap-4 pt-2 border-t border-[#1c2333]">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-[#1c2333] border border-[#2a3347] flex items-center justify-center">
-                        <User className="w-4 h-4 text-[#8a9ab5]" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[8px] text-[#8a9ab5] uppercase tracking-tighter">BARBEIRO</span>
-                        <span className="text-[10px] font-bold text-[#c8d4e8] uppercase truncate max-w-[80px]">
-                          {appt.barber_name}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-[#1c2333] border border-[#2a3347] flex items-center justify-center">
-                        <Clock className="w-4 h-4 text-[#f0c040]" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[8px] text-[#8a9ab5] uppercase tracking-tighter">DATA E HORA</span>
-                        <span className="text-[10px] font-bold text-[#c8d4e8] uppercase">
-                          {format(new Date(appt.starts_at), "dd/MM 'ÀS' HH:mm", { locale: ptBR })}
-                        </span>
-                      </div>
-                    </div>
+                {/* History */}
+                {pastAppointments.length > 0 && (
+                  <div className="space-y-4 opacity-60">
+                    <h4 className="text-[9px] font-bold text-[#8a9ab5] uppercase tracking-[0.2em] mb-2">Histórico</h4>
+                    {pastAppointments.map((appt) => (
+                      <AppointmentCard 
+                        key={appt.id} 
+                        appt={appt} 
+                        onCancel={() => setCancellingId(appt.id)} 
+                        isPast={true}
+                      />
+                    ))}
                   </div>
-
-                  <div className="pt-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setCancellingId(appt.id)}
-                      className="w-full text-[10px] text-red-500 hover:text-white hover:bg-red-900/50 uppercase tracking-widest font-bold flex items-center gap-2 transition-all border border-red-900/20"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      CANCELAR AGENDAMENTO
-                    </Button>
-                  </div>
-                </div>
-              ))
+                )}
+              </>
             )}
           </div>
         </div>
