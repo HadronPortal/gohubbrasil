@@ -51,6 +51,7 @@ export default function SuperAdmin() {
   const [isLoading, setIsLoading] = useState(true);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [ownerIsBarber, setOwnerIsBarber] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Edit State
@@ -159,8 +160,9 @@ export default function SuperAdmin() {
           description: formData.get("description") as string,
           ownerName: formData.get("owner_name") as string,
           ownerEmail: formData.get("owner_email") as string,
-          ownerPhone: formData.get("owner_phone") as string,
-          ownerPassword: formData.get("owner_password") as string
+           ownerPhone: formData.get("owner_phone") as string,
+          ownerPassword: formData.get("owner_password") as string,
+          ownerIsBarber: ownerIsBarber
         }
       });
 
@@ -172,7 +174,8 @@ export default function SuperAdmin() {
         toast.success("Barbearia cadastrada com sucesso");
         (e.target as HTMLFormElement).reset();
         setLogoFile(null);
-        setLogoPreview(null);
+         setLogoPreview(null);
+        setOwnerIsBarber(false);
         fetchBarbershops();
       }
     } catch (error: any) {
@@ -337,9 +340,15 @@ export default function SuperAdmin() {
                     <Label htmlFor="owner_phone" className="text-[10px] uppercase text-gray-500 tracking-widest">Telefone Celular</Label>
                     <Input id="owner_phone" name="owner_phone" required className="bg-[#0A0A0A] border-[#1F1F1F] h-9" />
                   </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="owner_password" className="text-[10px] uppercase text-gray-500 tracking-widest">Senha Provisória</Label>
-                    <Input id="owner_password" name="owner_password" type="password" required className="bg-[#0A0A0A] border-[#1F1F1F] h-9" />
+                   <div className="pt-2 flex items-center space-x-2">
+                    <input 
+                      type="checkbox" 
+                      id="owner_is_barber" 
+                      checked={ownerIsBarber}
+                      onChange={(e) => setOwnerIsBarber(e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-300 text-[#C6A355] focus:ring-[#C6A355]"
+                    />
+                    <Label htmlFor="owner_is_barber" className="text-xs text-gray-300 cursor-pointer">Esse dono também atende como barbeiro</Label>
                   </div>
                 </CardContent>
               </Card>
