@@ -150,19 +150,19 @@ export default function SuperAdmin() {
         logoUrl = await uploadLogo(logoFile);
       }
 
-      const params = {
-        p_barbershop_name: formData.get("barbershop_name") as string,
-        p_barbershop_address: formData.get("barbershop_address") as string,
-        p_barbershop_phone: formData.get("barbershop_phone") as string,
-        p_owner_name: formData.get("owner_name") as string,
-        p_owner_email: formData.get("owner_email") as string,
-        p_owner_phone: formData.get("owner_phone") as string,
-        p_owner_password: formData.get("owner_password") as string,
-        p_logo_url: logoUrl,
-        p_description: formData.get("description") as string
-      };
-
-      const { data: response, error } = await supabase.rpc("create_barbershop_with_owner", params);
+      const { data: response, error } = await supabase.functions.invoke("create-barbershop-with-owner", {
+        body: {
+          barbershopName: formData.get("barbershop_name") as string,
+          barbershopAddress: formData.get("barbershop_address") as string,
+          barbershopPhone: formData.get("barbershop_phone") as string,
+          logoUrl,
+          description: formData.get("description") as string,
+          ownerName: formData.get("owner_name") as string,
+          ownerEmail: formData.get("owner_email") as string,
+          ownerPhone: formData.get("owner_phone") as string,
+          ownerPassword: formData.get("owner_password") as string
+        }
+      });
 
       if (error) throw error;
 
