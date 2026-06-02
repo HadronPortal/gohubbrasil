@@ -158,6 +158,8 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
+          payment_due_date: string | null
+          payment_status: string | null
           phone: string | null
           slug: string | null
         }
@@ -168,6 +170,8 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
+          payment_due_date?: string | null
+          payment_status?: string | null
           phone?: string | null
           slug?: string | null
         }
@@ -178,6 +182,8 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
+          payment_due_date?: string | null
+          payment_status?: string | null
           phone?: string | null
           slug?: string | null
         }
