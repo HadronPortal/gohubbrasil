@@ -39,24 +39,67 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
     setIsLoading(false);
   };
 
+  const handleEdit = (service: Service) => {
+    setEditingService(service);
+    setName(service.name);
+    setDuration(service.duration_minutes.toString());
+    setPrice(service.price.toString());
+    setIsAdding(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Tem certeza que deseja excluir este serviço?")) return;
+    
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from("services")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      toast.success("Serviço excluído com sucesso!");
+      fetchServices();
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const { error } = await supabase
-        .from("services")
-        .insert({
-          barbershop_id: barbershopId,
-          name,
-          duration_minutes: parseInt(duration),
-          price: parseFloat(price)
-        });
+      if (editingService) {
+        const { error } = await supabase
+          .from("services")
+          .update({
+            name,
+            duration_minutes: parseInt(duration),
+            price: parseFloat(price)
+          })
+          .eq("id", editingService.id);
 
-      if (error) throw error;
+        if (error) throw error;
+        toast.success("Serviço atualizado!");
+      } else {
+        const { error } = await supabase
+          .from("services")
+          .insert({
+            barbershop_id: barbershopId,
+            name,
+            duration_minutes: parseInt(duration),
+            price: parseFloat(price)
+          });
 
-      toast.success("Serviço adicionado com sucesso!");
+        if (error) throw error;
+        toast.success("Serviço adicionado!");
+      }
+
       setIsAdding(false);
+      setEditingService(null);
       setName("");
       setPrice("");
       setDuration("30");
