@@ -6,6 +6,7 @@ import Services from "./pages/Services";
 import Booking from "./pages/Booking";
 import Admin from "./pages/Admin";
 import SuperAdmin from "./pages/SuperAdmin";
+import ClientHome from "./pages/ClientHome";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -39,8 +40,8 @@ const router = createBrowserRouter([
     element: <SuperAdmin />,
   },
   {
-    path: "/barbershops/new",
-    element: <SuperAdmin />,
+    path: "/client-home",
+    element: <ClientHome />,
   },
 ]);
 
