@@ -103,7 +103,7 @@ export default function SuperAdmin() {
     );
   }
 
-  if (!profile?.isSuperAdmin) {
+  if (!isSuperAdmin) {
     return <Navigate to="/" />;
   }
 
