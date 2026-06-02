@@ -11,7 +11,7 @@ interface Stats {
 
 interface Appointment {
   id: string;
-  appointment_time: string;
+  starts_at: string;
   status: string;
   users: { name: string };
   services: { name: string };
@@ -42,16 +42,16 @@ export default function AdminDashboard({ barbershopId }: { barbershopId: string 
       .from("appointments")
       .select(`
         id, 
-        appointment_time, 
+        starts_at, 
         status, 
         users:client_id (name),
         services:service_id (name, price),
         barbers:barber_id (name)
       `)
       .eq("barbershop_id", barbershopId)
-      .gte("appointment_time", start)
-      .lte("appointment_time", end)
-      .order("appointment_time", { ascending: true });
+      .gte("starts_at", start)
+      .lte("starts_at", end)
+      .order("starts_at", { ascending: true });
 
     if (appts) {
       setAppointments(appts as any);
@@ -142,7 +142,7 @@ export default function AdminDashboard({ barbershopId }: { barbershopId: string 
                 </div>
                 <div className="pt-2 border-t border-[#2a3347]/50 flex justify-between items-center">
                   <span className="text-lg font-bold text-[#f0c040] font-oswald">
-                    {format(new Date(appt.appointment_time), "HH:mm")}
+                    {format(new Date(appt.starts_at), "HH:mm")}
                   </span>
                 </div>
               </div>
