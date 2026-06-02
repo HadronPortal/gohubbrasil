@@ -55,18 +55,21 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center justify-center p-6 font-light">
-      <div className="w-full max-w-[390px] space-y-12">
-        {/* Logo Section */}
-        <div className="flex flex-col items-center justify-center space-y-4">
-          <div className="relative w-full flex justify-center">
-            <img 
-              src="/logo-login.png" 
-              alt="Logo Barber Shop" 
-              className="w-64 h-auto object-contain"
-            />
-          </div>
-        </div>
+    <div className="min-h-screen relative flex flex-col items-center justify-center p-6 font-light overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        style={{ 
+          backgroundImage: "url('/logo-login.png')",
+        }}
+      />
+      
+      {/* Dark Overlay for Readability */}
+      <div className="absolute inset-0 z-10 bg-black/70 backdrop-blur-[2px]" />
+
+      <div className="w-full max-w-[390px] space-y-12 relative z-20">
+        {/* Empty space for where the logo was, as it's now the background */}
+        <div className="pt-8"></div>
 
         <form onSubmit={handleAuth} className="space-y-4">
           <div className="space-y-3">
