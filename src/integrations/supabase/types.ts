@@ -190,31 +190,31 @@ export type Database = {
           avatar_url: string | null
           barbershop_id: string | null
           created_at: string | null
-          full_name: string | null
           id: string
+          name: string | null
+          phone: string | null
           role: string | null
           updated_at: string | null
-          whatsapp: string | null
         }
         Insert: {
           avatar_url?: string | null
           barbershop_id?: string | null
           created_at?: string | null
-          full_name?: string | null
           id: string
+          name?: string | null
+          phone?: string | null
           role?: string | null
           updated_at?: string | null
-          whatsapp?: string | null
         }
         Update: {
           avatar_url?: string | null
           barbershop_id?: string | null
           created_at?: string | null
-          full_name?: string | null
           id?: string
+          name?: string | null
+          phone?: string | null
           role?: string | null
           updated_at?: string | null
-          whatsapp?: string | null
         }
         Relationships: [
           {
