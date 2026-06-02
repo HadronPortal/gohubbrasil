@@ -38,6 +38,7 @@ interface Barbershop {
   address: string | null;
   phone: string | null;
   logo_url: string | null;
+  description: string | null;
   owner?: {
     name: string;
   };
@@ -157,7 +158,8 @@ export default function SuperAdmin() {
         p_owner_email: formData.get("owner_email") as string,
         p_owner_phone: formData.get("owner_phone") as string,
         p_owner_password: formData.get("owner_password") as string,
-        p_logo_url: logoUrl
+        p_logo_url: logoUrl,
+        p_description: formData.get("description") as string
       };
 
       const { data: response, error } = await supabase.rpc("create_barbershop_with_owner", params);
@@ -200,6 +202,7 @@ export default function SuperAdmin() {
           name: formData.get("name") as string,
           address: formData.get("address") as string,
           phone: formData.get("phone") as string,
+          description: formData.get("description") as string,
           logo_url: logoUrl
         })
         .eq("id", editingBarbershop.id);
@@ -308,6 +311,10 @@ export default function SuperAdmin() {
                   <div className="space-y-1">
                     <Label htmlFor="barbershop_phone" className="text-[10px] uppercase text-gray-500 tracking-widest">WhatsApp</Label>
                     <Input id="barbershop_phone" name="barbershop_phone" required className="bg-[#0A0A0A] border-[#1F1F1F] h-9" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="description" className="text-[10px] uppercase text-gray-500 tracking-widest">Descrição</Label>
+                    <Textarea id="description" name="description" className="bg-[#0A0A0A] border-[#1F1F1F] resize-none h-20" />
                   </div>
                 </CardContent>
               </Card>
@@ -452,6 +459,10 @@ export default function SuperAdmin() {
               <div className="space-y-1">
                 <Label className="text-[10px] uppercase text-gray-500">Telefone</Label>
                 <Input name="phone" defaultValue={editingBarbershop?.phone || ""} className="bg-[#0A0A0A] border-[#1F1F1F]" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] uppercase text-gray-500">Descrição</Label>
+                <Textarea name="description" defaultValue={editingBarbershop?.description || ""} className="bg-[#0A0A0A] border-[#1F1F1F] resize-none h-24" />
               </div>
             </div>
 
