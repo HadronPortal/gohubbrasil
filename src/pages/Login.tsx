@@ -60,7 +60,13 @@ export default function Login() {
           } else if (profileData?.role === "owner" || profileData?.role === "admin") {
             navigate("/admin");
           } else {
-            navigate("/");
+            // Check if there's a saved barbershop to decide where to send the client
+            const savedBarbershopId = localStorage.getItem("selectedBarbershopId");
+            if (savedBarbershopId) {
+              navigate("/client-home");
+            } else {
+              navigate("/");
+            }
           }
         } else {
           navigate("/");

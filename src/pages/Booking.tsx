@@ -33,11 +33,19 @@ export default function Booking() {
   ];
 
   useEffect(() => {
+    if (profile) {
+      if (profile.role !== 'client') {
+        const target = profile.isSuperAdmin ? "/super-admin" : "/admin";
+        navigate(target);
+        return;
+      }
+    }
+
     if (!serviceId || !barbershopId) {
       navigate("/");
       return;
     }
-  }, [serviceId, barbershopId, navigate]);
+  }, [serviceId, barbershopId, navigate, profile]);
 
   useEffect(() => {
     if (selectedBarberId && selectedDate) {
@@ -142,13 +150,6 @@ export default function Booking() {
           </div>
         </div>
 
-        {/* Header Section */}
-        <div>
-          <h1 className="text-[11px] font-light uppercase tracking-[0.2em] text-[#8a9ab5] m-0">OBRIGADO</h1>
-          <h2 className="text-4xl font-bold uppercase text-[#f0c040] font-oswald tracking-tight m-0 leading-tight">
-            {firstName.toUpperCase()}!
-          </h2>
-        </div>
 
         {/* Appointment Header */}
         <div>

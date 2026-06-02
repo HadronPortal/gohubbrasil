@@ -21,6 +21,7 @@ interface Barber {
 export default function SelectBarber() {
   const [searchParams] = useSearchParams();
   const [barbers, setBarbers] = useState<Barber[]>([]);
+  const [barbershop, setBarbershop] = useState<{ name: string; logo_url: string | null } | null>(null);
   const [selectedBarberId, setSelectedBarberId] = useState<string | null>(null);
   const barbershopId = searchParams.get("barbershopId");
   const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +36,13 @@ export default function SelectBarber() {
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/login");
-    } else if (user) {
+    } else if (user && profile) {
+      if (profile.role !== 'client') {
+        const target = profile.isSuperAdmin ? "/super-admin" : "/admin";
+        navigate(target);
+        return;
+      }
+      
       if (!barbershopId) {
         navigate("/");
         return;
@@ -46,6 +53,15 @@ export default function SelectBarber() {
 
   const fetchBarbers = async () => {
     if (barbershopId) {
+      // 0. Fetch barbershop info
+      const { data: shopData } = await supabase
+        .from("barbershops")
+        .select("name, logo_url")
+        .eq("id", barbershopId)
+        .single();
+      
+      if (shopData) setBarbershop(shopData);
+
       // 1. Fetch barbers
       const { data: barbersData, error: barbersError } = await supabase
         .from("barbers")
@@ -159,13 +175,21 @@ export default function SelectBarber() {
           </div>
         </div>
 
-        {/* Welcome Section */}
-        <div>
-          <h1 className="text-[11px] font-light uppercase tracking-[0.2em] text-[#8a9ab5] m-0">BEM-VINDO</h1>
-          <h2 className="text-4xl font-bold uppercase text-[#f0c040] font-oswald tracking-tight m-0 leading-tight">
-            {firstName.toUpperCase()}!
-          </h2>
-        </div>
+        {/* Barbershop Info */}
+        {barbershop && (
+          <div className="flex items-center gap-4 p-4 bg-[#141b2a] border border-[#2a3347] rounded-[4px]">
+            <div className="w-12 h-12 rounded-full bg-[#1c2333] border border-[#2a3347] flex items-center justify-center overflow-hidden flex-shrink-0">
+              {barbershop.logo_url ? (
+                <img src={barbershop.logo_url} alt={barbershop.name} className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-6 h-6 text-[#8a9ab5]" />
+              )}
+            </div>
+            <h2 className="text-xl font-bold uppercase text-[#f0c040] font-oswald tracking-tight truncate">
+              {barbershop.name}
+            </h2>
+          </div>
+        )}
 
         {/* Section Label */}
         <div className="pt-2">

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
   Scissors, Store, User, Mail, Phone, Lock, 
-  ArrowLeft, Upload, Edit2, Trash2, X, Check, CreditCard, Plus
+  ArrowLeft, Upload, Edit2, Trash2, X, Check, CreditCard, Plus, LogOut
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,6 +56,7 @@ interface Barbershop {
 }
 
 export default function SuperAdmin() {
+  const navigate = useNavigate();
   const { profile, isSuperAdmin, loading: authLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [barbershops, setBarbershops] = useState<Barbershop[]>([]);
@@ -111,6 +112,11 @@ export default function SuperAdmin() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/login");
   };
 
   const handleUpdatePaymentStatus = async (id: string, status: string) => {
@@ -299,10 +305,18 @@ export default function SuperAdmin() {
       <div className="max-w-6xl mx-auto space-y-12">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <Link to="/?select=true" className="p-2 bg-[#1A1A1A] rounded-full text-white hover:bg-[#252525] transition-colors">
-              <ArrowLeft className="w-6 h-6" />
-            </Link>
             <h1 className="text-3xl font-oswald uppercase tracking-wider">Painel do App</h1>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              onClick={signOut} 
+              className="text-[#8a9ab5] hover:text-[#f0c040] gap-2 font-oswald uppercase tracking-widest"
+            >
+              <LogOut className="w-5 h-5" />
+              Sair
+            </Button>
           </div>
 
           <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
