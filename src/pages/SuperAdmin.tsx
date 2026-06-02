@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
   Scissors, Store, User, Mail, Phone, Lock, 
-  ArrowLeft, Upload, Edit2, Trash2, X, Check
+  ArrowLeft, Upload, Edit2, Trash2, X, Check, CreditCard, Plus
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -31,6 +32,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Barbershop {
   id: string;
@@ -39,8 +47,10 @@ interface Barbershop {
   phone: string | null;
   logo_url: string | null;
   description: string | null;
+  payment_status: string | null;
   owner?: {
     name: string;
+    phone?: string;
   };
 }
 
