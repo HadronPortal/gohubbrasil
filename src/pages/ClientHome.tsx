@@ -145,18 +145,22 @@ export default function ClientHome() {
     if (!cancellingId) return;
     setIsCancelling(true);
     try {
-      const { error } = await supabase
-        .from("appointments")
-        .update({ status: "cancelled" })
-        .eq("id", cancellingId);
+      const { data, error } = await supabase.rpc("cancel_my_appointment", { 
+        p_appointment_id: cancellingId 
+      });
 
       if (error) throw error;
+      
+      if (data && data.success === false) {
+        toast.error(data.error || "Erro ao cancelar agendamento");
+        return;
+      }
 
       toast.success("Agendamento cancelado");
       setAppointments(prev => prev.filter(a => a.id !== cancellingId));
     } catch (error: any) {
       console.error("Error cancelling:", error);
-      toast.error("Erro ao cancelar agendamento");
+      toast.error(error.message || "Erro ao cancelar agendamento");
     } finally {
       setIsCancelling(false);
       setCancellingId(null);

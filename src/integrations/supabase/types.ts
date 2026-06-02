@@ -267,6 +267,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cancel_my_appointment: {
+        Args: { p_appointment_id: string }
+        Returns: Json
+      }
       create_barber:
         | {
             Args: {
