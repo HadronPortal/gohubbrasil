@@ -6,6 +6,7 @@ import { User, LogOut, MapPin } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { AdminGear } from "@/components/AdminGear";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { toast } from "sonner";
 
 interface Barbershop {
   id: string;
@@ -29,24 +30,27 @@ export default function SelectBarbershop() {
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/login");
-    } else if (user && profile) {
-      // If owner or barber, they should have a barbershop_id and can be redirected or allowed to choose
-      // But the requirement says owners can open their own admin panel.
-      // If it's a client, they MUST choose.
+    } else if (user) {
       fetchBarbershops();
     }
-  }, [user, authLoading, profile]);
+  }, [user, authLoading]);
 
   const fetchBarbershops = async () => {
     const { data, error } = await supabase
       .from("barbershops")
-      .select("id, name, address, logo_url, description");
+      .select("*")
+      .order("name", { ascending: true });
+
+    console.log("BARBERSHOPS DEBUG", { data, error });
 
     if (error) {
-      console.error("Error fetching barbershops:", error);
-    } else {
-      setBarbershops(data || []);
+      console.error("BARBERSHOPS ERROR", error);
+      toast.error(error.message);
+      setIsLoading(false);
+      return;
     }
+
+    setBarbershops(data || []);
     setIsLoading(false);
   };
 
