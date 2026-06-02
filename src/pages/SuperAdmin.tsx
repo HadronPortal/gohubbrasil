@@ -317,6 +317,8 @@ export default function SuperAdmin() {
               <LogOut className="w-5 h-5" />
               Sair
             </Button>
+          </div>
+        </div>
 
           <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
             <DialogTrigger asChild>
