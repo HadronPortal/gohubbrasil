@@ -61,9 +61,9 @@ export default function Login() {
         <div className="flex flex-col items-center justify-center space-y-4">
           <div className="relative w-full flex justify-center">
             <img 
-              src="/logo-atual.png" 
+              src="/logo-login.png" 
               alt="Logo Barber Shop" 
-              className="w-48 h-auto object-contain"
+              className="w-64 h-auto object-contain"
             />
           </div>
         </div>
