@@ -7,13 +7,13 @@ import { Input } from "@/components/ui/input";
 
 interface Barber {
   id: string;
+  user_id: string;
   name: string;
   active: boolean;
   avatar_url?: string;
-  user_id?: string;
   bio?: string;
   commission_pct?: number;
-  whatsapp?: string;
+  phone?: string;
 }
 
 export default function AdminBarbers({ barbershopId }: { barbershopId: string | null }) {
@@ -26,7 +26,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
+  const [phone, setPhone] = useState("");
   const [bio, setBio] = useState("");
   const [commission, setCommission] = useState("0");
   const [active, setActive] = useState(true);
@@ -38,43 +38,70 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
   }, [barbershopId]);
 
   const fetchBarbers = async () => {
-    const { data } = await supabase
+    setIsLoading(true);
+    // 1. Fetch barbers entries
+    const { data: barbersData, error: barbersError } = await supabase
       .from("barbers")
-      .select(`
-        id, 
-        name, 
-        active,
-        user_id,
-        bio,
-        commission_pct,
-        photo_url,
-        users:user_id (avatar_url, phone)
-      `)
+      .select("id, user_id, barbershop_id, bio, active, commission_pct")
       .eq("barbershop_id", barbershopId);
 
-    if (data) {
-      setBarbers(data.map((b: any) => ({
-        id: b.id,
-        name: b.name,
-        active: b.active,
-        avatar_url: b.users?.avatar_url || b.photo_url,
-        user_id: b.user_id,
-        bio: b.bio,
-        commission_pct: b.commission_pct,
-        whatsapp: b.users?.phone
-      })));
+    if (barbersError) {
+      console.error("Error fetching barbers:", barbersError);
+      toast.error("Erro ao carregar barbeiros");
+      setIsLoading(false);
+      return;
     }
+
+    // 2. Get user_ids
+    const userIds = (barbersData || []).map(b => b.user_id).filter(Boolean);
+
+    // 3. Fetch users info
+    const { data: usersData, error: usersError } = await supabase
+      .from("users")
+      .select("id, name, phone, avatar_url, role, barbershop_id")
+      .in("id", userIds);
+
+    if (usersError) {
+      console.error("Error fetching users:", usersError);
+      toast.error("Erro ao carregar dados dos usuários");
+      setIsLoading(false);
+      return;
+    }
+
+    // 4. Map and merge
+    const mappedBarbers = (barbersData || []).map(barber => {
+      const userEntry = usersData?.find(u => u.id === barber.user_id);
+      return {
+        id: barber.id,
+        user_id: barber.user_id as string,
+        name: userEntry?.name || "Sem Nome",
+        active: barber.active !== false,
+        avatar_url: userEntry?.avatar_url || undefined,
+        bio: barber.bio || "",
+        commission_pct: barber.commission_pct || 0,
+        phone: userEntry?.phone || ""
+      };
+    });
+
+    console.log("BARBERS DEBUG", { 
+      barbershopId, 
+      barbers: barbersData, 
+      users: usersData, 
+      mappedBarbers 
+    });
+
+    setBarbers(mappedBarbers);
     setIsLoading(false);
   };
 
-  const handleEdit = (barber: any) => {
+  const handleEdit = (barber: Barber) => {
     setEditingBarber(barber);
     setName(barber.name);
-    setWhatsapp(barber.whatsapp || "");
+    setPhone(barber.phone || "");
     setBio(barber.bio || "");
     setCommission(barber.commission_pct?.toString() || "0");
     setActive(barber.active);
-    setAvatarPreview(barber.avatar_url);
+    setAvatarPreview(barber.avatar_url || null);
     setIsAdding(true);
   };
 
@@ -84,7 +111,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
     setName("");
     setEmail("");
     setPassword("");
-    setWhatsapp("");
+    setPhone("");
     setBio("");
     setCommission("0");
     setActive(true);
@@ -133,7 +160,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
           p_email: email,
           p_password: password,
           p_name: name,
-          p_phone: whatsapp,
+          p_phone: phone,
           p_bio: bio,
           p_commission_pct: parseFloat(commission) || 0,
           p_avatar_url: finalAvatarUrl,
@@ -146,47 +173,38 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
         if (!result.success) throw new Error(result.error || "Erro ao cadastrar barbeiro no banco.");
 
         toast.success("Barbeiro cadastrado com sucesso!");
-        currentUserId = result.barber_id; // Temporary ID association
       } else {
-        // Update User only if exists
+        // Update User info in public.users
         if (currentUserId) {
           const { error: userUpdateError } = await supabase
             .from("users")
             .update({
               name,
-              phone: whatsapp,
-              avatar_url: finalAvatarUrl,
-              role: 'barber',
-              barbershop_id: barbershopId || undefined
+              phone: phone,
+              avatar_url: finalAvatarUrl
             })
             .eq("id", currentUserId);
 
           if (userUpdateError) throw userUpdateError;
         }
 
-        // Update Barber entry
+        // Update Barber entry (only config fields)
         const { error: barberError } = await supabase
           .from("barbers")
           .update({
-            name,
             bio,
             active,
-            commission_pct: parseFloat(commission) || 0,
-            photo_url: finalAvatarUrl
+            commission_pct: parseFloat(commission) || 0
           })
           .eq("id", editingBarber.id);
         
         if (barberError) throw barberError;
-      }
-
-      if (editingBarber) {
+        
         toast.success("Barbeiro atualizado!");
       }
+
       resetForm();
-      // Force refresh data
-      setTimeout(() => {
-        fetchBarbers();
-      }, 500);
+      fetchBarbers();
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -196,9 +214,6 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const barber = barbers.find(b => b.id === id);
-    if (!barber) return;
-
     if (!confirm("Tem certeza? Agendamentos futuros pendentes serão cancelados.")) return;
     
     setIsLoading(true);
@@ -212,7 +227,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
       const result = data as { success: boolean; error?: string };
       if (result.success) {
         toast.success("Barbeiro removido!");
-        setBarbers(prev => prev.filter(b => b.id !== id));
+        fetchBarbers();
       } else {
         throw new Error(result.error || "Erro ao excluir barbeiro.");
       }
@@ -251,7 +266,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
 
         <div className="space-y-4">
           <Input placeholder="NOME COMPLETO" value={name} onChange={e => setName(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
-          <Input placeholder="WHATSAPP" type="tel" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
+          <Input placeholder="WHATSAPP" type="tel" value={phone} onChange={e => setPhone(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
           {!editingBarber && (
             <>
               <Input placeholder="E-MAIL" type="email" value={email} onChange={e => setEmail(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
