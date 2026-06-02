@@ -35,30 +35,45 @@ export type Database = {
           barber_id: string
           barbershop_id: string
           client_id: string
+          confirmed_via_whatsapp: boolean | null
           created_at: string | null
+          ends_at: string | null
           id: string
+          price_charged: number | null
           service_id: string
+          starts_at: string | null
           status: string | null
+          whatsapp_sent: boolean | null
         }
         Insert: {
           appointment_time: string
           barber_id: string
           barbershop_id: string
           client_id: string
+          confirmed_via_whatsapp?: boolean | null
           created_at?: string | null
+          ends_at?: string | null
           id?: string
+          price_charged?: number | null
           service_id: string
+          starts_at?: string | null
           status?: string | null
+          whatsapp_sent?: boolean | null
         }
         Update: {
           appointment_time?: string
           barber_id?: string
           barbershop_id?: string
           client_id?: string
+          confirmed_via_whatsapp?: boolean | null
           created_at?: string | null
+          ends_at?: string | null
           id?: string
+          price_charged?: number | null
           service_id?: string
+          starts_at?: string | null
           status?: string | null
+          whatsapp_sent?: boolean | null
         }
         Relationships: [
           {
