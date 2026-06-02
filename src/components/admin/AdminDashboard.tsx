@@ -120,12 +120,16 @@ export default function AdminDashboard({ barbershopId }: { barbershopId: string 
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusInfo = (status: string) => {
     switch (status) {
-      case "pending": return "text-yellow-500 border-yellow-500/30 bg-yellow-500/10";
-      case "confirmed": return "text-green-500 border-green-500/30 bg-green-500/10";
-      case "cancelled": return "text-red-500 border-red-500/30 bg-red-500/10";
-      default: return "text-gray-500 border-gray-500/30 bg-gray-500/10";
+      case "pending": 
+        return { label: "PENDENTE", color: "text-yellow-500 border-yellow-500/30 bg-yellow-500/10" };
+      case "confirmed": 
+        return { label: "CONFIRMADO", color: "text-green-500 border-green-500/30 bg-green-500/10" };
+      case "cancelled": 
+        return { label: "CANCELADO", color: "text-red-500 border-red-500/30 bg-red-500/10" };
+      default: 
+        return { label: status.toUpperCase(), color: "text-gray-500 border-gray-500/30 bg-gray-500/10" };
     }
   };
 
@@ -175,8 +179,8 @@ export default function AdminDashboard({ barbershopId }: { barbershopId: string 
                       {appt.serviceName} • {appt.barberName}
                     </p>
                   </div>
-                  <span className={`text-[9px] font-bold px-2 py-1 rounded-[2px] border uppercase tracking-widest ${getStatusColor(appt.status)}`}>
-                    {appt.status}
+                  <span className={`text-[9px] font-bold px-2 py-1 rounded-[2px] border uppercase tracking-widest ${getStatusInfo(appt.status).color}`}>
+                    {getStatusInfo(appt.status).label}
                   </span>
                 </div>
                 <div className="pt-2 border-t border-[#2a3347]/50 flex justify-between items-center">
