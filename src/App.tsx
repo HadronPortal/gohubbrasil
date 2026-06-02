@@ -5,6 +5,7 @@ import SelectBarber from "./pages/SelectBarber";
 import Services from "./pages/Services";
 import Booking from "./pages/Booking";
 import Admin from "./pages/Admin";
+import SuperAdmin from "./pages/SuperAdmin";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
   {
     path: "/admin",
     element: <Admin />,
+  },
+  {
+    path: "/super-admin",
+    element: <SuperAdmin />,
   },
 ]);
 

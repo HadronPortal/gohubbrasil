@@ -14,6 +14,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_admins: {
+        Row: {
+          created_at: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           appointment_time: string
@@ -128,6 +143,7 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
+          phone: string | null
         }
         Insert: {
           address: string
@@ -136,6 +152,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
+          phone?: string | null
         }
         Update: {
           address?: string
@@ -144,6 +161,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
+          phone?: string | null
         }
         Relationships: []
       }
@@ -257,6 +275,18 @@ export type Database = {
             }
             Returns: Json
           }
+      create_barbershop_with_owner: {
+        Args: {
+          barbershop_address: string
+          barbershop_name: string
+          barbershop_phone: string
+          owner_email: string
+          owner_name: string
+          owner_password: string
+          owner_phone: string
+        }
+        Returns: Json
+      }
       delete_barber: { Args: { p_barber_id: string }; Returns: Json }
     }
     Enums: {

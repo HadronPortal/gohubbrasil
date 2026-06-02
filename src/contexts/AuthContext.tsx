@@ -9,11 +9,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   const loadProfile = async (userId: string) => {
-    const { data } = await supabase
-      .from('users')
-      .select('id, role, barbershop_id, name, phone, avatar_url')
-      .eq('id', userId)
-      .maybeSingle()
+    // Buscar perfil e verificar se é super admin em paralelo
+    const [profileRes, adminRes] = await Promise.all([
+      supabase
+        .from('users')
+        .select('id, role, barbershop_id, name, phone, avatar_url')
+        .eq('id', userId)
+        .maybeSingle(),
+      supabase
+        .from('app_admins')
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle()
+    ])
+
+    const data = profileRes.data
+    const isSuperAdmin = !!adminRes.data
 
     let finalProfile = null;
     if (data) {
@@ -24,7 +35,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       finalProfile = {
         ...data,
         isOwner,
-        isAdmin
+        isAdmin,
+        isSuperAdmin
       }
       
       console.log("AUTH PROFILE DEBUG", {
@@ -32,10 +44,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         profile: finalProfile,
         role: data.role,
         isAdmin,
-        isOwner
+        isOwner,
+        isSuperAdmin
       });
     } else {
-      finalProfile = { role: 'client', isOwner: false, isAdmin: false };
+      finalProfile = { role: 'client', isOwner: false, isAdmin: false, isSuperAdmin };
       console.log("AUTH PROFILE DEBUG (No profile found)", {
         userId: userId,
         profile: finalProfile
