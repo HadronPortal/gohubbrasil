@@ -32,6 +32,7 @@ import {
 
 interface Appointment {
   id: string;
+  client_id: string;
   barbershop_id: string;
   barber_id: string;
   service_id: string;
@@ -39,6 +40,7 @@ interface Appointment {
   ends_at: string;
   status: string;
   price_charged: number;
+  created_at: string;
   barbershop?: {
     name: string;
     logo_url: string | null;
