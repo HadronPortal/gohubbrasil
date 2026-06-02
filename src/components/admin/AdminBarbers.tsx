@@ -148,10 +148,10 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
         toast.success("Barbeiro cadastrado com sucesso!");
         currentUserId = result.barber_id; // Temporary ID association
       } else {
-        // Update Profile only if user exists
+        // Update User only if exists
         if (currentUserId) {
-          const { error: profileError } = await supabase
-            .from("profiles")
+          const { error: userUpdateError } = await supabase
+            .from("users")
             .update({
               name,
               phone: whatsapp,
@@ -161,7 +161,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
             })
             .eq("id", currentUserId);
 
-          if (profileError) throw profileError;
+          if (userUpdateError) throw userUpdateError;
         }
 
         // Update Barber entry
