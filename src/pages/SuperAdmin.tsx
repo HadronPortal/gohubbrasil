@@ -289,126 +289,157 @@ export default function SuperAdmin() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] p-4 md:p-8 text-white font-light">
+    <div className="min-h-screen bg-[#0A0A0A] p-4 md:p-8 text-white font-light pb-24">
       <div className="max-w-6xl mx-auto space-y-12">
-        <div className="flex items-center gap-4">
-          <Link to="/" className="p-2 bg-[#1A1A1A] rounded-full text-white hover:bg-[#252525] transition-colors">
-            <ArrowLeft className="w-6 h-6" />
-          </Link>
-          <h1 className="text-3xl font-oswald uppercase tracking-wider">Super Admin</h1>
-        </div>
-
-        {/* Cadastro Section */}
-        <section className="space-y-6">
-          <div className="flex items-center gap-2 border-l-4 border-[#C6A355] pl-4">
-            <h2 className="text-xl font-oswald uppercase tracking-widest text-[#C6A355]">Nova Barbearia</h2>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <Link to="/?select=true" className="p-2 bg-[#1A1A1A] rounded-full text-white hover:bg-[#252525] transition-colors">
+              <ArrowLeft className="w-6 h-6" />
+            </Link>
+            <h1 className="text-3xl font-oswald uppercase tracking-wider">Painel do App</h1>
           </div>
-          
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Logo Upload Card */}
-              <Card className="bg-[#141414] border-[#1F1F1F] flex flex-col items-center justify-center p-8 space-y-4">
-                <Label className="text-gray-300 font-oswald uppercase tracking-widest text-xs">Logo da Barbearia</Label>
-                <div 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="relative group cursor-pointer"
-                >
-                  <Avatar className="w-32 h-32 border-2 border-[#1F1F1F] group-hover:border-[#C6A355] transition-colors">
-                    <AvatarImage src={logoPreview || ""} className="object-cover" />
-                    <AvatarFallback className="bg-[#0A0A0A]">
-                      <Store className="w-12 h-12 text-gray-700" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
-                    <Upload className="w-6 h-6 text-[#C6A355]" />
+
+          <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-[#C6A355] hover:bg-[#D4B466] text-black font-oswald uppercase tracking-widest px-8 rounded-none h-12 transition-all gap-2">
+                <Plus className="w-5 h-5" />
+                Cadastrar Barbearia
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-[#141414] border-[#1F1F1F] text-white max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-oswald uppercase text-[#C6A355]">Nova Barbearia</DialogTitle>
+              </DialogHeader>
+              
+              <form onSubmit={handleSubmit} className="space-y-8 pt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Barbearia Info */}
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-2 border-l-2 border-[#C6A355] pl-3 mb-4">
+                      <h3 className="text-sm font-oswald uppercase tracking-widest text-[#C6A355]">Detalhes da Unidade</h3>
+                    </div>
+
+                    <div className="flex flex-col items-center justify-center p-6 border border-[#1F1F1F] bg-[#0A0A0A] rounded-md space-y-4 mb-6">
+                      <Label className="text-gray-300 font-oswald uppercase tracking-widest text-xs">Logo</Label>
+                      <div 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="relative group cursor-pointer"
+                      >
+                        <Avatar className="w-24 h-24 border-2 border-[#1F1F1F] group-hover:border-[#C6A355] transition-colors">
+                          <AvatarImage src={logoPreview || ""} className="object-cover" />
+                          <AvatarFallback className="bg-[#141414]">
+                            <Store className="w-8 h-8 text-gray-700" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                          <Upload className="w-5 h-5 text-[#C6A355]" />
+                        </div>
+                      </div>
+                      <input 
+                        type="file" 
+                        ref={fileInputRef}
+                        className="hidden" 
+                        accept="image/*"
+                        onChange={(e) => handleFileChange(e)}
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="space-y-1">
+                        <Label htmlFor="barbershop_name" className="text-[10px] uppercase text-gray-500 tracking-widest">Nome da Barbearia</Label>
+                        <Input id="barbershop_name" name="barbershop_name" required className="bg-[#0A0A0A] border-[#1F1F1F] h-10" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="barbershop_address" className="text-[10px] uppercase text-gray-500 tracking-widest">Endereço</Label>
+                        <Input id="barbershop_address" name="barbershop_address" required className="bg-[#0A0A0A] border-[#1F1F1F] h-10" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <Label htmlFor="barbershop_phone" className="text-[10px] uppercase text-gray-500 tracking-widest">WhatsApp/Tel</Label>
+                          <Input id="barbershop_phone" name="barbershop_phone" required className="bg-[#0A0A0A] border-[#1F1F1F] h-10" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="payment_status" className="text-[10px] uppercase text-gray-500 tracking-widest">Status Pagamento</Label>
+                          <Select name="payment_status" defaultValue="pending">
+                            <SelectTrigger className="bg-[#0A0A0A] border-[#1F1F1F] h-10">
+                              <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#141414] border-[#1F1F1F] text-white">
+                              <SelectItem value="paid">Em dia</SelectItem>
+                              <SelectItem value="pending">Pendente</SelectItem>
+                              <SelectItem value="overdue">Vencido</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="description" className="text-[10px] uppercase text-gray-500 tracking-widest">Descrição</Label>
+                        <Textarea id="description" name="description" className="bg-[#0A0A0A] border-[#1F1F1F] resize-none h-20" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Owner Info */}
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-2 border-l-2 border-[#C6A355] pl-3 mb-4">
+                      <h3 className="text-sm font-oswald uppercase tracking-widest text-[#C6A355]">Dados do Proprietário</h3>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="space-y-1">
+                        <Label htmlFor="owner_name" className="text-[10px] uppercase text-gray-500 tracking-widest">Nome do Dono</Label>
+                        <Input id="owner_name" name="owner_name" required className="bg-[#0A0A0A] border-[#1F1F1F] h-10" />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="owner_email" className="text-[10px] uppercase text-gray-500 tracking-widest">E-mail (Login)</Label>
+                        <Input id="owner_email" name="owner_email" type="email" required className="bg-[#0A0A0A] border-[#1F1F1F] h-10" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <Label htmlFor="owner_phone" className="text-[10px] uppercase text-gray-500 tracking-widest">Telefone</Label>
+                          <Input id="owner_phone" name="owner_phone" required className="bg-[#0A0A0A] border-[#1F1F1F] h-10" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="owner_password" className="text-[10px] uppercase text-gray-500 tracking-widest">Senha Inicial</Label>
+                          <Input id="owner_password" name="owner_password" type="password" required className="bg-[#0A0A0A] border-[#1F1F1F] h-10" />
+                        </div>
+                      </div>
+                      
+                      <div className="pt-4 p-4 border border-[#C6A355]/20 bg-[#C6A355]/5 rounded-md flex items-center space-x-3">
+                        <input 
+                          type="checkbox" 
+                          id="owner_is_barber_modal" 
+                          checked={ownerIsBarber}
+                          onChange={(e) => setOwnerIsBarber(e.target.checked)}
+                          className="w-5 h-5 rounded border-gray-300 text-[#C6A355] focus:ring-[#C6A355]"
+                        />
+                        <Label htmlFor="owner_is_barber_modal" className="text-xs text-gray-300 cursor-pointer font-medium">
+                          O dono também atende como barbeiro
+                        </Label>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <input 
-                  type="file" 
-                  ref={fileInputRef}
-                  className="hidden" 
-                  accept="image/*"
-                  onChange={(e) => handleFileChange(e)}
-                />
-                <p className="text-[10px] text-gray-500 uppercase tracking-tighter text-center">
-                  Clique para selecionar uma imagem
-                </p>
-              </Card>
 
-              {/* Barbearia Info */}
-              <Card className="bg-[#141414] border-[#1F1F1F]">
-                <CardHeader>
-                  <CardTitle className="text-sm font-oswald uppercase text-[#C6A355]">Detalhes da Unidade</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-1">
-                    <Label htmlFor="barbershop_name" className="text-[10px] uppercase text-gray-500 tracking-widest">Nome</Label>
-                    <Input id="barbershop_name" name="barbershop_name" required className="bg-[#0A0A0A] border-[#1F1F1F] h-9" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="barbershop_address" className="text-[10px] uppercase text-gray-500 tracking-widest">Endereço</Label>
-                    <Input id="barbershop_address" name="barbershop_address" required className="bg-[#0A0A0A] border-[#1F1F1F] h-9" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="barbershop_phone" className="text-[10px] uppercase text-gray-500 tracking-widest">WhatsApp</Label>
-                    <Input id="barbershop_phone" name="barbershop_phone" required className="bg-[#0A0A0A] border-[#1F1F1F] h-9" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="description" className="text-[10px] uppercase text-gray-500 tracking-widest">Descrição</Label>
-                    <Textarea id="description" name="description" className="bg-[#0A0A0A] border-[#1F1F1F] resize-none h-20" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Owner Info */}
-              <Card className="bg-[#141414] border-[#1F1F1F]">
-                <CardHeader>
-                  <CardTitle className="text-sm font-oswald uppercase text-[#C6A355]">Dados do Proprietário</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-1">
-                    <Label htmlFor="owner_name" className="text-[10px] uppercase text-gray-500 tracking-widest">Nome Completo</Label>
-                    <Input id="owner_name" name="owner_name" required className="bg-[#0A0A0A] border-[#1F1F1F] h-9" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="owner_email" className="text-[10px] uppercase text-gray-500 tracking-widest">Email de Acesso</Label>
-                    <Input id="owner_email" name="owner_email" type="email" required className="bg-[#0A0A0A] border-[#1F1F1F] h-9" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="owner_phone" className="text-[10px] uppercase text-gray-500 tracking-widest">Telefone Celular</Label>
-                    <Input id="owner_phone" name="owner_phone" required className="bg-[#0A0A0A] border-[#1F1F1F] h-9" />
-                  </div>
-                   <div className="pt-2 flex items-center space-x-2">
-                    <input 
-                      type="checkbox" 
-                      id="owner_is_barber" 
-                      checked={ownerIsBarber}
-                      onChange={(e) => setOwnerIsBarber(e.target.checked)}
-                      className="w-4 h-4 rounded border-gray-300 text-[#C6A355] focus:ring-[#C6A355]"
-                    />
-                    <Label htmlFor="owner_is_barber" className="text-xs text-gray-300 cursor-pointer">Esse dono também atende como barbeiro</Label>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="flex justify-end">
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="bg-[#C6A355] hover:bg-[#D4B466] text-black font-oswald uppercase tracking-widest px-8 rounded-none h-12 transition-all"
-              >
-                {isSubmitting ? "PROCESSANDO..." : "CADASTRAR UNIDADE"}
-              </Button>
-            </div>
-          </form>
-        </section>
+                <DialogFooter className="pt-6">
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    className="bg-[#C6A355] hover:bg-[#D4B466] text-black font-oswald uppercase tracking-widest w-full h-12 rounded-none transition-all"
+                  >
+                    {isSubmitting ? "PROCESSANDO..." : "CADASTRAR BARBEARIA"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
 
         {/* List Section */}
-        <section className="space-y-6 pt-12 border-t border-[#1F1F1F]">
-          <div className="flex items-center justify-between">
+        <section className="space-y-8">
+          <div className="flex items-center justify-between border-b border-[#1F1F1F] pb-4">
             <div className="flex items-center gap-2 border-l-4 border-[#C6A355] pl-4">
-              <h2 className="text-xl font-oswald uppercase tracking-widest text-[#C6A355]">Unidades Ativas</h2>
+              <h2 className="text-xl font-oswald uppercase tracking-widest text-[#C6A355]">Unidades Cadastradas</h2>
             </div>
             <p className="text-xs text-gray-500 uppercase tracking-widest">Total: {barbershops.length}</p>
           </div>
@@ -416,18 +447,91 @@ export default function SuperAdmin() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {isLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-40 bg-[#141414] animate-pulse rounded-md" />
+                <div key={i} className="h-64 bg-[#141414] animate-pulse rounded-md" />
               ))
             ) : barbershops.map((shop) => (
-              <Card key={shop.id} className="bg-[#141414] border-[#1F1F1F] hover:border-gray-700 transition-colors group">
-                <CardContent className="p-6 flex gap-4">
-                  <Avatar className="w-16 h-16 rounded-md border border-[#1F1F1F]">
-                    <AvatarImage src={shop.logo_url || ""} className="object-cover" />
-                    <AvatarFallback className="bg-[#0A0A0A]">
-                      <Store className="w-6 h-6 text-gray-700" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0 space-y-1">
+              <Card key={shop.id} className="bg-[#141414] border-[#1F1F1F] hover:border-gray-700 transition-colors group overflow-hidden">
+                <CardContent className="p-0">
+                  <div className="p-6 space-y-4">
+                    <div className="flex gap-4">
+                      <Avatar className="w-16 h-16 rounded-md border border-[#1F1F1F] flex-shrink-0">
+                        <AvatarImage src={shop.logo_url || ""} className="object-cover" />
+                        <AvatarFallback className="bg-[#0A0A0A]">
+                          <Store className="w-6 h-6 text-gray-700" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-oswald text-xl uppercase text-white truncate group-hover:text-[#C6A355] transition-colors">{shop.name}</h3>
+                        <div className="flex items-center gap-1.5 text-[11px] text-[#C6A355] font-medium uppercase tracking-wider mt-1">
+                          <User className="w-3.5 h-3.5" />
+                          <span className="truncate">{shop.owner?.name || "Sem dono"}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 text-[11px] uppercase tracking-wider text-gray-400">
+                      <div className="flex items-start gap-2">
+                        <Mail className="w-3.5 h-3.5 mt-0.5 text-gray-600" />
+                        <span className="truncate">{shop.address || "Sem endereço"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-3.5 h-3.5 text-gray-600" />
+                        <span>{shop.phone || shop.owner?.phone || "Sem telefone"}</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-[#1F1F1F] flex items-center justify-between">
+                      <div className="space-y-1 flex-1 pr-4">
+                        <Label className="text-[9px] uppercase text-gray-600 tracking-tighter">Status Pagamento</Label>
+                        <Select 
+                          value={shop.payment_status || "pending"} 
+                          onValueChange={(val) => handleUpdatePaymentStatus(shop.id, val)}
+                        >
+                          <SelectTrigger className={cn(
+                            "h-8 text-[10px] uppercase font-bold border-none bg-[#0A0A0A]",
+                            shop.payment_status === 'paid' ? "text-green-500" : 
+                            shop.payment_status === 'overdue' ? "text-red-500" : "text-yellow-500"
+                          )}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-[#141414] border-[#1F1F1F] text-white">
+                            <SelectItem value="paid">Em dia</SelectItem>
+                            <SelectItem value="pending">Pendente</SelectItem>
+                            <SelectItem value="overdue">Vencido</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => {
+                            setEditingBarbershop(shop);
+                            setEditLogoPreview(shop.logo_url);
+                          }}
+                          className="h-9 w-9 bg-[#1A1A1A] hover:bg-[#C6A355] hover:text-black transition-colors"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => setDeletingId(shop.id)}
+                          className="h-9 w-9 bg-[#1A1A1A] hover:bg-red-900 hover:text-white transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      </div>
+
                     <h3 className="font-oswald uppercase text-white truncate">{shop.name}</h3>
                     <p className="text-[10px] text-gray-500 uppercase truncate">{shop.address}</p>
                     <div className="flex items-center gap-1 text-[10px] text-[#C6A355] font-medium">
