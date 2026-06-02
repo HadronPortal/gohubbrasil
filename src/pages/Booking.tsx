@@ -65,6 +65,8 @@ export default function Booking() {
   };
 
   const handleBooking = async () => {
+    console.log("BOOKING PARAMS", { barbershopId, serviceId, barberIdFromUrl, selectedBarberId });
+
     if (!selectedBarberId || !selectedDate || !selectedTime) {
       toast.error("Por favor, selecione um barbeiro e horário");
       return;
@@ -73,6 +75,8 @@ export default function Booking() {
     setIsSubmitting(true);
     try {
       if (!user) throw new Error("Usuário não autenticado");
+      if (!serviceId) throw new Error("Serviço não selecionado");
+      if (!barberIdFromUrl && !selectedBarberId) throw new Error("Barbeiro não selecionado");
 
       // 1. Fetch service details for price and duration
       const { data: service, error: serviceError } = await supabase
