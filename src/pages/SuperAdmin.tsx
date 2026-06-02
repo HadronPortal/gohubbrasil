@@ -62,6 +62,7 @@ export default function SuperAdmin() {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [ownerIsBarber, setOwnerIsBarber] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Edit State
@@ -85,16 +86,22 @@ export default function SuperAdmin() {
         .from("barbershops")
         .select(`
           *,
-          users(name)
+          users(name, phone, role)
         `)
         .order("name", { ascending: true });
 
       if (error) throw error;
 
-      const formattedShops = shops.map((shop: any) => ({
-        ...shop,
-        owner: shop.users?.find((u: any) => u.role === 'owner') || shop.users?.[0]
-      }));
+      const formattedShops = shops.map((shop: any) => {
+        const ownerUser = shop.users?.find((u: any) => u.role === 'owner') || shop.users?.[0];
+        return {
+          ...shop,
+          owner: ownerUser ? {
+            name: ownerUser.name,
+            phone: ownerUser.phone
+          } : null
+        };
+      });
 
       setBarbershops(formattedShops);
     } catch (error: any) {
@@ -102,6 +109,25 @@ export default function SuperAdmin() {
       toast.error("Erro ao carregar barbearias");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleUpdatePaymentStatus = async (id: string, status: string) => {
+    try {
+      const { error } = await supabase
+        .from("barbershops")
+        .update({ payment_status: status })
+        .eq("id", id);
+      
+      if (error) throw error;
+      
+      setBarbershops(prev => prev.map(shop => 
+        shop.id === id ? { ...shop, payment_status: status } : shop
+      ));
+      
+      toast.success("Status de pagamento atualizado");
+    } catch (error: any) {
+      toast.error("Erro ao atualizar status");
     }
   };
 
