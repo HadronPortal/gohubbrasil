@@ -30,10 +30,22 @@ export default function SelectBarbershop() {
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/login");
-    } else if (user) {
+    } else if (user && profile) {
+      // Se for superadmin, redireciona para o painel do superadmin
+      if (profile.isSuperAdmin) {
+        navigate("/super-admin");
+        return;
+      }
+      
+      // Se for dono (owner) ou admin, redireciona para o painel admin
+      if (profile.isOwner || profile.role === 'admin') {
+        navigate("/admin");
+        return;
+      }
+      
       fetchBarbershops();
     }
-  }, [user, authLoading]);
+  }, [user, profile, authLoading, navigate]);
 
   const fetchBarbershops = async () => {
     const { data, error } = await supabase
