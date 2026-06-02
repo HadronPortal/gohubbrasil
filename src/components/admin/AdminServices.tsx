@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 
@@ -15,6 +15,7 @@ interface Service {
 export default function AdminServices({ barbershopId }: { barbershopId: string | null }) {
   const [services, setServices] = useState<Service[]>([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingService, setEditingService] = useState<Service | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Form state
@@ -27,13 +28,43 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
   }, [barbershopId]);
 
   const fetchServices = async () => {
+    setIsLoading(true);
     const { data } = await supabase
       .from("services")
       .select("*")
-      .eq("barbershop_id", barbershopId);
+      .eq("barbershop_id", barbershopId)
+      .order("name");
 
     if (data) setServices(data as Service[]);
     setIsLoading(false);
+  };
+
+  const handleEdit = (service: Service) => {
+    setEditingService(service);
+    setName(service.name);
+    setDuration(service.duration_minutes.toString());
+    setPrice(service.price.toString());
+    setIsAdding(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Tem certeza que deseja excluir este serviço?")) return;
+    
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from("services")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      toast.success("Serviço excluído com sucesso!");
+      fetchServices();
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -41,19 +72,34 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
     setIsLoading(true);
 
     try {
-      const { error } = await supabase
-        .from("services")
-        .insert({
-          barbershop_id: barbershopId,
-          name,
-          duration_minutes: parseInt(duration),
-          price: parseFloat(price)
-        });
+      if (editingService) {
+        const { error } = await supabase
+          .from("services")
+          .update({
+            name,
+            duration_minutes: parseInt(duration),
+            price: parseFloat(price)
+          })
+          .eq("id", editingService.id);
 
-      if (error) throw error;
+        if (error) throw error;
+        toast.success("Serviço atualizado!");
+      } else {
+        const { error } = await supabase
+          .from("services")
+          .insert({
+            barbershop_id: barbershopId,
+            name,
+            duration_minutes: parseInt(duration),
+            price: parseFloat(price)
+          });
 
-      toast.success("Serviço adicionado com sucesso!");
+        if (error) throw error;
+        toast.success("Serviço adicionado!");
+      }
+
       setIsAdding(false);
+      setEditingService(null);
       setName("");
       setPrice("");
       setDuration("30");
@@ -71,12 +117,30 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
       
       <div className="space-y-4">
         {services.map(service => (
-          <div key={service.id} className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] flex justify-between items-center">
+          <div key={service.id} className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] flex justify-between items-center group">
             <div>
               <h4 className="text-sm font-bold text-[#c8d4e8] font-oswald uppercase tracking-wider">{service.name}</h4>
               <p className="text-[10px] text-[#8a9ab5] uppercase tracking-widest mt-0.5">
                 {service.duration_minutes} MINutos • R$ {service.price.toFixed(2)}
               </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleEdit(service)}
+                className="text-[#8a9ab5] hover:text-[#f0c040] transition-colors"
+              >
+                <Pencil className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleDelete(service.id)}
+                className="text-[#8a9ab5] hover:text-red-500 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         ))}
@@ -93,11 +157,11 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
       {isAdding && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
           <div className="bg-[#1c2333] border border-[#2a3347] w-full max-w-[340px] p-6 rounded-[4px] space-y-6 relative animate-in zoom-in-95 duration-200">
-            <button onClick={() => setIsAdding(false)} className="absolute top-4 right-4 text-[#8a9ab5] hover:text-[#f0c040]">
+            <button onClick={() => { setIsAdding(false); setEditingService(null); setName(""); setPrice(""); setDuration("30"); }} className="absolute top-4 right-4 text-[#8a9ab5] hover:text-[#f0c040]">
               <X className="w-5 h-5" />
             </button>
             
-            <h3 className="text-xs font-bold tracking-[0.25em] text-[#f0c040] font-oswald uppercase">NOVO SERVIÇO</h3>
+            <h3 className="text-xs font-bold tracking-[0.25em] text-[#f0c040] font-oswald uppercase">{editingService ? "EDITAR SERVIÇO" : "NOVO SERVIÇO"}</h3>
             
             <form onSubmit={handleSave} className="space-y-4">
               <div className="space-y-1">
