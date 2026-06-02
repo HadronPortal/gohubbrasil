@@ -318,7 +318,6 @@ export default function SuperAdmin() {
               Sair
             </Button>
           </div>
-        </div>
 
           <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
             <DialogTrigger asChild>
