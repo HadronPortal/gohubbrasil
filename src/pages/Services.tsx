@@ -138,9 +138,12 @@ export default function Services() {
             const isSelected = selectedServiceId === s.id;
             
             // Determine icon based on service name
-            const Icon = s.name.toLowerCase().includes("barba") 
-              ? Razor 
-              : (s.name.toLowerCase().includes("corte") ? CustomScissors : Comb);
+            const nameLower = s.name.toLowerCase();
+            const Icon = (nameLower.includes("corte") && nameLower.includes("barba"))
+              ? ScissorsAndRazor
+              : nameLower.includes("barba") 
+                ? Razor 
+                : (nameLower.includes("corte") ? CustomScissors : Comb);
 
             return (
               <div 
