@@ -279,6 +279,13 @@ export default function ClientHome() {
 
   const firstName = profile?.name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || "USUÁRIO";
   
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return "BOM DIA";
+    if (hour >= 12 && hour < 18) return "BOA TARDE";
+    return "BOA NOITE";
+  };
+  
   const now = new Date();
   const upcomingAppointments = appointments.filter(a => new Date(a.starts_at) >= now);
   const pastAppointments = appointments.filter(a => new Date(a.starts_at) < now);
@@ -314,9 +321,11 @@ export default function ClientHome() {
         </div>
 
         {/* Welcome Section */}
-        <div>
-          <h1 className="text-[11px] font-light uppercase tracking-[0.2em] text-[#8a9ab5] m-0">OLÁ,</h1>
-          <h2 className="text-4xl font-bold uppercase text-[#f0c040] font-oswald tracking-tight m-0 leading-tight">
+        <div className="space-y-1">
+          <h1 className="text-[11px] font-light uppercase tracking-[0.2em] text-[#8a9ab5] m-0">
+            {getGreeting()},
+          </h1>
+          <h2 className="text-4xl font-bold uppercase text-[#f0c040] font-oswald tracking-tight m-0 leading-tight pt-1">
             {firstName.toUpperCase()}!
           </h2>
         </div>
