@@ -192,6 +192,10 @@ export default function ClientHome() {
   }
 
   const firstName = profile?.name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || "USUÁRIO";
+  
+  const now = new Date();
+  const upcomingAppointments = appointments.filter(a => new Date(a.starts_at) >= now);
+  const pastAppointments = appointments.filter(a => new Date(a.starts_at) < now);
 
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24 overflow-x-hidden">
