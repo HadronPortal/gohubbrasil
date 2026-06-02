@@ -15,6 +15,7 @@ interface Service {
 export default function AdminServices({ barbershopId }: { barbershopId: string | null }) {
   const [services, setServices] = useState<Service[]>([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingService, setEditingService] = useState<Service | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Form state
@@ -27,10 +28,12 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
   }, [barbershopId]);
 
   const fetchServices = async () => {
+    setIsLoading(true);
     const { data } = await supabase
       .from("services")
       .select("*")
-      .eq("barbershop_id", barbershopId);
+      .eq("barbershop_id", barbershopId)
+      .order("name");
 
     if (data) setServices(data as Service[]);
     setIsLoading(false);
