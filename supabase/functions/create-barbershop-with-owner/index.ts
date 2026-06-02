@@ -71,7 +71,7 @@ serve(async (req) => {
         phone: barbershopPhone,
         logo_url: logoUrl,
         description: description,
-        // slug: slug // We will add the column in a migration if it doesn't exist
+        slug: slug
       })
       .select()
       .single()
