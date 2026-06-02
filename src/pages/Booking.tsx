@@ -33,11 +33,19 @@ export default function Booking() {
   ];
 
   useEffect(() => {
+    if (profile) {
+      if (profile.role !== 'client') {
+        const target = profile.isSuperAdmin ? "/super-admin" : "/admin";
+        navigate(target);
+        return;
+      }
+    }
+
     if (!serviceId || !barbershopId) {
       navigate("/");
       return;
     }
-  }, [serviceId, barbershopId, navigate]);
+  }, [serviceId, barbershopId, navigate, profile]);
 
   useEffect(() => {
     if (selectedBarberId && selectedDate) {

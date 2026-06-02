@@ -72,12 +72,20 @@ export default function Services() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (profile) {
+      if (profile.role !== 'client') {
+        const target = profile.isSuperAdmin ? "/super-admin" : "/admin";
+        navigate(target);
+        return;
+      }
+    }
+
     if (!barberId || !barbershopId) {
       navigate("/");
       return;
     }
     fetchData();
-  }, [barberId, barbershopId]);
+  }, [barberId, barbershopId, profile]);
 
   const fetchData = async () => {
     const { data: serviceData } = await supabase

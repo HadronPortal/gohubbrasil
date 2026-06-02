@@ -36,7 +36,13 @@ export default function SelectBarber() {
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/login");
-    } else if (user) {
+    } else if (user && profile) {
+      if (profile.role !== 'client') {
+        const target = profile.isSuperAdmin ? "/super-admin" : "/admin";
+        navigate(target);
+        return;
+      }
+      
       if (!barbershopId) {
         navigate("/");
         return;
