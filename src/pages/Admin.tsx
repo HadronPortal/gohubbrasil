@@ -14,7 +14,7 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState<"agenda" | "barbeiros" | "servicos">("agenda");
   const [barbershopId, setBarbershopId] = useState<string | null>(null);
   const [loadingBarbershop, setLoadingBarbershop] = useState(true);
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, profile, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
