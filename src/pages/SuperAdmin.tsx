@@ -204,9 +204,13 @@ export default function SuperAdmin() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("EDGE ERROR", { error, data: response });
+        throw error;
+      }
 
       if (response && response.success === false) {
+        console.error("EDGE ERROR BUSINESS LOGIC", { data: response });
         toast.error(response.error || "Erro ao criar barbearia.");
       } else {
         toast.success("Barbearia cadastrada com sucesso");
