@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, User, LogOut } from "lucide-react";
@@ -19,9 +19,10 @@ interface Barber {
 }
 
 export default function SelectBarber() {
+  const [searchParams] = useSearchParams();
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [selectedBarberId, setSelectedBarberId] = useState<string | null>(null);
-  const [barbershopId, setBarbershopId] = useState<string | null>(null);
+  const barbershopId = searchParams.get("barbershopId");
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { user, profile, loading: authLoading } = useAuth();
@@ -35,28 +36,21 @@ export default function SelectBarber() {
     if (!authLoading && !user) {
       navigate("/login");
     } else if (user) {
+      if (!barbershopId) {
+        navigate("/");
+        return;
+      }
       fetchBarbers();
     }
-  }, [user, authLoading, profile]); // Re-fetch if profile changes
+  }, [user, authLoading, profile, barbershopId]); // Re-fetch if profile or barbershopId changes
 
   const fetchBarbers = async () => {
-    let bId = profile?.barbershop_id;
-    
-    if (!bId) {
-      const { data: shops } = await supabase.from("barbershops").select("id").limit(1);
-      if (shops && shops.length > 0) {
-        bId = shops[0].id;
-      }
-    }
-
-    if (bId) {
-      setBarbershopId(bId);
-
+    if (barbershopId) {
       // 1. Fetch barbers
       const { data: barbersData, error: barbersError } = await supabase
         .from("barbers")
         .select("id, user_id, barbershop_id, bio, active, commission_pct")
-        .eq("barbershop_id", bId);
+        .eq("barbershop_id", barbershopId);
 
       if (barbersError) {
         console.error("Error fetching barbers:", barbersError);
@@ -102,7 +96,7 @@ export default function SelectBarber() {
         .filter((b): b is Barber => b !== null);
 
       console.log("BARBERS DEBUG", { 
-        barbershopId: bId, 
+        barbershopId: barbershopId, 
         barbers: barbersData, 
         users: usersData, 
         mappedBarbers 

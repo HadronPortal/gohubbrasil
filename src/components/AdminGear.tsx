@@ -7,7 +7,7 @@ export const AdminGear: React.FC = () => {
   const { profile } = useAuth();
   const navigate = useNavigate();
 
-  if (profile?.isAdmin) {
+  if (profile?.role === 'owner' || profile?.role === 'admin') {
     return (
       <button 
         onClick={() => navigate('/admin')}

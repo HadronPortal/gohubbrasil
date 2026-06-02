@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "./pages/Login";
-import Home from "./pages/SelectBarber"; // Home is now Select Barber
+import SelectBarbershop from "./pages/SelectBarbershop";
+import SelectBarber from "./pages/SelectBarber";
 import Services from "./pages/Services";
 import Booking from "./pages/Booking";
 import Admin from "./pages/Admin";
@@ -10,7 +11,11 @@ import { AuthProvider } from "./contexts/AuthContext";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Home />,
+    element: <SelectBarbershop />,
+  },
+  {
+    path: "/barbers",
+    element: <SelectBarber />,
   },
   {
     path: "/services",

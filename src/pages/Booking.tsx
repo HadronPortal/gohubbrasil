@@ -33,11 +33,11 @@ export default function Booking() {
   ];
 
   useEffect(() => {
-    if (!serviceId) {
+    if (!serviceId || !barbershopId) {
       navigate("/");
       return;
     }
-  }, [serviceId, navigate]);
+  }, [serviceId, barbershopId, navigate]);
 
   useEffect(() => {
     if (selectedBarberId && selectedDate) {
