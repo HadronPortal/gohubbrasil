@@ -117,12 +117,30 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
       
       <div className="space-y-4">
         {services.map(service => (
-          <div key={service.id} className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] flex justify-between items-center">
+          <div key={service.id} className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] flex justify-between items-center group">
             <div>
               <h4 className="text-sm font-bold text-[#c8d4e8] font-oswald uppercase tracking-wider">{service.name}</h4>
               <p className="text-[10px] text-[#8a9ab5] uppercase tracking-widest mt-0.5">
                 {service.duration_minutes} MINutos • R$ {service.price.toFixed(2)}
               </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleEdit(service)}
+                className="text-[#8a9ab5] hover:text-[#f0c040] transition-colors"
+              >
+                <Pencil className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleDelete(service.id)}
+                className="text-[#8a9ab5] hover:text-red-500 transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         ))}
