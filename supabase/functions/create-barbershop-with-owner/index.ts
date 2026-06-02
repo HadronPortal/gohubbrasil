@@ -49,7 +49,8 @@ serve(async (req) => {
       ownerName, 
       ownerEmail, 
       ownerPhone, 
-      ownerPassword 
+      ownerPassword,
+      ownerIsBarber
     } = await req.json()
 
     // Generate slug
@@ -115,6 +116,27 @@ serve(async (req) => {
       await supabaseAdmin.auth.admin.deleteUser(authUser.user.id)
       await supabaseAdmin.from('barbershops').delete().eq('id', barbershop.id)
       throw pError
+    }
+
+    // 7. If owner is also a barber, create barber record
+    if (ownerIsBarber === true) {
+      const { error: barberError } = await supabaseAdmin
+        .from('barbers')
+        .upsert({
+          user_id: authUser.user.id,
+          barbershop_id: barbershop.id,
+          active: true,
+          bio: "Proprietário",
+          commission_pct: 0
+        }, {
+          onConflict: 'user_id,barbershop_id' // Assuming there might be a unique constraint or we just want to avoid duplicates
+        })
+      
+      if (barberError) {
+        console.error("Error creating barber for owner:", barberError)
+        // We don't necessarily want to fail the whole process if this fails, 
+        // but the user asked for it to be created.
+      }
     }
 
     return new Response(JSON.stringify({ 

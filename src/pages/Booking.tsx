@@ -53,6 +53,7 @@ export default function Booking() {
       .from("appointments")
       .select("starts_at")
       .eq("barber_id", selectedBarberId)
+      .neq("status", "cancelled")
       .gte("starts_at", start)
       .lt("starts_at", end);
 
