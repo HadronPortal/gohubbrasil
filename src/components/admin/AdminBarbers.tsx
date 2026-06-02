@@ -218,7 +218,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
     
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.rpc('delete_barber', {
+      const { data, error } = await supabase.rpc('delete_barber_safe', {
         p_barber_id: id
       });
       
@@ -226,13 +226,14 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
 
       const result = data as { success: boolean; error?: string };
       if (result.success) {
-        toast.success("Barbeiro removido!");
+        toast.success("Barbeiro excluído");
         fetchBarbers();
       } else {
-        throw new Error(result.error || "Erro ao excluir barbeiro.");
+        toast.error(result.error || "Erro ao excluir barbeiro.");
       }
     } catch (error: any) {
-      toast.error(error.message);
+      console.error("Delete error:", error);
+      toast.error(error.message || "Erro inesperado ao excluir");
     } finally {
       setIsLoading(false);
     }
