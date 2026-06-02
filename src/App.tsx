@@ -38,6 +38,10 @@ const router = createBrowserRouter([
     path: "/super-admin",
     element: <SuperAdmin />,
   },
+  {
+    path: "/barbershops/new",
+    element: <SuperAdmin />,
+  },
 ]);
 
 function App() {
