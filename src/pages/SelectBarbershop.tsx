@@ -42,6 +42,13 @@ export default function SelectBarbershop() {
         navigate("/admin");
         return;
       }
+
+      // Se for cliente e já tiver barbearia selecionada, vai para o painel do cliente
+      const savedBarbershopId = localStorage.getItem("selectedBarbershopId");
+      if (savedBarbershopId && profile.role === 'client') {
+        navigate("/client-home");
+        return;
+      }
       
       fetchBarbershops();
     }
@@ -66,8 +73,10 @@ export default function SelectBarbershop() {
     setIsLoading(false);
   };
 
-  const handleSelect = (id: string) => {
-    navigate(`/barbers?barbershopId=${id}`);
+  const handleSelect = (shop: Barbershop) => {
+    localStorage.setItem("selectedBarbershopId", shop.id);
+    localStorage.setItem("selectedBarbershopName", shop.name);
+    navigate("/client-home");
   };
 
   if (isLoading || authLoading) {
@@ -123,7 +132,7 @@ export default function SelectBarbershop() {
           {barbershops.map((shop) => (
             <div
               key={shop.id}
-              onClick={() => handleSelect(shop.id)}
+              onClick={() => handleSelect(shop)}
               className="flex items-center gap-4 p-4 rounded-[4px] bg-[#141b2a] border border-[#2a3347] hover:border-[#f0c040] transition-all cursor-pointer group"
             >
               <div className="w-16 h-16 rounded-lg bg-[#1c2333] border border-[#2a3347] flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:border-[#f0c040]/50">
