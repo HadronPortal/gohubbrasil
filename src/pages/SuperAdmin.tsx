@@ -32,25 +32,29 @@ export default function SuperAdmin() {
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
-    const data = {
-      barbershop_name: formData.get("barbershop_name"),
-      barbershop_address: formData.get("barbershop_address"),
-      barbershop_phone: formData.get("barbershop_phone"),
-      owner_name: formData.get("owner_name"),
-      owner_email: formData.get("owner_email"),
-      owner_phone: formData.get("owner_phone"),
-      owner_password: formData.get("owner_password"),
+    const params = {
+      p_barbershop_name: formData.get("barbershop_name") as string,
+      p_barbershop_address: formData.get("barbershop_address") as string,
+      p_barbershop_phone: formData.get("barbershop_phone") as string,
+      p_owner_name: formData.get("owner_name") as string,
+      p_owner_email: formData.get("owner_email") as string,
+      p_owner_phone: formData.get("owner_phone") as string,
+      p_owner_password: formData.get("owner_password") as string,
+      p_logo_url: "",
+      p_description: ""
     };
 
     try {
-      const { data: response, error } = await supabase.functions.invoke("create-barbershop", {
-        body: data,
-      });
+      const { data: response, error } = await supabase.rpc("create_barbershop_with_owner", params);
 
       if (error) throw error;
 
-      toast.success("Barbearia e dono criados com sucesso!");
-      (e.target as HTMLFormElement).reset();
+      if (response && response.success === false) {
+        toast.error(response.error || "Erro ao criar barbearia.");
+      } else {
+        toast.success("Barbearia cadastrada com sucesso");
+        (e.target as HTMLFormElement).reset();
+      }
     } catch (error: any) {
       console.error("Erro ao criar barbearia:", error);
       toast.error(error.message || "Erro ao criar barbearia. Verifique os dados e tente novamente.");
