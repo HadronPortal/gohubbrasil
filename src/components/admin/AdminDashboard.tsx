@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfDay, endOfDay } from "date-fns";
+import { toast } from "sonner";
 
 interface Stats {
   appointmentsToday: number;
@@ -12,10 +13,15 @@ interface Stats {
 interface Appointment {
   id: string;
   starts_at: string;
+  ends_at: string;
   status: string;
-  users: { name: string };
-  services: { name: string };
-  barbers: { name: string };
+  price_charged: number | null;
+  client_id: string;
+  barber_id: string;
+  service_id: string;
+  clientName?: string;
+  barberName?: string;
+  serviceName?: string;
 }
 
 export default function AdminDashboard({ barbershopId }: { barbershopId: string | null }) {
@@ -33,52 +39,85 @@ export default function AdminDashboard({ barbershopId }: { barbershopId: string 
   }, [barbershopId]);
 
   const fetchDashboardData = async () => {
-    const today = new Date();
-    const start = startOfDay(today).toISOString();
-    const end = endOfDay(today).toISOString();
+    try {
+      const today = new Date();
+      const start = startOfDay(today).toISOString();
+      const end = endOfDay(today).toISOString();
 
-    // Fetch Appointments
-    const { data: appts } = await supabase
-      .from("appointments")
-      .select(`
-        id, 
-        starts_at, 
-        status, 
-        users:client_id (name),
-        services:service_id (name, price),
-        barbers:barber_id (name)
-      `)
-      .eq("barbershop_id", barbershopId)
-      .gte("starts_at", start)
-      .lte("starts_at", end)
-      .order("starts_at", { ascending: true });
-
-    if (appts) {
-      setAppointments(appts as any);
-      
-      const revenue = appts
-        .filter(a => a.status === 'confirmed')
-        .reduce((acc, a: any) => acc + (a.services?.price || 0), 0);
-      
-      // Fetch Active Barbers
-      const { count: barberCount } = await supabase
-        .from("barbers")
-        .select("*", { count: "exact", head: true })
+      // 1. Fetch Appointments
+      const { data: appts, error } = await supabase
+        .from("appointments")
+        .select("id, client_id, barber_id, service_id, starts_at, ends_at, status, price_charged")
         .eq("barbershop_id", barbershopId)
-        .eq("active", true);
+        .gte("starts_at", start)
+        .lte("starts_at", end)
+        .order("starts_at", { ascending: true });
 
-      // Rough calculation for free slots (total slots - appointments)
-      const totalPossibleSlots = (barberCount || 0) * 18; // 18 slots per day per barber
-      const freeSlots = Math.max(0, totalPossibleSlots - appts.length);
+      if (error) {
+        console.error("DASHBOARD APPOINTMENTS ERROR", error);
+        toast.error(error.message);
+        setIsLoading(false);
+        return;
+      }
 
-      setStats({
-        appointmentsToday: appts.length,
-        freeSlots,
-        activeBarbers: barberCount || 0,
-        revenueToday: revenue,
-      });
+      console.log("DASHBOARD DEBUG", { barbershopId, start, end, appts });
+
+      if (appts) {
+        const clientIds = [...new Set(appts.map(a => a.client_id))].filter(Boolean);
+        const barberIds = [...new Set(appts.map(a => a.barber_id))].filter(Boolean);
+        const serviceIds = [...new Set(appts.map(a => a.service_id))].filter(Boolean);
+
+        // 2. Fetch related data separately
+        const [clientsRes, barbersRes, servicesRes] = await Promise.all([
+          supabase.from("users").select("id, name").in("id", clientIds),
+          supabase.from("barbers").select("id, user_id").in("id", barberIds),
+          supabase.from("services").select("id, name, price").in("id", serviceIds)
+        ]);
+
+        // For barbers, we need another step to get their user names
+        const barberUserIds = (barbersRes.data || []).map(b => b.user_id).filter(Boolean);
+        const barberUsersRes = await supabase.from("users").select("id, name").in("id", barberUserIds);
+
+        const clientsMap = Object.fromEntries((clientsRes.data || []).map(c => [c.id, c.name]));
+        const barberConfigMap = Object.fromEntries((barbersRes.data || []).map(b => [b.id, b.user_id]));
+        const barberUsersMap = Object.fromEntries((barberUsersRes.data || []).map(u => [u.id, u.name]));
+        const servicesMap = Object.fromEntries((servicesRes.data || []).map(s => [s.id, s.name]));
+        const servicePriceMap = Object.fromEntries((servicesRes.data || []).map(s => [s.id, s.price]));
+
+        const mappedAppts: Appointment[] = appts.map(a => ({
+          ...a,
+          clientName: clientsMap[a.client_id] || "Cliente",
+          barberName: barberUsersMap[barberConfigMap[a.barber_id]] || "Barbeiro",
+          serviceName: servicesMap[a.service_id] || "Serviço"
+        }));
+
+        setAppointments(mappedAppts);
+        
+        const revenue = appts
+          .filter(a => a.status !== 'cancelled')
+          .reduce((acc, a) => acc + (a.price_charged || servicePriceMap[a.service_id] || 0), 0);
+        
+        // 3. Active Barbers (Total in shop for now)
+        const { count: barberCount } = await supabase
+          .from("barbers")
+          .select("id", { count: "exact", head: true })
+          .eq("barbershop_id", barbershopId);
+
+        const totalPossibleSlots = (barberCount || 0) * 18;
+        const freeSlots = Math.max(0, totalPossibleSlots - appts.length);
+
+        setStats({
+          appointmentsToday: appts.length,
+          freeSlots,
+          activeBarbers: barberCount || 0,
+          revenueToday: revenue,
+        });
+      }
+    } catch (err: any) {
+      console.error("DASHBOARD FATAL ERROR", err);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const getStatusColor = (status: string) => {
@@ -99,7 +138,7 @@ export default function AdminDashboard({ barbershopId }: { barbershopId: string 
         {[
           { label: "AGENDAMENTOS HOJE", value: stats.appointmentsToday },
           { label: "HORÁRIOS LIVRES", value: stats.freeSlots },
-          { label: "BARBEIROS ATIVOS", value: stats.activeBarbers },
+          { label: "BARBEIROS", value: stats.activeBarbers },
           { label: "FATURAMENTO", value: `R$ ${stats.revenueToday.toFixed(2)}` },
         ].map((item, idx) => (
           <div key={idx} className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] space-y-2">
@@ -130,10 +169,10 @@ export default function AdminDashboard({ barbershopId }: { barbershopId: string 
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="text-sm font-bold text-[#c8d4e8] font-oswald uppercase tracking-wider">
-                      {appt.users?.name || "CLIENTE"}
+                      {appt.clientName}
                     </h4>
                     <p className="text-[10px] text-[#8a9ab5] uppercase tracking-widest mt-0.5">
-                      {appt.services?.name} • {appt.barbers?.name}
+                      {appt.serviceName} • {appt.barberName}
                     </p>
                   </div>
                   <span className={`text-[9px] font-bold px-2 py-1 rounded-[2px] border uppercase tracking-widest ${getStatusColor(appt.status)}`}>
