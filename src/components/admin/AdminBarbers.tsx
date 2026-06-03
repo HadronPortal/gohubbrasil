@@ -219,12 +219,6 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
       setIsLoading(false);
     }
   };
-    } catch (error: any) {
-      toast.error(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
