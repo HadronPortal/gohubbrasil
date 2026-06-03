@@ -20,16 +20,18 @@ export default function Login() {
 
   useEffect(() => {
     const redirectUser = async (profileData: any) => {
-      if (profileData.role === "superadmin") {
+      // Clear force flag on login
+      localStorage.removeItem('force_barber_panel');
+
+      const role = String(profileData.role || 'client').toLowerCase();
+      
+      if (role === "superadmin") {
         navigate("/super-admin", { replace: true });
-      } else if (profileData.role === "owner") {
+      } else if (role === "owner" || role === "admin") {
         navigate("/admin", { replace: true });
-      } else if (profileData.role === "admin") {
-        navigate("/admin", { replace: true });
-      } else if (profileData.role === "barber") {
+      } else if (role === "barber") {
         navigate("/barber-dashboard", { replace: true });
       } else {
-        // Source of truth for client: profile.barbershop_id
         if (profileData.barbershop_id) {
           navigate("/client-home", { replace: true });
         } else {
@@ -80,11 +82,13 @@ export default function Login() {
         const { data: panelData } = await supabase.rpc('get_my_app_panels');
         if (panelData) {
           const role = String(panelData.role || 'client').toLowerCase();
+          
+          // Clear force flag on login
+          localStorage.removeItem('force_barber_panel');
+
           if (role === "superadmin") {
             navigate("/super-admin", { replace: true });
-          } else if (role === "owner") {
-            navigate("/admin", { replace: true });
-          } else if (role === "admin") {
+          } else if (role === "owner" || role === "admin") {
             navigate("/admin", { replace: true });
           } else if (role === "barber") {
             navigate("/barber-dashboard", { replace: true });

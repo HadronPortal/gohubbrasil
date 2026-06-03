@@ -44,7 +44,8 @@ serve(async (req) => {
       owner_name, 
       owner_email, 
       owner_phone, 
-      owner_password 
+      owner_password,
+      ownerIsBarber
     } = await req.json()
 
     // 1. Create Barbershop
@@ -86,6 +87,15 @@ serve(async (req) => {
       })
 
     if (pError) throw pError
+
+    // 4. Ensure owner is barber if requested
+    if (ownerIsBarber === true) {
+      const { error: barberError } = await supabaseClient.rpc('ensure_owner_is_barber', {
+        p_owner_user_id: authUser.user.id,
+        p_barbershop_id: barbershop.id
+      })
+      if (barberError) console.error('Error ensuring owner is barber:', barberError)
+    }
 
     return new Response(JSON.stringify({ 
       barbershop_id: barbershop.id, 

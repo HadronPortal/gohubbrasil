@@ -191,18 +191,18 @@ export default function SuperAdmin() {
         logoUrl = await uploadLogo(logoFile);
       }
 
-      const { data: response, error } = await supabase.functions.invoke("create-barbershop-with-owner", {
+      const { data: response, error } = await supabase.functions.invoke("create-barbershop", {
         body: {
-          barbershopName: formData.get("barbershop_name") as string,
-          barbershopAddress: formData.get("barbershop_address") as string,
-          barbershopPhone: formData.get("barbershop_phone") as string,
+          barbershop_name: formData.get("barbershop_name") as string,
+          barbershop_address: formData.get("barbershop_address") as string,
+          barbershop_phone: formData.get("barbershop_phone") as string,
           logoUrl,
           description: formData.get("description") as string,
           paymentStatus: formData.get("payment_status") as string || "pending",
-          ownerName: formData.get("owner_name") as string,
-          ownerEmail: formData.get("owner_email") as string,
-          ownerPhone: formData.get("owner_phone") as string,
-          ownerPassword: formData.get("owner_password") as string,
+          owner_name: formData.get("owner_name") as string,
+          owner_email: formData.get("owner_email") as string,
+          owner_phone: formData.get("owner_phone") as string,
+          owner_password: formData.get("owner_password") as string,
           ownerIsBarber: ownerIsBarber
         }
       });
