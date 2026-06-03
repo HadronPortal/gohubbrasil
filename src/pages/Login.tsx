@@ -59,6 +59,8 @@ export default function Login() {
             navigate("/super-admin");
           } else if (profileData?.role === "owner" || profileData?.role === "admin") {
             navigate("/admin");
+          } else if (profileData?.role === "barber") {
+            navigate("/barber-dashboard");
           } else {
             // Check if there's a saved barbershop to decide where to send the client
             const savedBarbershopId = localStorage.getItem(`selectedBarbershopId:${authUser.id}`);

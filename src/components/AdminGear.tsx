@@ -4,12 +4,25 @@ import { Settings, Shield, PlusCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const AdminGear: React.FC = () => {
-  const { isAdmin, isSuperAdmin } = useAuth();
+  const { isAdmin, isSuperAdmin, isBarber } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
-  if (!isAdmin && !isSuperAdmin) {
+  if (!isAdmin && !isSuperAdmin && !isBarber) {
     return null;
+  }
+
+  // Se for barbeiro, manda para o dashboard de barbeiro
+  if (isBarber && !isSuperAdmin) {
+    return (
+      <button 
+        onClick={() => navigate('/barber-dashboard')}
+        className="p-2 bg-[#141b2a] border border-[#2a3347] rounded-full hover:border-[#f0c040] transition-all group"
+        aria-label="Painel Barbeiro"
+      >
+        <Settings size={20} className="text-[#8a9ab5] group-hover:text-[#f0c040]" />
+      </button>
+    );
   }
 
   // Se for apenas admin/owner (não superadmin), redireciona direto
