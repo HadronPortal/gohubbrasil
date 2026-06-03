@@ -287,8 +287,13 @@ export default function FreeSlotsView({ barbershopId, onBack }: FreeSlotsViewPro
                   className="text-[9px] font-bold uppercase tracking-widest text-[#f0c040] hover:bg-[#f0c040]/10"
                   onClick={() => {
                     setBlockBarberId(slot.barber_id);
-                    setBlockStartTime(format(new Date(slot.starts_at), "HH:mm"));
-                    setBlockEndTime(format(new Date(slot.ends_at), "HH:mm"));
+                    setBlockStartTime(slot.time_label);
+                    // Calculate end time label if needed or just use current block defaults
+                    const startH = parseInt(slot.time_label.split(":")[0]);
+                    const startM = parseInt(slot.time_label.split(":")[1]);
+                    const end = new Date();
+                    end.setHours(startH, startM + parseInt(slotInterval));
+                    setBlockEndTime(end.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false }));
                     setIsBlockModalOpen(true);
                   }}
                 >
