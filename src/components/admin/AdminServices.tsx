@@ -197,7 +197,14 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
                 </div>
                 <div className="flex-1 space-y-1">
                   <label className="text-[10px] text-[#8a9ab5] ml-1 uppercase font-bold tracking-widest">PREÇO (R$)</label>
-                  <Input type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
+                  <Input 
+                    type="text" 
+                    value={price} 
+                    onChange={e => setPrice(formatPrice(e.target.value))} 
+                    required 
+                    className="bg-[#141b2a] border-[#2a3347] h-12" 
+                    placeholder="0,00"
+                  />
                 </div>
               </div>
 
