@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { format, startOfDay, endOfDay } from "date-fns";
+import { format } from "date-fns";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -9,18 +9,34 @@ import FreeSlotsView from "./FreeSlotsView";
 
 interface Stats {
   appointmentsToday: number;
-  freeSlots: number;
+  upcomingAppointments: number;
   activeBarbers: number;
   revenueToday: number;
 }
 
 interface Appointment {
   client_name: string;
+  client_phone: string | null;
   barber_name: string;
+  barber_avatar_url: string | null;
   service_name: string;
   starts_at: string;
-  price_charged: number | null;
+  price: number;
   status: string;
+}
+
+interface RPCResponse {
+  success: boolean;
+  error?: string;
+  summary: {
+    appointments_today: number;
+    upcoming_appointments: number;
+    active_barbers: number;
+    revenue_today: number;
+  };
+  today: Appointment[];
+  upcoming: Appointment[];
+  history: Appointment[];
 }
 
 export default function AdminDashboard({ 
@@ -32,11 +48,19 @@ export default function AdminDashboard({
 }) {
   const [stats, setStats] = useState<Stats>({
     appointmentsToday: 0,
-    freeSlots: 0,
+    upcomingAppointments: 0,
     activeBarbers: 0,
     revenueToday: 0,
   });
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [appointments, setAppointments] = useState<{
+    today: Appointment[];
+    upcoming: Appointment[];
+    history: Appointment[];
+  }>({
+    today: [],
+    upcoming: [],
+    history: [],
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [showFreeSlots, setShowFreeSlots] = useState(false);
   const [activeTab, setActiveTab] = useState<"today" | "upcoming" | "history">("today");
@@ -52,39 +76,38 @@ export default function AdminDashboard({
 
       const { data, error } = await supabase.rpc("get_owner_dashboard_appointments", {
         p_day: todayStr
-      });
+      }) as { data: RPCResponse | null, error: any };
 
       console.log("OWNER DASHBOARD RPC", { data, error });
 
       if (error) {
         console.error("OWNER DASHBOARD ERROR", error);
-        toast.error("Erro ao carregar agendamentos");
+        toast.error(error.message || "Erro ao carregar agendamentos");
         setIsLoading(false);
         return;
       }
 
       if (data) {
-        const appts = data as Appointment[];
-        setAppointments(appts);
-        
-        const revenue = appts.reduce((acc, a) => acc + (Number(a.price_charged) || 0), 0);
-        
-        // Mantendo busca de barbeiros para o card de estatísticas
-        const { count: barberCount } = await supabase
-          .from("barbers")
-          .select("id", { count: "exact", head: true })
-          .eq("barbershop_id", barbershopId)
-          .eq("active", true);
-
-        // Estimativa simples de slots (considerando 18 slots por barbeiro)
-        const totalPossibleSlots = (barberCount || 0) * 18;
-        const freeSlots = Math.max(0, totalPossibleSlots - appts.length);
+        if (!data.success) {
+          toast.error(data.error || "Erro ao carregar dados do painel");
+          setIsLoading(false);
+          return;
+        }
 
         setStats({
-          appointmentsToday: appts.length,
-          freeSlots,
-          activeBarbers: barberCount || 0,
-          revenueToday: revenue,
+          appointmentsToday: data.summary.appointments_today,
+          upcomingAppointments: data.summary.upcoming_appointments,
+          activeBarbers: data.summary.active_barbers,
+          revenueToday: data.summary.revenue_today,
+        });
+
+        // Ordenação garantida conforme solicitado:
+        // Hoje e Próximos: starts_at ASC
+        // Histórico: starts_at DESC
+        setAppointments({
+          today: (data.today || []).sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()),
+          upcoming: (data.upcoming || []).sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()),
+          history: (data.history || []).sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime()),
         });
       }
     } catch (err: any) {
@@ -94,38 +117,6 @@ export default function AdminDashboard({
       setIsLoading(false);
     }
   };
-
-  const isFinished = (status: string) => ['completed', 'finalizado'].includes(String(status).toLowerCase());
-  const isCanceled = (status: string) => ['cancelled', 'canceled', 'cancelado'].includes(String(status).toLowerCase());
-  
-  const isToday = (date: string) => {
-    const d = new Date(date);
-    const now = new Date();
-    return d.toDateString() === now.toDateString();
-  };
-
-  const isFutureAfterToday = (date: string) => {
-    const d = new Date(date);
-    const endToday = new Date();
-    endToday.setHours(23, 59, 59, 999);
-    return d.getTime() > endToday.getTime();
-  };
-
-  const activeAppointments = appointments.filter(a =>
-    !isFinished(a.status) && !isCanceled(a.status)
-  );
-
-  const todayAppointments = activeAppointments
-    .filter(a => isToday(a.starts_at))
-    .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
-
-  const upcomingAppointments = activeAppointments
-    .filter(a => isFutureAfterToday(a.starts_at))
-    .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
-
-  const historyAppointments = appointments
-    .filter(a => isFinished(a.status) || isCanceled(a.status) || (new Date(a.starts_at).getTime() < Date.now() && !isToday(a.starts_at)))
-    .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
 
   if (isLoading) return <div className="text-[#8a9ab5] font-oswald text-xs tracking-widest uppercase">CARREGANDO...</div>;
 
@@ -139,9 +130,9 @@ export default function AdminDashboard({
       <div className="grid grid-cols-2 gap-4">
         {[
           { label: "AGENDAMENTOS HOJE", value: stats.appointmentsToday, onClick: null },
-          { label: "HORÁRIOS LIVRES", value: stats.freeSlots, onClick: () => setShowFreeSlots(true) },
-          { label: "BARBEIROS", value: stats.activeBarbers, onClick: null },
-          { label: "FATURAMENTO", value: money(stats.revenueToday), onClick: null },
+          { label: "PRÓXIMOS", value: stats.upcomingAppointments, onClick: null },
+          { label: "BARBEIROS ATIVOS", value: stats.activeBarbers, onClick: null },
+          { label: "FATURAMENTO HOJE", value: money(stats.revenueToday), onClick: null },
         ].map((item, idx) => (
           <div 
             key={idx} 
@@ -186,36 +177,36 @@ export default function AdminDashboard({
           </TabsList>
 
           <TabsContent value="today" className="mt-6 space-y-4">
-            {todayAppointments.length === 0 ? (
+            {appointments.today.length === 0 ? (
               <p className="text-sm text-[#8a9ab5] text-center py-10 border border-dashed border-[#2a3347] rounded-[4px]">
                 NENHUM AGENDAMENTO PARA HOJE
               </p>
             ) : (
-              todayAppointments.map((appt, idx) => (
+              appointments.today.map((appt, idx) => (
                 <AppointmentCard key={`today-${idx}`} appt={appt} />
               ))
             )}
           </TabsContent>
 
           <TabsContent value="upcoming" className="mt-6 space-y-4">
-            {upcomingAppointments.length === 0 ? (
+            {appointments.upcoming.length === 0 ? (
               <p className="text-sm text-[#8a9ab5] text-center py-10 border border-dashed border-[#2a3347] rounded-[4px]">
                 NENHUM AGENDAMENTO PRÓXIMO
               </p>
             ) : (
-              upcomingAppointments.map((appt, idx) => (
+              appointments.upcoming.map((appt, idx) => (
                 <AppointmentCard key={`upcoming-${idx}`} appt={appt} />
               ))
             )}
           </TabsContent>
 
           <TabsContent value="history" className="mt-6 space-y-4">
-            {historyAppointments.length === 0 ? (
+            {appointments.history.length === 0 ? (
               <p className="text-sm text-[#8a9ab5] text-center py-10 border border-dashed border-[#2a3347] rounded-[4px]">
                 NENHUM HISTÓRICO ENCONTRADO
               </p>
             ) : (
-              historyAppointments.map((appt, idx) => (
+              appointments.history.map((appt, idx) => (
                 <AppointmentCard key={`history-${idx}`} appt={appt} />
               ))
             )}
@@ -248,18 +239,37 @@ function AppointmentCard({ appt }: { appt: Appointment }) {
   return (
     <div className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] space-y-3">
       <div className="flex justify-between items-start">
-        <div>
-          <h4 className="text-sm font-bold text-[#c8d4e8] font-oswald uppercase tracking-wider">
-            {appt.client_name}
-          </h4>
-          <p className="text-[10px] text-[#8a9ab5] uppercase tracking-widest mt-0.5">
-            {appt.service_name} • {appt.barber_name}
-          </p>
+        <div className="flex gap-3 items-center">
+          {appt.barber_avatar_url && (
+            <img 
+              src={appt.barber_avatar_url} 
+              alt={appt.barber_name} 
+              className="w-8 h-8 rounded-full border border-[#f0c040]/30 object-cover"
+            />
+          )}
+          <div>
+            <h4 className="text-sm font-bold text-[#c8d4e8] font-oswald uppercase tracking-wider">
+              {appt.client_name}
+            </h4>
+            {appt.client_phone && (
+              <p className="text-[10px] text-[#8a9ab5] tracking-widest">
+                {appt.client_phone}
+              </p>
+            )}
+          </div>
         </div>
         <span className={`text-[9px] font-bold px-2 py-1 rounded-[2px] border uppercase tracking-widest ${getStatusInfo(appt.status).color}`}>
           {getStatusInfo(appt.status).label}
         </span>
       </div>
+      
+      <div className="py-2 px-3 bg-[#1c2333] rounded-[4px] border border-[#2a3347]/30">
+        <p className="text-[10px] text-[#8a9ab5] uppercase tracking-widest flex justify-between">
+          <span>{appt.service_name}</span>
+          <span className="text-[#c8d4e8] font-bold">{appt.barber_name}</span>
+        </p>
+      </div>
+
       <div className="pt-2 border-t border-[#2a3347]/50 flex justify-between items-center">
         <div className="flex flex-col">
           <span className="text-lg font-bold text-[#f0c040] font-oswald">
@@ -269,13 +279,10 @@ function AppointmentCard({ appt }: { appt: Appointment }) {
             {format(new Date(appt.starts_at), "dd/MM/yyyy")}
           </span>
         </div>
-        {appt.price_charged !== null && (
-          <span className="text-[10px] font-bold text-[#c8d4e8]">
-            {money(appt.price_charged)}
-          </span>
-        )}
+        <span className="text-[10px] font-bold text-[#c8d4e8]">
+          {money(appt.price)}
+        </span>
       </div>
     </div>
   );
 }
-
