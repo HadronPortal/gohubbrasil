@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut } from "lucide-react";
+import { LogOut, RefreshCw } from "lucide-react";
 import { LogoutButton } from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,13 +20,14 @@ export default function BarberDashboard() {
         return;
       }
       
-      if (!isBarber) {
+      // Allow owner even if not explicitly marked as isBarber (as per requirement)
+      if (!isBarber && profile?.role !== 'owner') {
         toast.error("Acesso restrito");
         navigate("/", { replace: true });
         return;
       }
     }
-  }, [user, isBarber, authLoading, navigate]);
+  }, [user, profile, isBarber, authLoading, navigate]);
 
 
   if (authLoading) {
@@ -43,7 +44,20 @@ export default function BarberDashboard() {
               PAINEL BARBEIRO
             </h1>
           </div>
-          <LogoutButton showText />
+          <div className="flex items-center gap-2">
+            {profile?.role === 'owner' && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate("/admin")}
+                className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] hover:border-[#f0c040] text-[10px] h-8 gap-2 font-bold font-oswald tracking-wider"
+              >
+                <RefreshCw className="w-3 h-3 text-[#f0c040]" />
+                PAINEL DONO
+              </Button>
+            )}
+            <LogoutButton showText />
+          </div>
         </div>
 
         {/* Dashboard Content */}
