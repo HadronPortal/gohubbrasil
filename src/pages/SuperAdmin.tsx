@@ -10,6 +10,7 @@ import {
   Scissors, Store, User, Mail, Phone, Lock, 
   ArrowLeft, Upload, Edit2, Trash2, X, Check, CreditCard, Plus, LogOut
 } from "lucide-react";
+import { LogoutButton } from "@/components/LogoutButton";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
@@ -114,10 +115,6 @@ export default function SuperAdmin() {
     }
   };
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/login", { replace: true });
-  };
 
   const handleUpdatePaymentStatus = async (id: string, status: string) => {
     try {
@@ -309,14 +306,7 @@ export default function SuperAdmin() {
           </div>
 
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              onClick={signOut} 
-              className="text-[#8a9ab5] hover:text-[#f0c040] gap-2 font-oswald uppercase tracking-widest"
-            >
-              <LogOut className="w-5 h-5" />
-              Sair
-            </Button>
+            <LogoutButton showText />
           </div>
 
           <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>

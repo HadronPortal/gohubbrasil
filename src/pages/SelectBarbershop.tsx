@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { User, LogOut, MapPin } from "lucide-react";
+import { LogoutButton } from "@/components/LogoutButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { AdminGear } from "@/components/AdminGear";
 import { LoadingScreen } from "@/components/LoadingScreen";
@@ -132,14 +133,7 @@ export default function SelectBarbershop() {
                 <User className="w-6 h-6 text-[#8a9ab5]" />
               )}
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={signOut} 
-              className="text-[#8a9ab5] hover:text-[#f0c040]"
-            >
-              <LogOut className="w-5 h-5" />
-            </Button>
+            <LogoutButton showText />
           </div>
         </div>
 

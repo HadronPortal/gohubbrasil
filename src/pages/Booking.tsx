@@ -3,7 +3,8 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ChevronLeft, User } from "lucide-react";
+import { ChevronLeft, User, LogOut } from "lucide-react";
+import { LogoutButton } from "@/components/LogoutButton";
 import { format, addDays, startOfDay, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
@@ -148,12 +149,15 @@ export default function Booking() {
             </Button>
             <AdminGear />
           </div>
-          <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#2a3347] flex items-center justify-center overflow-hidden">
-            {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <User className="w-6 h-6 text-[#8a9ab5]" />
-            )}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#2a3347] flex items-center justify-center overflow-hidden">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <User className="w-6 h-6 text-[#8a9ab5]" />
+              )}
+            </div>
+            <LogoutButton showText />
           </div>
         </div>
 

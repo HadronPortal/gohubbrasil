@@ -14,6 +14,7 @@ import {
   Store,
   Scissors
 } from "lucide-react";
+import { LogoutButton } from "@/components/LogoutButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingScreen } from "@/components/LoadingScreen";
@@ -275,17 +276,6 @@ export default function ClientHome() {
     navigate("/", { replace: true });
   };
 
-  const signOut = async () => {
-    if (user) {
-      // Don't clear on logout per requirement: "A barbearia escolhida deve ficar salva até ele clicar em 'Trocar estabelecimento'"
-      // BUT if the user wants it to be session based it would be different.
-      // The requirement says "Não limpar essa escolha quando: ... recarrega a página". 
-      // It doesn't explicitly say about logout, but "até ele clicar em 'Trocar estabelecimento'" suggests persistence across logins.
-      // So I will NOT remove it on signOut to maintain the persistence requirement.
-    }
-    await supabase.auth.signOut();
-    navigate("/login", { replace: true });
-  };
 
   if (authLoading || isLoading) {
     return <LoadingScreen />;
@@ -336,14 +326,7 @@ export default function ClientHome() {
                 <User className="w-6 h-6 text-[#8a9ab5]" />
               )}
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={signOut} 
-              className="text-[#8a9ab5] hover:text-[#f0c040]"
-            >
-              <LogOut className="w-5 h-5" />
-            </Button>
+            <LogoutButton showText />
           </div>
         </div>
 

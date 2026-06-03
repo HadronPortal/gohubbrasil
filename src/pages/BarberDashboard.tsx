@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut } from "lucide-react";
+import { LogoutButton } from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingScreen } from "@/components/LoadingScreen";
@@ -27,10 +28,6 @@ export default function BarberDashboard() {
     }
   }, [user, isBarber, authLoading, navigate]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/login", { replace: true });
-  };
 
   if (authLoading) {
     return <LoadingScreen />;
@@ -46,9 +43,7 @@ export default function BarberDashboard() {
               PAINEL BARBEIRO
             </h1>
           </div>
-          <Button variant="ghost" size="icon" onClick={handleLogout} className="text-[#8a9ab5] hover:text-[#f0c040]">
-            <LogOut className="w-5 h-5" />
-          </Button>
+          <LogoutButton showText />
         </div>
 
         {/* Dashboard Content */}
