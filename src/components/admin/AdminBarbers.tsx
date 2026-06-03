@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 
 interface Barber {
+  id?: string;
   barber_id: string;
   user_id: string;
   name: string;
@@ -161,18 +162,61 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
         body.password = password.trim();
       }
 
-      const { data, error } = await supabase.functions.invoke('create-barber', {
-        body
-      });
+      let resultData: any;
+      let resultError: any;
 
-      if (error) {
-        toast.error(error.message);
+      if (editingBarber) {
+        // Se editando, verificar se email ou senha mudaram
+        const emailChanged = email && email.trim() && email.trim().toLowerCase() !== editingBarber.email.toLowerCase();
+        const passwordChanged = password && password.trim() && !/^[*•●]+$/.test(password.trim());
+
+        if (emailChanged || passwordChanged) {
+          // Usar create-barber APENAS para email/senha se mudarem
+          const { data: funcData, error: funcError } = await supabase.functions.invoke('create-barber', {
+            body: {
+              barberId: editingBarber.barber_id,
+              email: emailChanged ? email.trim().toLowerCase() : undefined,
+              password: passwordChanged ? password.trim() : undefined,
+              barbershopId
+            }
+          });
+          
+          if (funcError || (funcData && funcData.success === false)) {
+            toast.error(funcError?.message || funcData?.error || "Erro ao atualizar credenciais.");
+            setIsLoading(false);
+            return;
+          }
+        }
+
+        // Para dados de perfil e comissão, usar sempre a RPC update_barber_admin
+        // p_barber_id: barber.barber_id || barber.id
+        const { data: rpcData, error: rpcError } = await supabase.rpc('update_barber_admin', {
+          p_barber_id: editingBarber.barber_id || editingBarber.id,
+          p_name: name,
+          p_phone: phone,
+          p_avatar_url: finalAvatarUrl,
+          p_commission_pct: Number(commissionPct || 0)
+        });
+        
+        resultData = rpcData;
+        resultError = rpcError;
+      } else {
+        // Novo barbeiro - usar create-barber
+        const { data: funcData, error: funcError } = await supabase.functions.invoke('create-barber', {
+          body
+        });
+        resultData = funcData;
+        resultError = funcError;
+      }
+
+      if (resultError) {
+        toast.error(resultError.message);
         setIsLoading(false);
         return;
       }
 
-      if (data && data.success === false) {
-        toast.error(data.error || "Erro ao salvar barbeiro.");
+      if (resultData && resultData.success === false) {
+        toast.error(resultData.error || "Erro ao salvar barbeiro.");
         setIsLoading(false);
         return;
       }
