@@ -147,17 +147,19 @@ export default function FreeSlotsView({ barbershopId, onBack }: FreeSlotsViewPro
   const handleCreateBlock = async () => {
     try {
       const dateStr = format(selectedDate, "yyyy-MM-dd");
-      const startsAtIso = `${dateStr}T${blockStartTime}:00Z`;
-      const endsAtIso = `${dateStr}T${blockEndTime}:00Z`;
-
-      const { error } = await supabase.rpc('create_barbershop_time_block', {
-        p_starts_at: startsAtIso,
-        p_ends_at: endsAtIso,
+      
+      const { data, error } = await supabase.rpc('create_barbershop_time_block_local', {
+        p_day: dateStr,
+        p_start_time: blockStartTime,
+        p_end_time: blockEndTime,
         p_reason: blockReason || null,
-        p_barber_id: blockBarberId === "all" ? null : blockBarberId
+        p_barber_id: blockBarberId === "all" ? null : blockBarberId,
+        p_barbershop_id: null
       });
 
       if (error) throw error;
+      if (data && data.success === false) throw new Error(data.error);
+
       toast.success("Horário bloqueado!");
       setIsBlockModalOpen(false);
       setBlockReason("");

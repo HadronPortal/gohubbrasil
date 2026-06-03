@@ -21,16 +21,12 @@ export default function Booking() {
   const [selectedBarberId, setSelectedBarberId] = useState<string | null>(barberIdFromUrl);
   const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const [availableSlots, setAvailableSlots] = useState<any[]>([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [service, setService] = useState<any>(null);
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(startOfDay(new Date()), i));
-  
-  const timeSlots = [
-    "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", 
-    "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", 
-    "15:00", "15:30", "16:00", "16:30", "17:00", "17:30"
-  ];
 
   useEffect(() => {
     if (profile) {
@@ -48,29 +44,49 @@ export default function Booking() {
   }, [serviceId, barbershopId, navigate, profile]);
 
   useEffect(() => {
-    if (selectedBarberId && selectedDate) {
-      fetchBookedSlots();
+    fetchServiceDetails();
+  }, [serviceId]);
+
+  useEffect(() => {
+    if (selectedBarberId && selectedDate && serviceId) {
+      fetchAvailableSlots();
     }
-  }, [selectedBarberId, selectedDate]);
+  }, [selectedBarberId, selectedDate, serviceId]);
 
-  const fetchBookedSlots = async () => {
-    const start = selectedDate.toISOString();
-    const end = addDays(selectedDate, 1).toISOString();
+  const fetchServiceDetails = async () => {
+    if (!serviceId) return;
+    const { data } = await supabase
+      .from("services")
+      .select("*")
+      .eq("id", serviceId)
+      .single();
+    if (data) setService(data);
+  };
 
-    const { data: appointments } = await supabase
-      .from("appointments")
-      .select("starts_at")
-      .eq("barber_id", selectedBarberId)
-      .neq("status", "cancelled")
-      .gte("starts_at", start)
-      .lt("starts_at", end);
-
-    if (appointments) {
-      const slots = appointments.map(a => {
-        const date = new Date(a.starts_at);
-        return format(date, "HH:mm");
+  const fetchAvailableSlots = async () => {
+    setIsLoadingSlots(true);
+    try {
+      const { data, error } = await supabase.rpc('get_barbershop_available_slots', {
+        p_day: format(selectedDate, "yyyy-MM-dd"),
+        p_barber_id: selectedBarberId,
+        p_barbershop_id: barbershopId,
+        p_duration_minutes: service?.duration_minutes ?? null
       });
-      setBookedSlots(slots);
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      if (data.success) {
+        setAvailableSlots(data.slots || []);
+      } else {
+        toast.error(data.error);
+      }
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsLoadingSlots(false);
     }
   };
 
@@ -88,28 +104,19 @@ export default function Booking() {
       if (!serviceId) throw new Error("Serviço não selecionado");
       if (!barberIdFromUrl && !selectedBarberId) throw new Error("Barbeiro não selecionado");
 
-      // 1. Fetch service details for price and duration
-      const { data: service, error: serviceError } = await supabase
-        .from("services")
-        .select("price, duration_minutes")
-        .eq("id", serviceId)
-        .single();
+      // Use already fetched service data
+      if (!service) throw new Error("Serviço não encontrado");
 
-      if (serviceError || !service) throw new Error("Serviço não encontrado");
-
-      const [hours, minutes] = selectedTime.split(":");
-      const startsAt = new Date(selectedDate);
-      startsAt.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-
-      const endsAt = new Date(startsAt.getTime() + service.duration_minutes * 60000);
+      const selectedSlot = availableSlots.find(s => s.time_label === selectedTime);
+      if (!selectedSlot) throw new Error("Horário não selecionado corretamente");
 
       const { error } = await supabase.from("appointments").insert({
         client_id: user.id,
         barbershop_id: barbershopId,
         service_id: serviceId,
         barber_id: selectedBarberId,
-        starts_at: startsAt.toISOString(),
-        ends_at: endsAt.toISOString(),
+        starts_at: selectedSlot.starts_at,
+        ends_at: selectedSlot.ends_at,
         status: "pending",
         whatsapp_sent: false,
         confirmed_via_whatsapp: false,
@@ -193,29 +200,36 @@ export default function Booking() {
           <h3 className="text-[11px] font-bold tracking-[0.2em] text-[#f0c040] font-oswald uppercase">
             HORÁRIOS DISPONÍVEIS
           </h3>
-          <div className="grid grid-cols-3 gap-2">
-            {timeSlots.map((time) => {
-              const isBooked = bookedSlots.includes(time);
-              const isSelected = selectedTime === time;
-              
-              return (
-                <button
-                  key={time}
-                  disabled={isBooked}
-                  onClick={() => setSelectedTime(time)}
-                  className={`py-3 rounded-[4px] text-xs font-oswald tracking-widest border transition-all ${
-                    isSelected
-                      ? "bg-[#f0c040] border-[#f0c040] text-[#1c2333]"
-                      : isBooked
-                        ? "bg-[#8b0000]/30 border-[#8b0000]/50 text-[#8b0000] cursor-not-allowed"
+          
+          {isLoadingSlots ? (
+            <div className="text-center py-6 text-xs text-[#8a9ab5] uppercase tracking-widest">
+              Carregando horários...
+            </div>
+          ) : availableSlots.length === 0 ? (
+            <div className="text-center py-10 border border-dashed border-[#2a3347] rounded-[4px] text-sm text-[#8a9ab5]">
+              Nenhum horário disponível para esta data.
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              {availableSlots.map((slot) => {
+                const isSelected = selectedTime === slot.time_label;
+                
+                return (
+                  <button
+                    key={slot.starts_at}
+                    onClick={() => setSelectedTime(slot.time_label)}
+                    className={`py-3 rounded-[4px] text-xs font-oswald tracking-widest border transition-all ${
+                      isSelected
+                        ? "bg-[#f0c040] border-[#f0c040] text-[#1c2333]"
                         : "bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] hover:border-[#f0c040]/50"
-                  }`}
-                >
-                  {isBooked ? "RESERVADO" : time}
-                </button>
-              );
-            })}
-          </div>
+                    }`}
+                  >
+                    {slot.time_label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
       </div>
