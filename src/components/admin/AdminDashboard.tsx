@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { money } from "@/utils/format";
+import { getInitial } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import FreeSlotsView from "./FreeSlotsView";
 
 interface Stats {
@@ -240,13 +242,16 @@ function AppointmentCard({ appt }: { appt: Appointment }) {
     <div className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] space-y-3">
       <div className="flex justify-between items-start">
         <div className="flex gap-3 items-center">
-          {appt.barber_avatar_url && (
-            <img 
-              src={appt.barber_avatar_url} 
+          <Avatar className="w-8 h-8 border border-[#f0c040]/30">
+            <AvatarImage 
+              src={appt.barber_avatar_url || undefined} 
               alt={appt.barber_name} 
-              className="w-8 h-8 rounded-full border border-[#f0c040]/30 object-cover"
+              className="object-cover"
             />
-          )}
+            <AvatarFallback className="text-[10px]">
+              {getInitial(appt.barber_name)}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <h4 className="text-sm font-bold text-[#c8d4e8] font-oswald uppercase tracking-wider">
               {appt.client_name}

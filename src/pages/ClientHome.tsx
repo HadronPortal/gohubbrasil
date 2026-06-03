@@ -14,6 +14,8 @@ import {
   Store,
   Scissors
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getInitial } from "@/lib/utils";
 import { LogoutButton } from "@/components/LogoutButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
@@ -82,13 +84,12 @@ function AppointmentCard({
 
       <div className="grid grid-cols-2 gap-4 pt-2 border-t border-[#1c2333]">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-[#1c2333] border border-[#2a3347] flex items-center justify-center overflow-hidden">
-            {appt.barber_avatar_url ? (
-              <img src={appt.barber_avatar_url} alt={appt.barber_name} className="w-full h-full object-cover" />
-            ) : (
-              <User className="w-4 h-4 text-[#8a9ab5]" />
-            )}
-          </div>
+          <Avatar className="w-8 h-8 border border-[#2a3347]">
+            <AvatarImage src={appt.barber_avatar_url || undefined} alt={appt.barber_name} className="object-cover" />
+            <AvatarFallback className="text-[10px]">
+              {getInitial(appt.barber_name)}
+            </AvatarFallback>
+          </Avatar>
           <div className="flex flex-col">
             <span className="text-[8px] text-[#8a9ab5] uppercase tracking-tighter">BARBEIRO</span>
             <span className="text-[10px] font-bold text-[#c8d4e8] uppercase truncate max-w-[80px]">
@@ -290,13 +291,12 @@ export default function ClientHome() {
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#2a3347] flex items-center justify-center overflow-hidden">
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <User className="w-6 h-6 text-[#8a9ab5]" />
-              )}
-            </div>
+            <Avatar className="w-10 h-10 border border-[#2a3347]">
+              <AvatarImage src={profile?.avatar_url || undefined} alt="Profile" className="object-cover" />
+              <AvatarFallback>
+                {getInitial(profile?.name, user?.email)}
+              </AvatarFallback>
+            </Avatar>
             <LogoutButton showText />
           </div>
         </div>

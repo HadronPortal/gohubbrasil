@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Calendar, Users, Scissors, LogOut, ArrowLeft, RefreshCw, User } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogoutButton } from "@/components/LogoutButton";
 import { toast } from "sonner";
+import { getInitial } from "@/lib/utils";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import AdminBarbers from "@/components/admin/AdminBarbers";
 import AdminServices from "@/components/admin/AdminServices";
@@ -76,13 +78,12 @@ export default function Admin() {
               PAINEL ADMIN
             </h1>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#141b2a] border border-[#f0c040] flex items-center justify-center overflow-hidden shadow-[0_0_15px_rgba(240,192,64,0.2)]">
-                {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <User className="w-6 h-6 text-[#8a9ab5]" />
-                )}
-              </div>
+              <Avatar className="w-10 h-10 border border-[#f0c040] shadow-[0_0_15px_rgba(240,192,64,0.2)]">
+                <AvatarImage src={profile?.avatar_url || undefined} alt="Profile" className="object-cover" />
+                <AvatarFallback>
+                  {getInitial(profile?.name, user?.email)}
+                </AvatarFallback>
+              </Avatar>
               <LogoutButton showText />
             </div>
           </div>
