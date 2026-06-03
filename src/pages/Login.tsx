@@ -157,19 +157,19 @@ export default function Login() {
       {/* Dark Overlay for Readability */}
       <div className="absolute inset-0 z-10 bg-black/30" />
 
-      <div className="w-full max-w-[390px] space-y-12 relative z-20">
+      <div className="w-full max-w-[390px] space-y-8 relative z-20">
         {/* Empty space for where the logo was, as it's now the background */}
-        <div className="pt-8"></div>
+        <div className="pt-2"></div>
 
-        <form onSubmit={handleAuth} className="space-y-4">
-          <div className="space-y-3">
+        <form onSubmit={handleAuth} className="space-y-3">
+          <div className="space-y-2">
             {isSignUp && (
               <>
                 <Input
                   id="fullName"
                   type="text"
                   placeholder="NOME COMPLETO"
-                  className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] h-14 rounded-[4px] placeholder:text-[#8a9ab5] font-light"
+                  className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] h-12 rounded-[4px] placeholder:text-[#8a9ab5] font-light"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
@@ -178,7 +178,7 @@ export default function Login() {
                   id="whatsapp"
                   type="tel"
                   placeholder="WHATSAPP"
-                  className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] h-14 rounded-[4px] placeholder:text-[#8a9ab5] font-light"
+                  className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] h-12 rounded-[4px] placeholder:text-[#8a9ab5] font-light"
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
                   required
@@ -189,7 +189,7 @@ export default function Login() {
               id="email"
               type="email"
               placeholder="E-MAIL"
-              className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] h-14 rounded-[4px] placeholder:text-[#8a9ab5] font-light"
+              className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] h-12 rounded-[4px] placeholder:text-[#8a9ab5] font-light"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -198,7 +198,7 @@ export default function Login() {
               id="password"
               type="password"
               placeholder="SENHA"
-              className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] h-14 rounded-[4px] placeholder:text-[#8a9ab5] font-light"
+              className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] h-12 rounded-[4px] placeholder:text-[#8a9ab5] font-light"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -208,7 +208,7 @@ export default function Login() {
 
           <Button 
             type="submit" 
-            className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-7 text-lg rounded-[4px] transition-all font-oswald uppercase tracking-[3px]"
+            className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-6 text-lg rounded-[4px] transition-all font-oswald uppercase tracking-[3px]"
             disabled={isLoading}
           >
             {isLoading ? <div className="flex items-center gap-2"><img src="/tesouras.png" className="w-5 h-5 invert brightness-0" alt="" /> CARREGANDO...</div> : isSignUp ? "CRIAR CONTA" : "ENTRAR"}
@@ -229,7 +229,7 @@ export default function Login() {
             </button>
           </div>
 
-          <div className="relative pt-4">
+          <div className="relative pt-2">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-[#2a3347]"></span>
             </div>
@@ -243,7 +243,7 @@ export default function Login() {
             onClick={handleGoogleLogin}
             disabled={isLoading}
             variant="outline"
-            className="w-full bg-[#141b2a] border-[#2a3347] hover:bg-[#1a2438] text-[#c8d4e8] font-normal py-6 rounded-[4px] transition-all flex items-center justify-center gap-3"
+            className="w-full bg-[#141b2a] border-[#2a3347] hover:bg-[#1a2438] text-[#c8d4e8] font-normal py-5 rounded-[4px] transition-all flex items-center justify-center gap-3"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
