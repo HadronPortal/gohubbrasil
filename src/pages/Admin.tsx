@@ -70,9 +70,6 @@ export default function Admin() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="text-[#8a9ab5] hover:text-[#f0c040]">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
             <h1 className="text-xl font-bold uppercase text-[#f0c040] font-oswald tracking-widest leading-tight">
               PAINEL ADMIN
             </h1>
