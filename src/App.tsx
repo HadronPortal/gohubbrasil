@@ -10,6 +10,7 @@ import Admin from "./pages/Admin";
 import SuperAdmin from "./pages/SuperAdmin";
 import ClientHome from "./pages/ClientHome";
 import BarberDashboard from "./pages/BarberDashboard";
+import AuthCallback from "./pages/AuthCallback";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -49,6 +50,10 @@ const router = createBrowserRouter([
   {
     path: "/barber-dashboard",
     element: <BarberDashboard />,
+  },
+  {
+    path: "/auth/callback",
+    element: <AuthCallback />,
   },
 ]);
 
