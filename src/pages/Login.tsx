@@ -158,8 +158,8 @@ export default function Login() {
       <div className="absolute inset-0 z-10 bg-black/30" />
 
       <div className="w-full max-w-[390px] space-y-8 relative z-20">
-        {/* Empty space for where the logo was, as it's now the background */}
-        <div className="pt-2"></div>
+        {/* Espaço aumentado para descer os campos e mostrar a logo */}
+        <div className="pt-32"></div>
 
         <form onSubmit={handleAuth} className="space-y-3">
           <div className="space-y-2">
