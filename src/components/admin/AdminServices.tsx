@@ -23,6 +23,21 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
   const [name, setName] = useState("");
   const [duration, setDuration] = useState("30");
   const [price, setPrice] = useState("");
+  
+  const formatPrice = (value: string) => {
+    const cleanValue = value.replace(/\D/g, "");
+    if (!cleanValue) return "";
+    const numberValue = parseInt(cleanValue) / 100;
+    return new Intl.NumberFormat("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(numberValue);
+  };
+
+  const parsePrice = (value: string) => {
+    if (!value) return 0;
+    return parseFloat(value.replace(/\./g, "").replace(",", "."));
+  };
 
   useEffect(() => {
     if (barbershopId) fetchServices();
