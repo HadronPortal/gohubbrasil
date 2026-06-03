@@ -19,32 +19,27 @@ export default function Login() {
   const { user, profile, loading } = useAuth();
 
   useEffect(() => {
-    const redirectUser = async (profileData: any, userId: string) => {
+    const redirectUser = async (profileData: any) => {
       if (profileData.role === "superadmin") {
         navigate("/super-admin", { replace: true });
-      } else if (profileData.role === "owner" || profileData.role === "admin") {
+      } else if (profileData.role === "owner") {
+        navigate("/admin", { replace: true });
+      } else if (profileData.role === "admin") {
         navigate("/admin", { replace: true });
       } else if (profileData.role === "barber") {
         navigate("/barber-dashboard", { replace: true });
       } else {
-        // Source of truth: profile barbershop_id
+        // Source of truth for client: profile.barbershop_id
         if (profileData.barbershop_id) {
-          localStorage.setItem(`selectedBarbershopId:${userId}`, profileData.barbershop_id);
           navigate("/client-home", { replace: true });
         } else {
-          // Check cache as fallback
-          const savedBarbershopId = localStorage.getItem(`selectedBarbershopId:${userId}`);
-          if (savedBarbershopId) {
-            navigate("/client-home", { replace: true });
-          } else {
-            navigate("/", { replace: true });
-          }
+          navigate("/", { replace: true });
         }
       }
     };
 
     if (!loading && user && profile) {
-      redirectUser(profile, user.id);
+      redirectUser(profile);
     }
   }, [user, profile, loading, navigate]);
 
@@ -78,34 +73,26 @@ export default function Login() {
 
         if (error) throw error;
         
-        // Fetch profile to redirect based on role
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        if (authUser) {
-          const { data: profileData } = await supabase
-            .from("users")
-            .select("role, barbershop_id")
-            .eq("id", authUser.id)
-            .single();
-          
-          if (profileData?.role === "superadmin") {
+        // We don't need manual fetch here as AuthContext handles it via onAuthStateChange,
+        // but for faster redirection we can do a quick check.
+        // Best practice is to let the useEffect redirect based on profile from AuthContext.
+        // However, if we want immediate:
+        const { data: panelData } = await supabase.rpc('get_my_app_panels');
+        if (panelData) {
+          const role = String(panelData.role || 'client').toLowerCase();
+          if (role === "superadmin") {
             navigate("/super-admin", { replace: true });
-          } else if (profileData?.role === "owner" || profileData?.role === "admin") {
+          } else if (role === "owner") {
             navigate("/admin", { replace: true });
-          } else if (profileData?.role === "barber") {
+          } else if (role === "admin") {
+            navigate("/admin", { replace: true });
+          } else if (role === "barber") {
             navigate("/barber-dashboard", { replace: true });
           } else {
-            // Source of truth: profileData.barbershop_id
-            if (profileData?.barbershop_id) {
-              localStorage.setItem(`selectedBarbershopId:${authUser.id}`, profileData.barbershop_id);
+            if (panelData.barbershop_id) {
               navigate("/client-home", { replace: true });
             } else {
-              // Check if there's a saved barbershop to decide where to send the client
-              const savedBarbershopId = localStorage.getItem(`selectedBarbershopId:${authUser.id}`);
-              if (savedBarbershopId) {
-                navigate("/client-home", { replace: true });
-              } else {
-                navigate("/", { replace: true });
-              }
+              navigate("/", { replace: true });
             }
           }
         } else {
