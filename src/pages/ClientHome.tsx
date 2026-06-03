@@ -48,6 +48,7 @@ interface Appointment {
     logo_url: string | null;
   };
   barber_name?: string;
+  barber_avatar_url?: string | null;
   service_name?: string;
 }
 
@@ -83,8 +84,12 @@ function AppointmentCard({
 
       <div className="grid grid-cols-2 gap-4 pt-2 border-t border-[#1c2333]">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-[#1c2333] border border-[#2a3347] flex items-center justify-center">
-            <User className="w-4 h-4 text-[#8a9ab5]" />
+          <div className="w-8 h-8 rounded-full bg-[#1c2333] border border-[#2a3347] flex items-center justify-center overflow-hidden">
+            {appt.barber_avatar_url ? (
+              <img src={appt.barber_avatar_url} alt={appt.barber_name} className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-4 h-4 text-[#8a9ab5]" />
+            )}
           </div>
           <div className="flex flex-col">
             <span className="text-[8px] text-[#8a9ab5] uppercase tracking-tighter">BARBEIRO</span>
@@ -158,9 +163,16 @@ export default function ClientHome() {
         return;
       }
 
-      if (!barbershopId) {
-        navigate("/", { replace: true });
-        return;
+      if (!profile.barbershop_id) {
+        // Fallback to localStorage if bank is not updated yet, but bank is priority
+        const savedId = localStorage.getItem(`selectedBarbershopId:${user.id}`);
+        if (!savedId) {
+          navigate("/", { replace: true });
+          return;
+        }
+      } else {
+        // Sync local storage with bank
+        localStorage.setItem(`selectedBarbershopId:${user.id}`, profile.barbershop_id);
       }
 
       fetchAppointments();
@@ -216,7 +228,7 @@ export default function ClientHome() {
 
       // Fetch user names for barbers
       const barberUserIds = barbersData?.map(b => b.user_id).filter(Boolean) || [];
-      const { data: barberUsers } = await supabase.from("users").select("id, name").in("id", barberUserIds);
+      const { data: barberUsers } = await supabase.from("users").select("id, name, avatar_url").in("id", barberUserIds);
 
       // 3. Map everything
       const mapped: Appointment[] = appts.map(a => {
@@ -229,6 +241,7 @@ export default function ClientHome() {
           ...a,
           barbershop: shop,
           barber_name: barberUser?.name || "Barbeiro",
+          barber_avatar_url: barberUser?.avatar_url,
           service_name: service?.name || "Serviço"
         };
       });

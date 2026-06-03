@@ -19,21 +19,32 @@ export default function Login() {
   const { user, profile, loading } = useAuth();
 
   useEffect(() => {
-    if (!loading && user && profile) {
-      if (profile.role === "superadmin") {
+    const redirectUser = async (profileData: any, userId: string) => {
+      if (profileData.role === "superadmin") {
         navigate("/super-admin", { replace: true });
-      } else if (profile.role === "owner" || profile.role === "admin") {
+      } else if (profileData.role === "owner" || profileData.role === "admin") {
         navigate("/admin", { replace: true });
-      } else if (profile.role === "barber") {
+      } else if (profileData.role === "barber") {
         navigate("/barber-dashboard", { replace: true });
       } else {
-        const savedBarbershopId = localStorage.getItem(`selectedBarbershopId:${user.id}`);
-        if (savedBarbershopId) {
+        // Source of truth: profile barbershop_id
+        if (profileData.barbershop_id) {
+          localStorage.setItem(`selectedBarbershopId:${userId}`, profileData.barbershop_id);
           navigate("/client-home", { replace: true });
         } else {
-          navigate("/", { replace: true });
+          // Check cache as fallback
+          const savedBarbershopId = localStorage.getItem(`selectedBarbershopId:${userId}`);
+          if (savedBarbershopId) {
+            navigate("/client-home", { replace: true });
+          } else {
+            navigate("/", { replace: true });
+          }
         }
       }
+    };
+
+    if (!loading && user && profile) {
+      redirectUser(profile, user.id);
     }
   }, [user, profile, loading, navigate]);
 
@@ -72,7 +83,7 @@ export default function Login() {
         if (authUser) {
           const { data: profileData } = await supabase
             .from("users")
-            .select("role")
+            .select("role, barbershop_id")
             .eq("id", authUser.id)
             .single();
           
@@ -83,12 +94,18 @@ export default function Login() {
           } else if (profileData?.role === "barber") {
             navigate("/barber-dashboard", { replace: true });
           } else {
-            // Check if there's a saved barbershop to decide where to send the client
-            const savedBarbershopId = localStorage.getItem(`selectedBarbershopId:${authUser.id}`);
-            if (savedBarbershopId) {
+            // Source of truth: profileData.barbershop_id
+            if (profileData?.barbershop_id) {
+              localStorage.setItem(`selectedBarbershopId:${authUser.id}`, profileData.barbershop_id);
               navigate("/client-home", { replace: true });
             } else {
-              navigate("/", { replace: true });
+              // Check if there's a saved barbershop to decide where to send the client
+              const savedBarbershopId = localStorage.getItem(`selectedBarbershopId:${authUser.id}`);
+              if (savedBarbershopId) {
+                navigate("/client-home", { replace: true });
+              } else {
+                navigate("/", { replace: true });
+              }
             }
           }
         } else {

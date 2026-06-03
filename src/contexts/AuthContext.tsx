@@ -9,6 +9,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   const loadProfile = async (userId: string) => {
+    // 1. Fetch panel info via RPC
+    const { data: panelData, error: panelError } = await supabase.rpc('get_my_app_panels');
+    
+    if (panelError) {
+      console.error("Error loading panels:", panelError);
+    }
+
+    // 2. Fetch basic profile info
     const { data, error } = await supabase
       .from('users')
       .select('id, role, barbershop_id, name, phone, avatar_url')
@@ -35,24 +43,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isOwner,
         isAdmin,
         isSuperAdmin,
-        isBarber
+        isBarber,
+        has_barber_panel: panelData?.has_barber_panel || false
       }
       
       console.log("AUTH PROFILE DEBUG", {
         userId: userId,
         profile: finalProfile,
-        role: data.role,
-        isAdmin,
-        isOwner,
-        isSuperAdmin,
-        isBarber
+        panels: panelData
       });
     } else {
-      finalProfile = { role: 'client', isOwner: false, isAdmin: false, isSuperAdmin: false };
-      console.log("AUTH PROFILE DEBUG (No profile found)", {
-        userId: userId,
-        profile: finalProfile
-      });
+      finalProfile = { 
+        role: 'client', 
+        isOwner: false, 
+        isAdmin: false, 
+        isSuperAdmin: false,
+        has_barber_panel: false
+      };
     }
     setProfile(finalProfile)
     setLoading(false)

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Calendar, Users, Scissors, LogOut, ArrowLeft } from "lucide-react";
+import { Calendar, Users, Scissors, LogOut, ArrowLeft, RefreshCw } from "lucide-react";
 import { LogoutButton } from "@/components/LogoutButton";
 import { toast } from "sonner";
 import AdminDashboard from "@/components/admin/AdminDashboard";
@@ -71,7 +71,20 @@ export default function Admin() {
               PAINEL ADMIN
             </h1>
           </div>
-          <LogoutButton showText />
+          <div className="flex items-center gap-2">
+            {profile?.has_barber_panel && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate("/barber-dashboard")}
+                className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] hover:border-[#f0c040] text-[10px] h-8 gap-2 font-bold font-oswald tracking-wider"
+              >
+                <RefreshCw className="w-3 h-3 text-[#f0c040]" />
+                PAINEL BARBEIRO
+              </Button>
+            )}
+            <LogoutButton showText />
+          </div>
         </div>
 
         {/* Tab Content */}
