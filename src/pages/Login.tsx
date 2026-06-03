@@ -108,7 +108,7 @@ export default function Login() {
       <div 
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
         style={{ 
-          backgroundImage: "url('/logo-login.png')",
+          backgroundImage: "url('/login-bg.png')",
         }}
       />
       
