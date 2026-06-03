@@ -72,7 +72,7 @@ function AppointmentCard({
             </h4>
           </div>
           <p className="text-[10px] text-[#8a9ab5] uppercase tracking-wider font-medium">
-            {appt.barbershop?.name}
+            {appt.barbershop_name || appt.barbershop?.name}
           </p>
         </div>
         <div className="text-right">
@@ -164,15 +164,8 @@ export default function ClientHome() {
       }
 
       if (!profile.barbershop_id) {
-        // Fallback to localStorage if bank is not updated yet, but bank is priority
-        const savedId = localStorage.getItem(`selectedBarbershopId:${user.id}`);
-        if (!savedId) {
-          navigate("/", { replace: true });
-          return;
-        }
-      } else {
-        // Sync local storage with bank
-        localStorage.setItem(`selectedBarbershopId:${user.id}`, profile.barbershop_id);
+        navigate("/", { replace: true });
+        return;
       }
 
       fetchAppointments();
