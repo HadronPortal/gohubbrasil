@@ -167,7 +167,7 @@ function AppointmentList({ appointments, onWhatsApp, emptyMessage, onRefresh }: 
       case "cancelado":
         return { label: "CANCELADO", color: "text-red-500 border-red-500/30 bg-red-500/10" };
       case "completed":
-        return { label: "CONCLUÍDO", color: "text-blue-500 border-blue-500/30 bg-blue-500/10" };
+        return { label: "FINALIZADO", color: "text-blue-500 border-blue-500/30 bg-blue-500/10" };
       default: 
         return { label: status.toUpperCase(), color: "text-gray-500 border-gray-500/30 bg-gray-500/10" };
     }
