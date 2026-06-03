@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Scissors, LogOut, ArrowLeft } from "lucide-react";
+import { Calendar, Users, Scissors, LogOut, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import AdminBarbers from "@/components/admin/AdminBarbers";
@@ -93,7 +93,7 @@ export default function Admin() {
             activeTab === "agenda" ? "text-[#f0c040]" : "text-[#8a9ab5]"
           }`}
         >
-          <LayoutDashboard className="w-6 h-6" />
+          <Calendar className="w-6 h-6" />
           <span className="text-[10px] font-bold font-oswald tracking-wider uppercase">AGENDA</span>
         </button>
         <button
