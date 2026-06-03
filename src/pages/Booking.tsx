@@ -115,18 +115,28 @@ export default function Booking() {
     try {
       if (!user) throw new Error("Usuário não autenticado");
       
-      const { error } = await supabase.from("appointments").insert({
-        client_id: user.id,
-        barbershop_id: barbershopId,
-        service_id: serviceId,
-        barber_id: selectedSlot.barber_id,
-        starts_at: selectedSlot.starts_at,
-        ends_at: selectedSlot.ends_at,
-        status: "pending",
-        price_charged: Number(service?.price ?? 0)
-      });
+      const { data: appointment, error: insertError } = await supabase
+        .from("appointments")
+        .insert({
+          client_id: user.id,
+          barbershop_id: barbershopId,
+          service_id: serviceId,
+          barber_id: selectedSlot.barber_id,
+          starts_at: selectedSlot.starts_at,
+          ends_at: selectedSlot.ends_at,
+          status: "pending",
+          price_charged: Number(service?.price ?? 0)
+        })
+        .select("id")
+        .single();
 
-      if (error) throw error;
+      if (insertError) throw insertError;
+
+      if (appointment) {
+        await supabase.rpc('enqueue_whatsapp_for_appointment', {
+          p_appointment_id: appointment.id
+        });
+      }
 
       toast.success("Agendamento realizado com sucesso!");
       navigate("/", { replace: true });
