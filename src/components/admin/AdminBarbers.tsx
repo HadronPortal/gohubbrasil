@@ -156,16 +156,18 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
       }
 
       if (!editingBarber) {
-        // 2. Use RPC to create barber record
-        const { data: rpcData, error: rpcError } = await supabase.rpc('create_barber', {
-          p_email: email,
-          p_password: password,
-          p_name: name,
-          p_phone: phone,
-          p_bio: bio,
-          p_commission_pct: parseFloat(commission) || 0,
-          p_avatar_url: finalAvatarUrl,
-          p_barbershop_id: barbershopId
+        // 2. Use Edge Function to create/update barber (Auth + Profile + Barber)
+        const { data: rpcData, error: rpcError } = await supabase.functions.invoke('create-barber', {
+          body: {
+            p_email: email,
+            p_password: password,
+            p_name: name,
+            p_phone: phone,
+            p_bio: bio,
+            p_commission_pct: parseFloat(commission) || 0,
+            p_avatar_url: finalAvatarUrl,
+            p_barbershop_id: barbershopId
+          }
         });
 
         if (rpcError) throw rpcError;
