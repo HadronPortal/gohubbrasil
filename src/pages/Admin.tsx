@@ -32,16 +32,15 @@ export default function Admin() {
       }
 
       const fetchBarbershopId = async () => {
-        // Se o profile tem barbershop_id, usa ele (regra para owners)
         if (profile?.barbershop_id) {
           setBarbershopId(profile.barbershop_id);
           setLoadingBarbershop(false);
           return;
         }
 
-        // Se for superadmin ou usuário sem barbershop_id, tenta pegar a primeira barbearia (fallback/teste)
-        if (isAdmin) {
-          const { data } = await supabase.from("barbershops").select("id").limit(1).single();
+        if (profile?.isSuperAdmin) {
+          // Fallback for superadmin who doesn't have a barbershop_id linked
+          const { data } = await supabase.from("barbershops").select("id").limit(1).maybeSingle();
           if (data) {
             setBarbershopId(data.id);
           }

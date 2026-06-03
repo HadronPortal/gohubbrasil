@@ -9,60 +9,49 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   const loadProfile = async (userId: string) => {
-    // 1. Fetch panel info via RPC
+    // 1. Fetch panel info and profile via RPC
     const { data: panelData, error: panelError } = await supabase.rpc('get_my_app_panels');
     
     if (panelError) {
       console.error("Error loading panels:", panelError);
-    }
-
-    // 2. Fetch basic profile info
-    const { data, error } = await supabase
-      .from('users')
-      .select('id, role, barbershop_id, name, phone, avatar_url')
-      .eq('id', userId)
-      .maybeSingle()
-
-    if (error) {
-      console.error("Error loading profile:", error);
       setLoading(false);
       return;
     }
 
-    let finalProfile = null;
-    if (data) {
-      const role = String(data.role || '').toLowerCase()
-      const isSuperAdmin = role === 'superadmin'
-      const isOwner = role === 'owner'
-      const isBarber = role === 'barber'
-      const isAdmin = isSuperAdmin || isOwner || role === 'admin'
-      
-      finalProfile = {
-        ...data,
-        role, // Use normalized role
-        isOwner,
-        isAdmin,
-        isSuperAdmin,
-        isBarber,
-        has_barber_panel: panelData?.has_barber_panel || false
-      }
-      
-      console.log("AUTH PROFILE DEBUG", {
-        userId: userId,
-        profile: finalProfile,
-        panels: panelData
-      });
-    } else {
-      finalProfile = { 
-        role: 'client', 
-        isOwner: false, 
-        isAdmin: false, 
-        isSuperAdmin: false,
-        has_barber_panel: false
-      };
+    if (!panelData) {
+      console.error("No panel data returned");
+      setLoading(false);
+      return;
     }
-    setProfile(finalProfile)
-    setLoading(false)
+
+    const role = String(panelData.role || 'client').toLowerCase();
+    const isSuperAdmin = role === 'superadmin';
+    const isOwner = role === 'owner';
+    const isBarber = role === 'barber';
+    const isAdmin = isSuperAdmin || isOwner || role === 'admin';
+    
+    const finalProfile = {
+      id: userId,
+      role,
+      name: panelData.name,
+      phone: panelData.phone,
+      avatar_url: panelData.avatar_url,
+      barbershop_id: panelData.barbershop_id,
+      isOwner,
+      isAdmin,
+      isSuperAdmin,
+      isBarber,
+      has_barber_panel: panelData.has_barber_panel || false
+    };
+    
+    console.log("AUTH PROFILE DEBUG (via RPC)", {
+      userId,
+      profile: finalProfile,
+      panels: panelData
+    });
+
+    setProfile(finalProfile);
+    setLoading(false);
   }
 
   useEffect(() => {

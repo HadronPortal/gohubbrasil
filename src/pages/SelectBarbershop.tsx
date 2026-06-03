@@ -33,11 +33,8 @@ export default function SelectBarbershop() {
       if (!authLoading && !user) {
         navigate("/login", { replace: true });
       } else if (user && profile) {
-        // Source of truth: profile barbershop_id
-        if (profile.barbershop_id && profile.role === 'client') {
-          // Sync cache
-          localStorage.setItem(`selectedBarbershopId:${user.id}`, profile.barbershop_id);
-          
+        // Source of truth: profile role and barbershop_id
+        if (profile.role === 'client' && profile.barbershop_id) {
           const params = new URLSearchParams(window.location.search);
           const manualSelection = params.get("select") === "true";
           
@@ -98,9 +95,6 @@ export default function SelectBarbershop() {
 
   const handleSelect = async (shop: Barbershop) => {
     if (user) {
-      localStorage.setItem(`selectedBarbershopId:${user.id}`, shop.id);
-      localStorage.setItem(`selectedBarbershopName:${user.id}`, shop.name);
-      
       // Persist selection in database
       const { error } = await supabase.rpc('set_my_selected_barbershop', {
         p_barbershop_id: shop.id
@@ -109,9 +103,16 @@ export default function SelectBarbershop() {
       if (error) {
         console.error("Error setting barbershop:", error);
         toast.error("Erro ao salvar barbearia selecionada");
+        return;
       }
+      
+      // Update local storage for immediate UI feedback if needed
+      localStorage.setItem(`selectedBarbershopId:${user.id}`, shop.id);
+      localStorage.setItem(`selectedBarbershopName:${user.id}`, shop.name);
+      
+      // Navigate to home, which will re-fetch profile/panels
+      navigate("/client-home", { replace: true });
     }
-    navigate("/client-home", { replace: true });
   };
 
   if (isLoading || authLoading) {
