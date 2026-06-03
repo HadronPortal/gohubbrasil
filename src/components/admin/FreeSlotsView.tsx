@@ -257,12 +257,13 @@ export default function FreeSlotsView({ barbershopId, onBack }: FreeSlotsViewPro
                 {selectedDate ? format(selectedDate, "dd/MM/yyyy") : <span>Selecione a data</span>}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-[#1c2333] border-[#2a3347]" align="start">
+            <PopoverContent className="w-[310px] p-4 bg-[#141b2a] border-[#2a3347] shadow-2xl rounded-lg" align="start">
               <Calendar
                 mode="single"
                 selected={selectedDate}
                 onSelect={(date) => date && setSelectedDate(date)}
-                className="bg-[#1c2333] text-[#c8d4e8]"
+                className="p-0"
+                locale={ptBR}
               />
             </PopoverContent>
           </Popover>
@@ -466,12 +467,12 @@ export default function FreeSlotsView({ barbershopId, onBack }: FreeSlotsViewPro
                     {blockDate ? format(blockDate, "dd/MM/yyyy") : <span>Selecione a data</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-[#1c2333] border-[#2a3347]" align="start">
+                <PopoverContent className="w-[310px] p-4 bg-[#141b2a] border-[#2a3347] shadow-2xl rounded-lg" align="start">
                   <Calendar
                     mode="single"
                     selected={blockDate}
                     onSelect={(date) => date && setBlockDate(date)}
-                    className="bg-[#1c2333] text-[#c8d4e8]"
+                    className="p-0"
                     locale={ptBR}
                   />
                 </PopoverContent>
