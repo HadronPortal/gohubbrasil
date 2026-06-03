@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Calendar, Users, Scissors, LogOut, ArrowLeft } from "lucide-react";
+import { LogoutButton } from "@/components/LogoutButton";
 import { toast } from "sonner";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import AdminBarbers from "@/components/admin/AdminBarbers";
@@ -74,9 +75,7 @@ export default function Admin() {
               PAINEL ADMIN
             </h1>
           </div>
-          <Button variant="ghost" size="icon" onClick={handleLogout} className="text-[#8a9ab5] hover:text-[#f0c040]">
-            <LogOut className="w-5 h-5" />
-          </Button>
+          <LogoutButton showText />
         </div>
 
         {/* Tab Content */}
