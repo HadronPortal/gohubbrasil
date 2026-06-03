@@ -6,6 +6,7 @@ import { MessageCircle, Calendar as CalendarIcon, DollarSign, Percent, TrendingU
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
+import { money } from "@/utils/format";
 
 interface DashboardSummary {
   appointments_today: number;
@@ -37,13 +38,7 @@ interface DashboardData {
   history: Appointment[];
 }
 
-const money = (value: any) => {
-  const number = Number(value ?? 0);
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(Number.isFinite(number) ? number : 0);
-};
+// Removido money local, usando importado
 
 export default function BarberDashboard({ profile }: { profile: any }) {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -212,13 +207,7 @@ function AppointmentList({ appointments, onWhatsApp, emptyMessage, onRefresh }: 
   };
 
 
-  const money = (value: any) => {
-    const number = Number(value ?? 0);
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(Number.isFinite(number) ? number : 0);
-  };
+// Removido money local, usando importado
 
   const handleFinishAppointment = async (appt: Appointment) => {
     try {
