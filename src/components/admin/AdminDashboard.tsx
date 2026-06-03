@@ -39,6 +39,7 @@ export default function AdminDashboard({
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showFreeSlots, setShowFreeSlots] = useState(false);
+  const [activeTab, setActiveTab] = useState<"today" | "upcoming" | "history">("today");
 
   useEffect(() => {
     if (barbershopId) fetchDashboardData();
@@ -47,10 +48,10 @@ export default function AdminDashboard({
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true);
-      const today = new Date().toISOString().slice(0, 10);
+      const todayStr = new Date().toISOString().slice(0, 10);
 
       const { data, error } = await supabase.rpc("get_owner_dashboard_appointments", {
-        p_day: today
+        p_day: todayStr
       });
 
       console.log("OWNER DASHBOARD RPC", { data, error });
@@ -96,15 +97,34 @@ export default function AdminDashboard({
 
   const isFinished = (status: string) => ['completed', 'finalizado'].includes(String(status).toLowerCase());
   const isCanceled = (status: string) => ['cancelled', 'canceled', 'cancelado'].includes(String(status).toLowerCase());
-  const isPast = (appt: Appointment) => new Date(appt.starts_at).getTime() < Date.now();
-  const isHistory = (appt: Appointment) => isFinished(appt.status) || isCanceled(appt.status) || isPast(appt);
+  
+  const isToday = (date: string) => {
+    const d = new Date(date);
+    const now = new Date();
+    return d.toDateString() === now.toDateString();
+  };
 
-  const activeAppointments = [...appointments]
-    .filter(a => !isHistory(a))
+  const isFutureAfterToday = (date: string) => {
+    const d = new Date(date);
+    const endToday = new Date();
+    endToday.setHours(23, 59, 59, 999);
+    return d.getTime() > endToday.getTime();
+  };
+
+  const activeAppointments = appointments.filter(a =>
+    !isFinished(a.status) && !isCanceled(a.status)
+  );
+
+  const todayAppointments = activeAppointments
+    .filter(a => isToday(a.starts_at))
     .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
 
-  const historyAppointments = [...appointments]
-    .filter(a => isHistory(a))
+  const upcomingAppointments = activeAppointments
+    .filter(a => isFutureAfterToday(a.starts_at))
+    .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
+
+  const historyAppointments = appointments
+    .filter(a => isFinished(a.status) || isCanceled(a.status) || (new Date(a.starts_at).getTime() < Date.now() && !isToday(a.starts_at)))
     .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
 
   if (isLoading) return <div className="text-[#8a9ab5] font-oswald text-xs tracking-widest uppercase">CARREGANDO...</div>;
@@ -143,13 +163,19 @@ export default function AdminDashboard({
 
       {/* Appointments Sections */}
       <div className="space-y-6">
-        <Tabs defaultValue="active" className="w-full">
-          <TabsList className="w-full bg-[#141b2a] border border-[#2a3347] grid grid-cols-2 h-12 p-1">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
+          <TabsList className="w-full bg-[#141b2a] border border-[#2a3347] grid grid-cols-3 h-12 p-1">
             <TabsTrigger 
-              value="active" 
+              value="today" 
               className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]"
             >
-              AGENDAMENTOS
+              HOJE
+            </TabsTrigger>
+            <TabsTrigger 
+              value="upcoming" 
+              className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]"
+            >
+              PRÓXIMOS
             </TabsTrigger>
             <TabsTrigger 
               value="history" 
@@ -159,13 +185,25 @@ export default function AdminDashboard({
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="active" className="mt-6 space-y-4">
-            {activeAppointments.length === 0 ? (
+          <TabsContent value="today" className="mt-6 space-y-4">
+            {todayAppointments.length === 0 ? (
               <p className="text-sm text-[#8a9ab5] text-center py-10 border border-dashed border-[#2a3347] rounded-[4px]">
-                NENHUM AGENDAMENTO ATIVO
+                NENHUM AGENDAMENTO PARA HOJE
               </p>
             ) : (
-              activeAppointments.map((appt, idx) => (
+              todayAppointments.map((appt, idx) => (
+                <AppointmentCard key={`today-${idx}`} appt={appt} />
+              ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="upcoming" className="mt-6 space-y-4">
+            {upcomingAppointments.length === 0 ? (
+              <p className="text-sm text-[#8a9ab5] text-center py-10 border border-dashed border-[#2a3347] rounded-[4px]">
+                NENHUM AGENDAMENTO PRÓXIMO
+              </p>
+            ) : (
+              upcomingAppointments.map((appt, idx) => (
                 <AppointmentCard key={`upcoming-${idx}`} appt={appt} />
               ))
             )}
