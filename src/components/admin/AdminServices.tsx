@@ -112,7 +112,7 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
             barbershop_id: barbershopId,
             name,
             duration_minutes: parseInt(duration),
-            price: parseFloat(price)
+            price: parsePrice(price)
           });
 
         if (error) throw error;
