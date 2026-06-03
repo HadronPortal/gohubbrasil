@@ -168,7 +168,11 @@ export default function ClientHome() {
       fetchAppointments();
 
       // Recarregar quando a janela ganha foco para refletir finalizações do barbeiro
-      const handleFocus = () => fetchAppointments();
+      const handleFocus = () => {
+        if (!authLoading && user && profile) {
+          fetchAppointments();
+        }
+      };
       window.addEventListener('focus', handleFocus);
       return () => window.removeEventListener('focus', handleFocus);
     }
