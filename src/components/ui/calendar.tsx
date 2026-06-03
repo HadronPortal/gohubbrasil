@@ -19,14 +19,14 @@ function Calendar({
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4 w-full",
-        caption: "flex justify-center pt-1 relative items-center mb-4",
+        month_caption: "flex justify-center pt-1 relative items-center mb-4",
         caption_label: "text-sm font-medium text-[#c8d4e8] font-oswald uppercase tracking-wider",
         nav: "space-x-1 flex items-center",
-        table: "w-full border-collapse space-y-1",
-        head_row: "grid grid-cols-7 gap-1 mb-2",
-        head_cell: "text-[#8a9ab5] rounded-md w-full font-bold text-[10px] uppercase text-center",
-        row: "grid grid-cols-7 gap-1 w-full mt-1",
-        cell: "h-9 w-full text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+        month_grid: "w-full border-collapse space-y-1",
+        weekdays: "grid grid-cols-7 gap-1 mb-2",
+        weekday: "text-[#8a9ab5] rounded-md w-full font-bold text-[10px] uppercase text-center",
+        weeks: "flex flex-col gap-1 w-full mt-1",
+        week: "grid grid-cols-7 gap-1 w-full",
         day: cn(
           buttonVariants({ variant: "ghost" }),
           "h-9 w-full p-0 font-normal aria-selected:opacity-100 hover:bg-[#2a3347] hover:text-[#f0c040]"
