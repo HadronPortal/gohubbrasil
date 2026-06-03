@@ -41,6 +41,9 @@ export default function SelectBarbershop() {
           if (!manualSelection) {
             navigate("/client-home", { replace: true });
             return;
+          } else {
+            // Se for seleção manual (Trocar estabelecimento), limpar para garantir nova escolha
+            localStorage.removeItem('selectedBarbershopId');
           }
         }
 
