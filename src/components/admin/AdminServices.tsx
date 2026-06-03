@@ -99,7 +99,7 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
           .update({
             name,
             duration_minutes: parseInt(duration),
-            price: parseFloat(price)
+            price: parsePrice(price)
           })
           .eq("id", editingService.id);
 
