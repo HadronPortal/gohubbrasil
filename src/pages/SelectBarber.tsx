@@ -30,21 +30,21 @@ export default function SelectBarber() {
   
   const signOut = async () => {
     await supabase.auth.signOut();
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate("/login");
+      navigate("/login", { replace: true });
     } else if (user && profile) {
       if (profile.role !== 'client') {
         const target = profile.isSuperAdmin ? "/super-admin" : "/admin";
-        navigate(target);
+        navigate(target, { replace: true });
         return;
       }
       
       if (!barbershopId) {
-        navigate("/");
+        navigate("/", { replace: true });
         return;
       }
       fetchBarbers();
@@ -166,7 +166,7 @@ export default function SelectBarber() {
               size="icon" 
               onClick={async () => {
                 await signOut();
-                navigate("/login");
+                navigate("/login", { replace: true });
               }} 
               className="text-[#8a9ab5] hover:text-[#f0c040]"
               title="Sair"

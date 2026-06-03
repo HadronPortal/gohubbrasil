@@ -116,7 +116,7 @@ export default function SuperAdmin() {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
 
   const handleUpdatePaymentStatus = async (id: string, status: string) => {

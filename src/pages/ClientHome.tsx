@@ -277,7 +277,7 @@ export default function ClientHome() {
       // So I will NOT remove it on signOut to maintain the persistence requirement.
     }
     await supabase.auth.signOut();
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
 
   if (authLoading || isLoading) {
