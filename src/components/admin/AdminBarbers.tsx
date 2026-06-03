@@ -111,7 +111,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
     setName(barber.name);
     setPhone(barber.phone || "");
     setBio(barber.bio || "");
-    setCommission(barber.commission_pct?.toString() || "0");
+    setCommission(barber.commission_pct?.toString().replace(".", ",") || "0");
     setActive(barber.active);
     setAvatarPreview(barber.avatar_url || null);
     setIsAdding(true);
