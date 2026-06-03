@@ -191,25 +191,26 @@ export default function SuperAdmin() {
         logoUrl = await uploadLogo(logoFile);
       }
 
-      const { data: response, error } = await supabase.functions.invoke("create-barbershop", {
+      const { data: response, error } = await supabase.functions.invoke("create-barbershop-with-owner", {
         body: {
-          barbershop_name: formData.get("barbershop_name") as string,
-          barbershop_address: formData.get("barbershop_address") as string,
-          barbershop_phone: formData.get("barbershop_phone") as string,
+          barbershopName: formData.get("barbershop_name") as string,
+          address: formData.get("barbershop_address") as string,
+          phone: formData.get("barbershop_phone") as string,
           logoUrl,
           description: formData.get("description") as string,
-          paymentStatus: formData.get("payment_status") as string || "pending",
-          owner_name: formData.get("owner_name") as string,
-          owner_email: formData.get("owner_email") as string,
-          owner_phone: formData.get("owner_phone") as string,
-          owner_password: formData.get("owner_password") as string,
-          ownerIsBarber: ownerIsBarber
+          paymentStatus: (formData.get("payment_status") as string) || "pending",
+          ownerName: formData.get("owner_name") as string,
+          ownerEmail: formData.get("owner_email") as string,
+          ownerPhone: formData.get("owner_phone") as string,
+          ownerPassword: formData.get("owner_password") as string,
+          ownerIsBarber: Boolean(ownerIsBarber)
         }
       });
 
       if (error) {
         console.error("EDGE ERROR", { error, data: response });
-        throw error;
+        toast.error(error.message || "Erro de conexão com o servidor.");
+        return;
       }
 
       if (response && response.success === false) {
@@ -226,7 +227,7 @@ export default function SuperAdmin() {
       }
     } catch (error: any) {
       console.error("Erro ao criar barbearia:", error);
-      toast.error(error.message || "Erro ao criar barbearia.");
+      toast.error(error.message || "Erro inesperado ao criar barbearia.");
     } finally {
       setIsSubmitting(false);
     }
