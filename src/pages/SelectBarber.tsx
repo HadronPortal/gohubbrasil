@@ -160,7 +160,6 @@ export default function SelectBarber() {
             </div>
             <LogoutButton showText />
           </div>
-          </div>
         </div>
 
         {/* Barbershop Info */}
