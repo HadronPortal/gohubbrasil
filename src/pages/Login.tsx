@@ -113,7 +113,7 @@ export default function Login() {
       />
       
       {/* Dark Overlay for Readability */}
-      <div className="absolute inset-0 z-10 bg-black/70 backdrop-blur-[2px]" />
+      <div className="absolute inset-0 z-10 bg-black/40 backdrop-blur-[1px]" />
 
       <div className="w-full max-w-[390px] space-y-12 relative z-20">
         {/* Empty space for where the logo was, as it's now the background */}
