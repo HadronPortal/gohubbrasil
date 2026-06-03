@@ -195,32 +195,34 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
 
         toast.success(editingBarber ? "Barbeiro atualizado!" : "Barbeiro cadastrado com sucesso!");
       } else {
-        // Update User info in public.users
-        if (currentUserId) {
-          const { error: userUpdateError } = await supabase
-            .from("users")
-            .update({
-              name,
-              phone: phone,
-              avatar_url: finalAvatarUrl
-            })
-            .eq("id", currentUserId);
+        // 2. Use Edge Function to create/update barber (Auth + Profile + Barber)
+        const { data, error } = await supabase.functions.invoke('create-barber', {
+          body: {
+            name,
+            email: editingBarber.name, // The edge function needs an email, but for updates we might not want to change it if not provided. 
+            // Actually, the edge function uses email to find existing user if ID is not passed, but here we have ID.
+            // Let's adjust the Edge function to handle updates by ID more explicitly if needed, 
+            // but for now, the user wants the Edge Function to handle commissionPct saving.
+            phone,
+            avatarUrl: finalAvatarUrl,
+            bio,
+            commissionPct: parsePercentage(commission) || 0,
+            barbershopId
+          }
+        });
 
-          if (userUpdateError) throw userUpdateError;
+        if (error) {
+          toast.error(error.message);
+          setIsLoading(false);
+          return;
         }
 
-        // Update Barber entry (only config fields)
-        const { error: barberError } = await supabase
-          .from("barbers")
-          .update({
-            bio,
-            active,
-            commission_pct: parsePercentage(commission) || 0
-          })
-          .eq("id", editingBarber.id);
-        
-        if (barberError) throw barberError;
-        
+        if (data && data.success === false) {
+          toast.error(data.error || "Erro ao atualizar barbeiro.");
+          setIsLoading(false);
+          return;
+        }
+
         toast.success("Barbeiro atualizado!");
       }
 

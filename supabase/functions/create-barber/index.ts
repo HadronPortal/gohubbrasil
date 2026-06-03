@@ -44,10 +44,11 @@ serve(async (req) => {
       name, 
       phone, 
       bio, 
-      commissionPct, 
       avatarUrl,
       barbershopId 
     } = body
+
+    const commissionPct = Number(body.commissionPct ?? body.commission_pct ?? 0)
 
     // Use caller's barbershop_id if not superadmin
     const targetBarbershopId = callerProfile.role === 'superadmin' ? barbershopId : callerProfile.barbershop_id
