@@ -18,6 +18,7 @@ import { LogoutButton } from "@/components/LogoutButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { money } from "@/utils/format";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -74,7 +75,7 @@ function AppointmentCard({
         </div>
         <div className="text-right">
           <div className="text-lg font-bold text-[#c8d4e8] font-oswald leading-none">
-            R$ {appt.price_charged.toFixed(2)}
+            {money(appt.price_charged)}
           </div>
         </div>
       </div>

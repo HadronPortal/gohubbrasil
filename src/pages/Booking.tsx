@@ -10,6 +10,7 @@ import { ptBR } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
 import { AdminGear } from "@/components/AdminGear";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { money } from "@/utils/format";
 
 export default function Booking() {
   const { id: barbershopId } = useParams();
@@ -21,7 +22,7 @@ export default function Booking() {
   
   const [selectedBarberId, setSelectedBarberId] = useState<string | null>(barberIdFromUrl);
   const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
   const [availableSlots, setAvailableSlots] = useState<any[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -94,22 +95,27 @@ export default function Booking() {
   const handleBooking = async () => {
     console.log("BOOKING PARAMS", { barbershopId, serviceId, barberIdFromUrl, selectedBarberId });
 
-    if (!selectedBarberId || !selectedDate || !selectedTime) {
-      toast.error("Por favor, selecione um barbeiro e horário");
+    if (!service) {
+      toast.error("Serviço não encontrado");
+      navigate(-1);
+      return;
+    }
+
+    if (!selectedSlot) {
+      toast.error("Selecione um horário");
+      return;
+    }
+
+    if (!selectedBarberId || !selectedDate) {
+      toast.error("Por favor, selecione um barbeiro e data");
       return;
     }
 
     setIsSubmitting(true);
     try {
       if (!user) throw new Error("Usuário não autenticado");
-      if (!serviceId) throw new Error("Serviço não selecionado");
-      if (!barberIdFromUrl && !selectedBarberId) throw new Error("Barbeiro não selecionado");
-
-      // Use already fetched service data
-      if (!service) throw new Error("Serviço não encontrado");
-
-      const selectedSlot = availableSlots.find(s => s.time_label === selectedTime);
-      if (!selectedSlot) throw new Error("Horário não selecionado corretamente");
+      
+      const price = Number(service?.price ?? 0);
 
       const { error } = await supabase.from("appointments").insert({
         client_id: user.id,
@@ -121,7 +127,7 @@ export default function Booking() {
         status: "pending",
         whatsapp_sent: false,
         confirmed_via_whatsapp: false,
-        price_charged: service.price
+        price_charged: price
       });
 
       if (error) throw error;
@@ -216,12 +222,12 @@ export default function Booking() {
           ) : (
             <div className="grid grid-cols-3 gap-2">
               {availableSlots.map((slot) => {
-                const isSelected = selectedTime === slot.time_label;
+                const isSelected = selectedSlot?.starts_at === slot.starts_at;
                 
                 return (
                   <button
                     key={slot.starts_at}
-                    onClick={() => setSelectedTime(slot.time_label)}
+                    onClick={() => setSelectedSlot(slot)}
                     className={`py-3 rounded-[4px] text-xs font-oswald tracking-widest border transition-all ${
                       isSelected
                         ? "bg-[#f0c040] border-[#f0c040] text-[#1c2333]"
@@ -242,7 +248,7 @@ export default function Booking() {
       <div className="fixed bottom-0 w-full max-w-[390px] p-6 bg-[#1c2333]/90 backdrop-blur-sm">
         <Button
           onClick={handleBooking}
-          disabled={isSubmitting || !selectedTime}
+          disabled={isSubmitting || !selectedSlot}
           className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-7 text-lg rounded-[4px] border-none shadow-none transition-all font-oswald uppercase tracking-[3px]"
         >
           {isSubmitting ? <div className="flex items-center gap-2 justify-center w-full"><img src="/tesouras.png" className="w-5 h-5" alt="" style={{ filter: 'brightness(0)' }} /> PROCESSANDO...</div> : "CONTINUAR"}

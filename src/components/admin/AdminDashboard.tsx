@@ -4,6 +4,7 @@ import { format, startOfDay, endOfDay } from "date-fns";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { money } from "@/utils/format";
 import FreeSlotsView from "./FreeSlotsView";
 
 interface Stats {
@@ -120,7 +121,7 @@ export default function AdminDashboard({
           { label: "AGENDAMENTOS HOJE", value: stats.appointmentsToday, onClick: null },
           { label: "HORÁRIOS LIVRES", value: stats.freeSlots, onClick: () => setShowFreeSlots(true) },
           { label: "BARBEIROS", value: stats.activeBarbers, onClick: null },
-          { label: "FATURAMENTO", value: new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(stats.revenueToday), onClick: null },
+          { label: "FATURAMENTO", value: money(stats.revenueToday), onClick: null },
         ].map((item, idx) => (
           <div 
             key={idx} 
@@ -232,7 +233,7 @@ function AppointmentCard({ appt }: { appt: Appointment }) {
         </div>
         {appt.price_charged !== null && (
           <span className="text-[10px] font-bold text-[#c8d4e8]">
-            {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(appt.price_charged))}
+            {money(appt.price_charged)}
           </span>
         )}
       </div>
