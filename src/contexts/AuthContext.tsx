@@ -91,6 +91,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       user, 
       profile, 
       loading,
+      refreshProfile: () => user && loadProfile(user.id),
       isSuperAdmin: profile?.isSuperAdmin || false,
       isOwner: profile?.isOwner || false,
       isAdmin: profile?.isAdmin || false,
