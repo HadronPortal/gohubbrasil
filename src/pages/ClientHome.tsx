@@ -162,8 +162,14 @@ export default function ClientHome() {
       }
 
       fetchAppointments();
+
+      // Recarregar quando a janela ganha foco para refletir finalizações do barbeiro
+      const handleFocus = () => fetchAppointments();
+      window.addEventListener('focus', handleFocus);
+      return () => window.removeEventListener('focus', handleFocus);
     }
   }, [user, profile, authLoading, navigate, barbershopId]);
+
 
   const fetchAppointments = async () => {
     if (!user) return;
@@ -175,8 +181,8 @@ export default function ClientHome() {
         .from("appointments")
         .select("id, client_id, barbershop_id, barber_id, service_id, starts_at, ends_at, status, price_charged, created_at")
         .eq("client_id", user.id)
-        .neq("status", "cancelled")
-        .order("starts_at", { ascending: false }); // Show most recent first (especially for history)
+        .order("starts_at", { ascending: false });
+
 
       console.log("MY APPOINTMENTS QUERY", { appointments: appts, error });
 
@@ -294,8 +300,18 @@ export default function ClientHome() {
   };
   
   const now = new Date();
-  const upcomingAppointments = appointments.filter(a => new Date(a.starts_at) >= now);
-  const pastAppointments = appointments.filter(a => new Date(a.starts_at) < now);
+  
+  const isFinished = (status: string) => ["completed", "finalizado"].includes(status.toLowerCase());
+  const isCancelled = (status: string) => ["cancelled", "canceled", "cancelado"].includes(status.toLowerCase());
+
+  const upcomingAppointments = appointments
+    .filter(a => !isFinished(a.status) && !isCancelled(a.status) && new Date(a.starts_at) >= new Date(now.getTime() - 60 * 60 * 1000))
+    .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
+
+  const pastAppointments = appointments
+    .filter(a => isFinished(a.status) || isCancelled(a.status) || new Date(a.starts_at) < new Date(now.getTime() - 60 * 60 * 1000))
+    .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
+
 
   return (
     <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24 overflow-x-hidden">
