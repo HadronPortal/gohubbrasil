@@ -270,7 +270,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      owner_appointments_view: {
+        Row: {
+          barber_name: string | null
+          barbershop_id: string | null
+          client_name: string | null
+          id: string | null
+          price_charged: number | null
+          service_name: string | null
+          starts_at: string | null
+          status: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       cancel_my_appointment: {
