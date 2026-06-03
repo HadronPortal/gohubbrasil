@@ -83,7 +83,7 @@ export default function Admin() {
         </div>
 
         {/* Tab Content */}
-        {activeTab === "agenda" && <AdminDashboard barbershopId={barbershopId} />}
+        {activeTab === "agenda" && <AdminDashboard barbershopId={barbershopId} profile={profile} />}
         {activeTab === "barbeiros" && <AdminBarbers barbershopId={barbershopId} />}
         {activeTab === "servicos" && <AdminServices barbershopId={barbershopId} />}
       </div>
