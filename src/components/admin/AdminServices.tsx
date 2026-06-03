@@ -59,7 +59,7 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
     setEditingService(service);
     setName(service.name);
     setDuration(service.duration_minutes.toString());
-    setPrice(service.price.toString());
+    setPrice(formatPrice((service.price * 100).toFixed(0)));
     setIsAdding(true);
   };
 
