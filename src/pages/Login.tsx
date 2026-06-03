@@ -96,7 +96,23 @@ export default function Login() {
         }
       }
     } catch (error: any) {
-      toast.error(error.message);
+      let friendlyMessage = "Ocorreu um erro. Por favor, tente novamente.";
+      
+      const message = error.message || "";
+      
+      if (message.includes("Invalid login credentials")) {
+        friendlyMessage = "E-mail ou senha incorretos. Verifique seus dados e tente novamente.";
+      } else if (message.includes("Email not confirmed")) {
+        friendlyMessage = "Por favor, confirme seu e-mail para acessar a conta.";
+      } else if (message.includes("User already registered")) {
+        friendlyMessage = "Este e-mail já está em uso. Tente fazer login ou use outro e-mail.";
+      } else if (message.includes("Password should be at least")) {
+        friendlyMessage = "A senha deve ter pelo menos 6 caracteres.";
+      } else if (message.includes("rate limit")) {
+        friendlyMessage = "Muitas tentativas. Por favor, aguarde um momento antes de tentar novamente.";
+      }
+      
+      toast.error(friendlyMessage);
     } finally {
       setIsLoading(false);
     }
