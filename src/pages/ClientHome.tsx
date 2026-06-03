@@ -14,6 +14,7 @@ import {
   Store,
   Scissors
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { toast } from "sonner";
@@ -301,16 +302,19 @@ export default function ClientHome() {
   
   const now = new Date();
   
-  const isFinished = (status: string) => ["completed", "finalizado"].includes(status.toLowerCase());
-  const isCancelled = (status: string) => ["cancelled", "canceled", "cancelado"].includes(status.toLowerCase());
+  const isFinished = (status: string) => ['completed', 'finalizado'].includes(String(status).toLowerCase());
+  const isCanceled = (status: string) => ['cancelled', 'canceled', 'cancelado'].includes(String(status).toLowerCase());
+  const isPast = (appt: Appointment) => new Date(appt.starts_at).getTime() < Date.now();
+  const isHistory = (appt: Appointment) => isFinished(appt.status) || isCanceled(appt.status) || isPast(appt);
 
-  const upcomingAppointments = appointments
-    .filter(a => !isFinished(a.status) && !isCancelled(a.status) && new Date(a.starts_at) >= new Date(now.getTime() - 60 * 60 * 1000))
-    .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
+  const sortActive = (items: Appointment[]) =>
+    [...items].sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
 
-  const pastAppointments = appointments
-    .filter(a => isFinished(a.status) || isCancelled(a.status) || new Date(a.starts_at) < new Date(now.getTime() - 60 * 60 * 1000))
-    .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
+  const sortHistory = (items: Appointment[]) =>
+    [...items].sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
+
+  const upcomingAppointments = sortActive(appointments.filter(a => !isHistory(a)));
+  const historyAppointments = sortHistory(appointments.filter(a => isHistory(a)));
 
 
   return (
@@ -375,62 +379,69 @@ export default function ClientHome() {
 
         {/* Appointments Section */}
         <div className="space-y-6 pt-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold tracking-[0.25em] text-[#f0c040] font-oswald uppercase">
-              MEUS AGENDAMENTOS
-            </h3>
-            {appointments.length > 0 && (
-              <span className="text-[10px] text-[#8a9ab5] uppercase tracking-widest">{upcomingAppointments.length} PRÓXIMO(S)</span>
-            )}
-          </div>
+          <Tabs defaultValue="active" className="w-full">
+            <TabsList className="w-full bg-[#141b2a] border border-[#2a3347] grid grid-cols-2 h-12 p-1">
+              <TabsTrigger 
+                value="active" 
+                className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]"
+              >
+                MEUS AGENDAMENTOS
+              </TabsTrigger>
+              <TabsTrigger 
+                value="history" 
+                className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]"
+              >
+                HISTÓRICO
+              </TabsTrigger>
+            </TabsList>
 
-          <div className="space-y-8">
-            {appointments.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 px-4 bg-[#141b2a] border border-[#2a3347] rounded-[4px] text-center space-y-4">
-                <Scissors className="w-10 h-10 text-[#2a3347]" />
-                <p className="text-xs text-[#8a9ab5] uppercase tracking-widest">Você não possui agendamentos.</p>
-                <Button 
-                  variant="link" 
-                  onClick={() => navigate(`/barbers?barbershopId=${barbershopId}`)}
-                  className="text-[#f0c040] font-bold p-0 uppercase text-[10px] tracking-widest"
-                >
-                  Agendar agora
-                </Button>
-              </div>
-            ) : (
-              <>
-                {/* Upcoming */}
-                {upcomingAppointments.length > 0 && (
-                  <div className="space-y-4">
-                    <h4 className="text-[9px] font-bold text-[#8a9ab5] uppercase tracking-[0.2em] mb-2">Próximos</h4>
-                    {upcomingAppointments.map((appt) => (
-                      <AppointmentCard 
-                        key={appt.id} 
-                        appt={appt} 
-                        onCancel={() => setCancellingId(appt.id)} 
-                        isPast={false}
-                      />
-                    ))}
-                  </div>
-                )}
+            <TabsContent value="active" className="mt-6 space-y-4">
+              {upcomingAppointments.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 px-4 bg-[#141b2a] border border-[#2a3347] rounded-[4px] text-center space-y-4">
+                  <Scissors className="w-10 h-10 text-[#2a3347]" />
+                  <p className="text-xs text-[#8a9ab5] uppercase tracking-widest">Você não possui agendamentos ativos.</p>
+                  <Button 
+                    variant="link" 
+                    onClick={() => navigate(`/barbers?barbershopId=${barbershopId}`)}
+                    className="text-[#f0c040] font-bold p-0 uppercase text-[10px] tracking-widest"
+                  >
+                    Agendar agora
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {upcomingAppointments.map((appt) => (
+                    <AppointmentCard 
+                      key={appt.id} 
+                      appt={appt} 
+                      onCancel={() => setCancellingId(appt.id)} 
+                      isPast={false}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
 
-                {/* History */}
-                {pastAppointments.length > 0 && (
-                  <div className="space-y-4 opacity-60">
-                    <h4 className="text-[9px] font-bold text-[#8a9ab5] uppercase tracking-[0.2em] mb-2">Histórico</h4>
-                    {pastAppointments.map((appt) => (
-                      <AppointmentCard 
-                        key={appt.id} 
-                        appt={appt} 
-                        onCancel={() => setCancellingId(appt.id)} 
-                        isPast={true}
-                      />
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+            <TabsContent value="history" className="mt-6 space-y-4">
+              {historyAppointments.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 px-4 bg-[#141b2a] border border-[#2a3347] rounded-[4px] text-center space-y-4">
+                  <Scissors className="w-10 h-10 text-[#2a3347]" />
+                  <p className="text-xs text-[#8a9ab5] uppercase tracking-widest">Nenhum histórico encontrado.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {historyAppointments.map((appt) => (
+                    <AppointmentCard 
+                      key={appt.id} 
+                      appt={appt} 
+                      onCancel={() => setCancellingId(appt.id)} 
+                      isPast={true}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 

@@ -82,6 +82,28 @@ export default function BarberDashboard({ profile }: { profile: any }) {
     }
   };
 
+  const isFinished = (status: string) => ['completed', 'finalizado'].includes(String(status).toLowerCase());
+  const isCanceled = (status: string) => ['cancelled', 'canceled', 'cancelado'].includes(String(status).toLowerCase());
+  const isPast = (appt: Appointment) => new Date(appt.starts_at).getTime() < Date.now();
+  const isHistory = (appt: Appointment) => isFinished(appt.status) || isCanceled(appt.status) || isPast(appt);
+
+  const allAppointments = [
+    ...(data?.today || []),
+    ...(data?.upcoming || []),
+    ...(data?.history || [])
+  ];
+
+  // Remover duplicatas por ID caso existam
+  const uniqueAppointments = Array.from(new Map(allAppointments.map(a => [a.id, a])).values());
+
+  const activeAppointments = uniqueAppointments
+    .filter(a => !isHistory(a))
+    .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
+
+  const historyAppointments = uniqueAppointments
+    .filter(a => isHistory(a))
+    .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
+
   const openWhatsApp = (phone: string) => {
     if (!phone) return;
     const cleanPhone = phone.replace(/\D/g, "");
@@ -132,23 +154,38 @@ export default function BarberDashboard({ profile }: { profile: any }) {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="today" className="w-full">
-        <TabsList className="w-full bg-[#141b2a] border border-[#2a3347] grid grid-cols-3 h-12 p-1">
-          <TabsTrigger value="today" className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]">Hoje</TabsTrigger>
-          <TabsTrigger value="upcoming" className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]">Próximos</TabsTrigger>
-          <TabsTrigger value="history" className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]">Histórico</TabsTrigger>
+      <Tabs defaultValue="active" className="w-full">
+        <TabsList className="w-full bg-[#141b2a] border border-[#2a3347] grid grid-cols-2 h-12 p-1">
+          <TabsTrigger 
+            value="active" 
+            className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]"
+          >
+            Hoje / Próximos
+          </TabsTrigger>
+          <TabsTrigger 
+            value="history" 
+            className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]"
+          >
+            Histórico
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="today" className="mt-6 space-y-4">
-          <AppointmentList appointments={data?.today || []} onWhatsApp={openWhatsApp} emptyMessage="Nenhum agendamento para hoje" onRefresh={fetchDashboardData} />
-        </TabsContent>
-
-        <TabsContent value="upcoming" className="mt-6 space-y-4">
-          <AppointmentList appointments={data?.upcoming || []} onWhatsApp={openWhatsApp} emptyMessage="Nenhum agendamento futuro" onRefresh={fetchDashboardData} />
+        <TabsContent value="active" className="mt-6 space-y-4">
+          <AppointmentList 
+            appointments={activeAppointments} 
+            onWhatsApp={openWhatsApp} 
+            emptyMessage="Nenhum agendamento ativo" 
+            onRefresh={fetchDashboardData} 
+          />
         </TabsContent>
 
         <TabsContent value="history" className="mt-6 space-y-4">
-          <AppointmentList appointments={data?.history || []} onWhatsApp={openWhatsApp} emptyMessage="Nenhum histórico encontrado" onRefresh={fetchDashboardData} />
+          <AppointmentList 
+            appointments={historyAppointments} 
+            onWhatsApp={openWhatsApp} 
+            emptyMessage="Nenhum histórico encontrado" 
+            onRefresh={fetchDashboardData} 
+          />
         </TabsContent>
       </Tabs>
     </div>

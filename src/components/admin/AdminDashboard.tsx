@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfDay, endOfDay } from "date-fns";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Stats {
   appointmentsToday: number;
@@ -89,18 +90,18 @@ export default function AdminDashboard({
     }
   };
 
-  const getStatusInfo = (status: string) => {
-    switch (status) {
-      case "pending": 
-        return { label: "PENDENTE", color: "text-yellow-500 border-yellow-500/30 bg-yellow-500/10" };
-      case "confirmed": 
-        return { label: "CONFIRMADO", color: "text-green-500 border-green-500/30 bg-green-500/10" };
-      case "cancelled": 
-        return { label: "CANCELADO", color: "text-red-500 border-red-500/30 bg-red-500/10" };
-      default: 
-        return { label: status.toUpperCase(), color: "text-gray-500 border-gray-500/30 bg-gray-500/10" };
-    }
-  };
+  const isFinished = (status: string) => ['completed', 'finalizado'].includes(String(status).toLowerCase());
+  const isCanceled = (status: string) => ['cancelled', 'canceled', 'cancelado'].includes(String(status).toLowerCase());
+  const isPast = (appt: Appointment) => new Date(appt.starts_at).getTime() < Date.now();
+  const isHistory = (appt: Appointment) => isFinished(appt.status) || isCanceled(appt.status) || isPast(appt);
+
+  const activeAppointments = [...appointments]
+    .filter(a => !isHistory(a))
+    .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
+
+  const historyAppointments = [...appointments]
+    .filter(a => isHistory(a))
+    .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
 
   if (isLoading) return <div className="text-[#8a9ab5] font-oswald text-xs tracking-widest uppercase">CARREGANDO...</div>;
 
@@ -126,50 +127,47 @@ export default function AdminDashboard({
       </div>
 
       {/* Appointments Sections */}
-      <div className="space-y-10">
-        {/* Upcoming Section */}
-        <div className="space-y-6">
-          <h3 className="text-xs font-bold tracking-[0.25em] text-[#f0c040] font-oswald uppercase">
-            HOJE / PRÓXIMOS
-          </h3>
-          
-          <div className="space-y-4">
-            {appointments.filter(a => !["completed", "finalizado", "cancelled", "canceled", "cancelado"].includes(a.status.toLowerCase()) && new Date(a.starts_at) >= new Date(new Date().getTime() - 60 * 60 * 1000)).length === 0 ? (
+      <div className="space-y-6">
+        <Tabs defaultValue="active" className="w-full">
+          <TabsList className="w-full bg-[#141b2a] border border-[#2a3347] grid grid-cols-2 h-12 p-1">
+            <TabsTrigger 
+              value="active" 
+              className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]"
+            >
+              AGENDAMENTOS
+            </TabsTrigger>
+            <TabsTrigger 
+              value="history" 
+              className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]"
+            >
+              HISTÓRICO
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="active" className="mt-6 space-y-4">
+            {activeAppointments.length === 0 ? (
               <p className="text-sm text-[#8a9ab5] text-center py-10 border border-dashed border-[#2a3347] rounded-[4px]">
                 NENHUM AGENDAMENTO ATIVO
               </p>
             ) : (
-              appointments
-                .filter(a => !["completed", "finalizado", "cancelled", "canceled", "cancelado"].includes(a.status.toLowerCase()) && new Date(a.starts_at) >= new Date(new Date().getTime() - 60 * 60 * 1000))
-                .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
-                .map((appt, idx) => (
-                  <AppointmentCard key={`upcoming-${idx}`} appt={appt} />
-                ))
+              activeAppointments.map((appt, idx) => (
+                <AppointmentCard key={`upcoming-${idx}`} appt={appt} />
+              ))
             )}
-          </div>
-        </div>
+          </TabsContent>
 
-        {/* History Section */}
-        <div className="space-y-6">
-          <h3 className="text-xs font-bold tracking-[0.25em] text-[#8a9ab5] font-oswald uppercase">
-            HISTÓRICO / FINALIZADOS
-          </h3>
-          
-          <div className="space-y-4 opacity-70">
-            {appointments.filter(a => ["completed", "finalizado", "cancelled", "canceled", "cancelado"].includes(a.status.toLowerCase()) || new Date(a.starts_at) < new Date(new Date().getTime() - 60 * 60 * 1000)).length === 0 ? (
+          <TabsContent value="history" className="mt-6 space-y-4">
+            {historyAppointments.length === 0 ? (
               <p className="text-sm text-[#8a9ab5] text-center py-10 border border-dashed border-[#2a3347] rounded-[4px]">
                 NENHUM HISTÓRICO ENCONTRADO
               </p>
             ) : (
-              appointments
-                .filter(a => ["completed", "finalizado", "cancelled", "canceled", "cancelado"].includes(a.status.toLowerCase()) || new Date(a.starts_at) < new Date(new Date().getTime() - 60 * 60 * 1000))
-                .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime())
-                .map((appt, idx) => (
-                  <AppointmentCard key={`history-${idx}`} appt={appt} />
-                ))
+              historyAppointments.map((appt, idx) => (
+                <AppointmentCard key={`history-${idx}`} appt={appt} />
+              ))
             )}
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
