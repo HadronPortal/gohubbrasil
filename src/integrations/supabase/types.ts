@@ -35,10 +35,12 @@ export type Database = {
           barber_id: string
           barbershop_id: string
           client_id: string
+          commission_amount: number | null
           confirmed_via_whatsapp: boolean | null
           created_at: string | null
           ends_at: string | null
           id: string
+          price: number | null
           price_charged: number | null
           service_id: string
           starts_at: string | null
@@ -50,10 +52,12 @@ export type Database = {
           barber_id: string
           barbershop_id: string
           client_id: string
+          commission_amount?: number | null
           confirmed_via_whatsapp?: boolean | null
           created_at?: string | null
           ends_at?: string | null
           id?: string
+          price?: number | null
           price_charged?: number | null
           service_id: string
           starts_at?: string | null
@@ -65,10 +69,12 @@ export type Database = {
           barber_id?: string
           barbershop_id?: string
           client_id?: string
+          commission_amount?: number | null
           confirmed_via_whatsapp?: boolean | null
           created_at?: string | null
           ends_at?: string | null
           id?: string
+          price?: number | null
           price_charged?: number | null
           service_id?: string
           starts_at?: string | null
@@ -343,6 +349,10 @@ export type Database = {
       }
       ensure_owner_is_barber: {
         Args: { p_barbershop_id: string; p_owner_user_id: string }
+        Returns: Json
+      }
+      finish_barber_appointment: {
+        Args: { p_appointment_id: string }
         Returns: Json
       }
       get_auth_user_id_by_email: { Args: { p_email: string }; Returns: string }

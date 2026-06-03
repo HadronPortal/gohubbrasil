@@ -15,12 +15,16 @@ interface DashboardSummary {
 }
 
 interface Appointment {
+  id: string;
   client_name: string;
   client_phone: string;
   service_name: string;
   starts_at: string;
-  price_charged: number;
-  commission_value: number;
+  price?: number;
+  price_charged?: number;
+  service_price?: number;
+  commission_amount?: number;
+  commission_value?: number;
   status: string;
 }
 
@@ -32,6 +36,14 @@ interface DashboardData {
   upcoming: Appointment[];
   history: Appointment[];
 }
+
+const money = (value: any) => {
+  const number = Number(value ?? 0);
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(Number.isFinite(number) ? number : 0);
+};
 
 export default function BarberDashboard({ profile }: { profile: any }) {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -70,28 +82,13 @@ export default function BarberDashboard({ profile }: { profile: any }) {
     }
   };
 
-  const getStatusInfo = (status: string) => {
-    switch (status) {
-      case "pending": 
-        return { label: "PENDENTE", color: "text-yellow-500 border-yellow-500/30 bg-yellow-500/10" };
-      case "confirmed": 
-        return { label: "CONFIRMADO", color: "text-green-500 border-green-500/30 bg-green-500/10" };
-      case "cancelled": 
-        return { label: "CANCELADO", color: "text-red-500 border-red-500/30 bg-red-500/10" };
-      case "completed":
-        return { label: "CONCLUÍDO", color: "text-blue-500 border-blue-500/30 bg-blue-500/10" };
-      default: 
-        return { label: status.toUpperCase(), color: "text-gray-500 border-gray-500/30 bg-gray-500/10" };
-    }
-  };
-
   const openWhatsApp = (phone: string) => {
     if (!phone) return;
     const cleanPhone = phone.replace(/\D/g, "");
     window.open(`https://wa.me/55${cleanPhone}`);
   };
 
-  if (isLoading && !data) return <div className="text-[#8a9ab5] font-oswald text-xs tracking-widest uppercase">CARREGANDO...</div>;
+  if (isLoading && !data) return <div className="text-[#8a9ab5] font-oswald text-xs tracking-widest uppercase p-6">CARREGANDO...</div>;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -110,7 +107,7 @@ export default function BarberDashboard({ profile }: { profile: any }) {
             <TrendingUp className="w-4 h-4 text-[#8a9ab5] mb-1" />
             <span className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Faturamento hoje</span>
             <span className="text-2xl font-bold text-[#f0c040] font-oswald">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(data?.summary.gross_today || 0)}
+              {money(data?.summary.gross_today)}
             </span>
           </CardContent>
         </Card>
@@ -120,7 +117,7 @@ export default function BarberDashboard({ profile }: { profile: any }) {
             <DollarSign className="w-4 h-4 text-[#8a9ab5] mb-1" />
             <span className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Minha comissão hoje</span>
             <span className="text-2xl font-bold text-green-500 font-oswald">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(data?.summary.commission_today || 0)}
+              {money(data?.summary.commission_today)}
             </span>
           </CardContent>
         </Card>
@@ -143,22 +140,22 @@ export default function BarberDashboard({ profile }: { profile: any }) {
         </TabsList>
 
         <TabsContent value="today" className="mt-6 space-y-4">
-          <AppointmentList appointments={data?.today || []} onWhatsApp={openWhatsApp} emptyMessage="Nenhum agendamento para hoje" />
+          <AppointmentList appointments={data?.today || []} onWhatsApp={openWhatsApp} emptyMessage="Nenhum agendamento para hoje" onRefresh={fetchDashboardData} />
         </TabsContent>
 
         <TabsContent value="upcoming" className="mt-6 space-y-4">
-          <AppointmentList appointments={data?.upcoming || []} onWhatsApp={openWhatsApp} emptyMessage="Nenhum agendamento futuro" />
+          <AppointmentList appointments={data?.upcoming || []} onWhatsApp={openWhatsApp} emptyMessage="Nenhum agendamento futuro" onRefresh={fetchDashboardData} />
         </TabsContent>
 
         <TabsContent value="history" className="mt-6 space-y-4">
-          <AppointmentList appointments={data?.history || []} onWhatsApp={openWhatsApp} emptyMessage="Nenhum histórico encontrado" />
+          <AppointmentList appointments={data?.history || []} onWhatsApp={openWhatsApp} emptyMessage="Nenhum histórico encontrado" onRefresh={fetchDashboardData} />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
 
-function AppointmentList({ appointments, onWhatsApp, emptyMessage }: { appointments: Appointment[], onWhatsApp: (phone: string) => void, emptyMessage: string }) {
+function AppointmentList({ appointments, onWhatsApp, emptyMessage, onRefresh }: { appointments: Appointment[], onWhatsApp: (phone: string) => void, emptyMessage: string, onRefresh: () => void }) {
   const getStatusInfo = (status: string) => {
     switch (status) {
       case "pending": 
@@ -166,11 +163,44 @@ function AppointmentList({ appointments, onWhatsApp, emptyMessage }: { appointme
       case "confirmed": 
         return { label: "CONFIRMADO", color: "text-green-500 border-green-500/30 bg-green-500/10" };
       case "cancelled": 
+      case "canceled":
+      case "cancelado":
         return { label: "CANCELADO", color: "text-red-500 border-red-500/30 bg-red-500/10" };
       case "completed":
         return { label: "CONCLUÍDO", color: "text-blue-500 border-blue-500/30 bg-blue-500/10" };
       default: 
         return { label: status.toUpperCase(), color: "text-gray-500 border-gray-500/30 bg-gray-500/10" };
+    }
+  };
+
+  const money = (value: any) => {
+    const number = Number(value ?? 0);
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(Number.isFinite(number) ? number : 0);
+  };
+
+  const handleFinishAppointment = async (appt: Appointment) => {
+    try {
+      const { data, error } = await supabase.rpc('finish_barber_appointment', {
+        p_appointment_id: appt.id
+      });
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      if (data.success === false) {
+        toast.error(data.error || "Erro ao finalizar atendimento");
+        return;
+      }
+
+      toast.success("Atendimento finalizado");
+      onRefresh();
+    } catch (err: any) {
+      toast.error("Ocorreu um erro ao finalizar o atendimento");
     }
   };
 
@@ -184,50 +214,67 @@ function AppointmentList({ appointments, onWhatsApp, emptyMessage }: { appointme
 
   return (
     <div className="space-y-4">
-      {appointments.map((appt, i) => (
-        <div key={i} className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] space-y-4">
-          <div className="flex justify-between items-start">
-            <div className="space-y-1">
-              <h4 className="text-sm font-bold text-[#c8d4e8] font-oswald uppercase tracking-wider">{appt.client_name}</h4>
-              <p className="text-[10px] text-[#8a9ab5] uppercase tracking-widest">{appt.service_name}</p>
+      {appointments.map((appt, i) => {
+        const isFinished = ["completed", "cancelled", "canceled", "cancelado"].includes(appt.status.toLowerCase());
+        const price = appt.price ?? appt.price_charged ?? appt.service_price ?? 0;
+        const commission = appt.commission_amount ?? appt.commission_value ?? 0;
+
+        return (
+          <div key={i} className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] space-y-4">
+            <div className="flex justify-between items-start">
+              <div className="space-y-1">
+                <h4 className="text-sm font-bold text-[#c8d4e8] font-oswald uppercase tracking-wider">{appt.client_name}</h4>
+                <p className="text-[10px] text-[#8a9ab5] uppercase tracking-widest">{appt.service_name}</p>
+              </div>
+              <span className={`text-[9px] font-bold px-2 py-1 rounded-[2px] border uppercase tracking-widest ${getStatusInfo(appt.status).color}`}>
+                {getStatusInfo(appt.status).label}
+              </span>
             </div>
-            <span className={`text-[9px] font-bold px-2 py-1 rounded-[2px] border uppercase tracking-widest ${getStatusInfo(appt.status).color}`}>
-              {getStatusInfo(appt.status).label}
-            </span>
+
+            <div className="flex justify-between items-center pt-3 border-t border-[#2a3347]/50">
+              <div className="space-y-1">
+                <div className="text-lg font-bold text-[#f0c040] font-oswald">
+                  {format(new Date(appt.starts_at), "HH:mm")}
+                </div>
+                <div className="text-[9px] text-[#8a9ab5] uppercase tracking-widest">
+                  {format(new Date(appt.starts_at), "dd/MM/yyyy")}
+                </div>
+              </div>
+
+              <div className="text-right space-y-1">
+                <div className="text-sm font-bold text-[#c8d4e8]">
+                  {money(price)}
+                </div>
+                <div className="text-[9px] text-green-500 font-bold uppercase tracking-widest">
+                  Comissão: {money(commission)}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2">
+              {!isFinished && (
+                <Button 
+                  className="w-full h-10 bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2 text-[10px] uppercase font-bold tracking-widest"
+                  onClick={() => handleFinishAppointment(appt)}
+                >
+                  Finalizar atendimento
+                </Button>
+              )}
+              
+              {appt.client_phone && (
+                <Button 
+                  variant="outline" 
+                  className="w-full h-10 border-[#25d366]/30 text-[#25d366] hover:bg-[#25d366]/10 flex items-center justify-center gap-2 text-[10px] uppercase font-bold tracking-widest"
+                  onClick={() => onWhatsApp(appt.client_phone)}
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  WhatsApp
+                </Button>
+              )}
+            </div>
           </div>
-
-          <div className="flex justify-between items-center pt-3 border-t border-[#2a3347]/50">
-            <div className="space-y-1">
-              <div className="text-lg font-bold text-[#f0c040] font-oswald">
-                {format(new Date(appt.starts_at), "HH:mm")}
-              </div>
-              <div className="text-[9px] text-[#8a9ab5] uppercase tracking-widest">
-                {format(new Date(appt.starts_at), "dd/MM/yyyy")}
-              </div>
-            </div>
-
-            <div className="text-right space-y-1">
-              <div className="text-sm font-bold text-[#c8d4e8]">
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(appt.price_charged)}
-              </div>
-              <div className="text-[9px] text-green-500 font-bold uppercase tracking-widest">
-                Comissão: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(appt.commission_value)}
-              </div>
-            </div>
-          </div>
-
-          {appt.client_phone && (
-            <Button 
-              variant="outline" 
-              className="w-full h-10 border-[#25d366]/30 text-[#25d366] hover:bg-[#25d366]/10 flex items-center justify-center gap-2 text-[10px] uppercase font-bold tracking-widest"
-              onClick={() => onWhatsApp(appt.client_phone)}
-            >
-              <MessageCircle className="w-4 h-4" />
-              WhatsApp
-            </Button>
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
