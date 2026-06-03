@@ -147,17 +147,19 @@ export default function FreeSlotsView({ barbershopId, onBack }: FreeSlotsViewPro
   const handleCreateBlock = async () => {
     try {
       const dateStr = format(selectedDate, "yyyy-MM-dd");
-      const startsAtIso = `${dateStr}T${blockStartTime}:00Z`;
-      const endsAtIso = `${dateStr}T${blockEndTime}:00Z`;
-
-      const { error } = await supabase.rpc('create_barbershop_time_block', {
-        p_starts_at: startsAtIso,
-        p_ends_at: endsAtIso,
+      
+      const { data, error } = await supabase.rpc('create_barbershop_time_block_local', {
+        p_day: dateStr,
+        p_start_time: blockStartTime,
+        p_end_time: blockEndTime,
         p_reason: blockReason || null,
-        p_barber_id: blockBarberId === "all" ? null : blockBarberId
+        p_barber_id: blockBarberId === "all" ? null : blockBarberId,
+        p_barbershop_id: null
       });
 
       if (error) throw error;
+      if (data && data.success === false) throw new Error(data.error);
+
       toast.success("Horário bloqueado!");
       setIsBlockModalOpen(false);
       setBlockReason("");
@@ -285,8 +287,13 @@ export default function FreeSlotsView({ barbershopId, onBack }: FreeSlotsViewPro
                   className="text-[9px] font-bold uppercase tracking-widest text-[#f0c040] hover:bg-[#f0c040]/10"
                   onClick={() => {
                     setBlockBarberId(slot.barber_id);
-                    setBlockStartTime(format(new Date(slot.starts_at), "HH:mm"));
-                    setBlockEndTime(format(new Date(slot.ends_at), "HH:mm"));
+                    setBlockStartTime(slot.time_label);
+                    // Calculate end time label if needed or just use current block defaults
+                    const startH = parseInt(slot.time_label.split(":")[0]);
+                    const startM = parseInt(slot.time_label.split(":")[1]);
+                    const end = new Date();
+                    end.setHours(startH, startM + parseInt(slotInterval));
+                    setBlockEndTime(end.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false }));
                     setIsBlockModalOpen(true);
                   }}
                 >
@@ -313,7 +320,7 @@ export default function FreeSlotsView({ barbershopId, onBack }: FreeSlotsViewPro
                   </div>
                   <div>
                     <span className="text-[11px] font-bold text-red-500 uppercase tracking-widest">
-                      {format(new Date(block.starts_at), "HH:mm")} - {format(new Date(block.ends_at), "HH:mm")}
+                      {new Date(block.starts_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })} - {new Date(block.ends_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}
                     </span>
                     <p className="text-[9px] text-[#8a9ab5] uppercase tracking-widest">
                       {block.barber_name} {block.reason ? `• ${block.reason}` : ""}
