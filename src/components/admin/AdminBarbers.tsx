@@ -9,6 +9,7 @@ interface Barber {
   id: string;
   user_id: string;
   name: string;
+  email: string;
   active: boolean;
   avatar_url?: string;
   bio?: string;
@@ -70,7 +71,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
     // 3. Fetch users info
     const { data: usersData, error: usersError } = await supabase
       .from("users")
-      .select("id, name, phone, avatar_url, role, barbershop_id")
+      .select("id, name, phone, avatar_url, role, barbershop_id, email")
       .in("id", userIds);
 
     if (usersError) {
@@ -89,6 +90,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
         name: userEntry?.name || "Sem Nome",
         active: barber.active !== false,
         avatar_url: userEntry?.avatar_url || undefined,
+        email: userEntry?.email || "",
         bio: barber.bio || "",
         commission_pct: barber.commission_pct || 0,
         phone: userEntry?.phone || ""
@@ -109,6 +111,8 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
   const handleEdit = (barber: Barber) => {
     setEditingBarber(barber);
     setName(barber.name);
+    setEmail(barber.email);
+    setPassword("••••••");
     setPhone(barber.phone || "");
     setBio(barber.bio || "");
     setCommission(barber.commission_pct?.toString().replace(".", ",") || "0");
@@ -144,13 +148,11 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
     setIsLoading(true);
 
     try {
-      let currentUserId = editingBarber?.user_id;
       let finalAvatarUrl = avatarPreview || "";
 
-      // 1. Upload Avatar if file exists
       if (avatarFile) {
         const fileExt = avatarFile.name.split('.').pop();
-        const identifier = currentUserId || editingBarber?.id || Math.random().toString(36).substring(7);
+        const identifier = editingBarber?.user_id || editingBarber?.id || Math.random().toString(36).substring(7);
         const fileName = `${identifier}-${Math.random().toString(36).substring(7)}.${fileExt}`;
         
         const { error: uploadError } = await supabase.storage
@@ -166,66 +168,49 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
         finalAvatarUrl = publicUrl;
       }
 
-      if (!editingBarber) {
-        // 2. Use Edge Function to create/update barber (Auth + Profile + Barber)
-        const { data, error } = await supabase.functions.invoke('create-barber', {
-          body: {
-            name,
-            email,
-            phone,
-            password,
-            avatarUrl: finalAvatarUrl,
-            bio,
-            commissionPct: parsePercentage(commission) || 0,
-            barbershopId
-          }
-        });
+      const commissionPct = parsePercentage(commission);
+      
+      const body: any = {
+        name,
+        phone,
+        avatarUrl: finalAvatarUrl,
+        bio,
+        commissionPct,
+        barbershopId
+      };
 
-        if (error) {
-          toast.error(error.message);
-          setIsLoading(false);
-          return;
+      if (editingBarber) {
+        body.barberId = editingBarber.id;
+        // Only include email if it changed and is not empty
+        if (email && email.trim() && email.trim().toLowerCase() !== editingBarber.email.toLowerCase()) {
+          body.email = email.trim().toLowerCase();
         }
-
-        if (data && data.success === false) {
-          toast.error(data.error || "Erro ao cadastrar barbeiro.");
-          setIsLoading(false);
-          return;
+        // Only include password if it's not the mask and not empty
+        if (password && password.trim() && !/^[*•●]+$/.test(password.trim())) {
+          body.password = password.trim();
         }
-
-        toast.success(editingBarber ? "Barbeiro atualizado!" : "Barbeiro cadastrado com sucesso!");
       } else {
-        // 2. Use Edge Function to create/update barber (Auth + Profile + Barber)
-        const { data, error } = await supabase.functions.invoke('create-barber', {
-          body: {
-            name,
-            email: editingBarber.name, // The edge function needs an email, but for updates we might not want to change it if not provided. 
-            // Actually, the edge function uses email to find existing user if ID is not passed, but here we have ID.
-            // Let's adjust the Edge function to handle updates by ID more explicitly if needed, 
-            // but for now, the user wants the Edge Function to handle commissionPct saving.
-            phone,
-            avatarUrl: finalAvatarUrl,
-            bio,
-            commissionPct: parsePercentage(commission) || 0,
-            barbershopId
-          }
-        });
-
-        if (error) {
-          toast.error(error.message);
-          setIsLoading(false);
-          return;
-        }
-
-        if (data && data.success === false) {
-          toast.error(data.error || "Erro ao atualizar barbeiro.");
-          setIsLoading(false);
-          return;
-        }
-
-        toast.success("Barbeiro atualizado!");
+        body.email = email.trim().toLowerCase();
+        body.password = password.trim();
       }
 
+      const { data, error } = await supabase.functions.invoke('create-barber', {
+        body
+      });
+
+      if (error) {
+        toast.error(error.message);
+        setIsLoading(false);
+        return;
+      }
+
+      if (data && data.success === false) {
+        toast.error(data.error || "Erro ao salvar barbeiro.");
+        setIsLoading(false);
+        return;
+      }
+
+      toast.success(editingBarber ? "Barbeiro atualizado!" : "Barbeiro cadastrado com sucesso!");
       resetForm();
       fetchBarbers();
     } catch (error: any) {
@@ -291,12 +276,8 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
         <div className="space-y-4">
           <Input placeholder="NOME COMPLETO" value={name} onChange={e => setName(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
           <Input placeholder="WHATSAPP" type="tel" value={phone} onChange={e => setPhone(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
-          {!editingBarber && (
-            <>
-              <Input placeholder="E-MAIL" type="email" value={email} onChange={e => setEmail(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
-              <Input placeholder="SENHA INICIAL" type="password" value={password} onChange={e => setPassword(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
-            </>
-          )}
+          <Input placeholder="E-MAIL" type="email" value={email} onChange={e => setEmail(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
+          <Input placeholder={editingBarber ? "NOVA SENHA (DEIXE EM BRANCO PARA MANTER)" : "SENHA INICIAL"} type="password" value={password} onChange={e => setPassword(e.target.value)} required={!editingBarber} className="bg-[#141b2a] border-[#2a3347] h-12" />
           <Input placeholder="ESPECIALIDADE (EX: CORTE CLÁSSICO)" value={bio} onChange={e => setBio(e.target.value)} className="bg-[#141b2a] border-[#2a3347] h-12" />
           <div className="flex gap-4">
             <div className="flex-1 space-y-1">

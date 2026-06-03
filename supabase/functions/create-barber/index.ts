@@ -39,6 +39,7 @@ serve(async (req) => {
 
     const body = await req.json()
     const { 
+      barberId,
       email, 
       password, 
       name, 
@@ -57,14 +58,29 @@ serve(async (req) => {
       throw new Error('ID da barbearia não fornecido.')
     }
 
-    // 3. Check if user already exists in auth.users by email
-    const { data: existingUserId } = await supabaseAdmin.rpc("get_auth_user_id_by_email", { 
-      p_email: email 
-    })
+    // 3. Determine userId
+    let userId = null
 
-    let userId = existingUserId
+    if (barberId) {
+      // Find user_id from barberId
+      const { data: barber, error: barberError } = await supabaseAdmin
+        .from('barbers')
+        .select('user_id')
+        .eq('id', barberId)
+        .single()
+      
+      if (barberError || !barber) throw new Error('Barbeiro não encontrado.')
+      userId = barber.user_id
+    } else if (email) {
+      // Check if user already exists in auth.users by email
+      const { data: existingUserId } = await supabaseAdmin.rpc("get_auth_user_id_by_email", { 
+        p_email: email 
+      })
+      userId = existingUserId
+    }
 
     if (!userId) {
+      if (!email || !password) throw new Error('E-mail e senha são obrigatórios para novo barbeiro.')
       // 4. Create Auth User
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email: email,
@@ -82,15 +98,19 @@ serve(async (req) => {
       userId = newUser.user.id
     } else {
       // 5. Update Existing Auth User
-      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-        password: password,
+      const updateData: any = {
         user_metadata: {
           name: name,
           phone: phone,
           role: 'barber',
           barbershop_id: targetBarbershopId
         }
-      })
+      }
+      
+      if (email) updateData.email = email
+      if (password) updateData.password = password
+
+      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, updateData)
       if (updateError) console.error("Error updating auth user:", updateError)
     }
 
