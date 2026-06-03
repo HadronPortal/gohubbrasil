@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, X, Pencil, Trash2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { money } from "@/utils/format";
 
 interface Service {
   id: string;
@@ -11,13 +12,6 @@ interface Service {
   duration_minutes: number;
   price: number;
 }
-
-const money = (value: number) => {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
-};
 
 export default function AdminServices({ barbershopId }: { barbershopId: string | null }) {
   const [services, setServices] = useState<Service[]>([]);
