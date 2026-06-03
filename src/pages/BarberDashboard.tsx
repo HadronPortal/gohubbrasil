@@ -20,6 +20,12 @@ export default function BarberDashboard() {
         return;
       }
       
+      // Priority Rule: If owner and force flag is not set, redirect to admin panel
+      if (profile?.role === 'owner' && localStorage.getItem('force_barber_panel') !== 'true') {
+        navigate("/admin", { replace: true });
+        return;
+      }
+      
       // Allow owner even if not explicitly marked as isBarber (as per requirement)
       if (!isBarber && profile?.role !== 'owner') {
         toast.error("Acesso restrito");

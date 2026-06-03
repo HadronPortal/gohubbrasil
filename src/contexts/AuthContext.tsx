@@ -30,6 +30,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const isBarber = role === 'barber';
     const isAdmin = isSuperAdmin || isOwner || role === 'admin';
     
+    // As per requirement, if owner has a barber panel, clear the force flag on login 
+    // to ensure they always land on the Owner Panel first.
+    if (isOwner) {
+      localStorage.removeItem('force_barber_panel');
+    }
+
     const finalProfile = {
       id: userId,
       role,

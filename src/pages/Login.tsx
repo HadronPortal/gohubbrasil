@@ -83,7 +83,7 @@ export default function Login() {
         if (panelData) {
           const role = String(panelData.role || 'client').toLowerCase();
           
-          // Clear force flag on login
+          // Clear force flag on login to ensure owner priority
           localStorage.removeItem('force_barber_panel');
 
           if (role === "superadmin") {

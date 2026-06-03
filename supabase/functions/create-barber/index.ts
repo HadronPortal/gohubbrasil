@@ -46,7 +46,8 @@ serve(async (req) => {
       phone, 
       bio, 
       avatarUrl,
-      barbershopId 
+      barbershopId,
+      preserveRole = false
     } = body
 
     const commissionPct = Number(body.commissionPct ?? body.commission_pct ?? 0)
@@ -58,26 +59,36 @@ serve(async (req) => {
       throw new Error('ID da barbearia não fornecido.')
     }
 
-    // 3. Determine userId
+    // 3. Determine userId and current role
     let userId = null
+    let currentRole = 'barber'
 
     if (barberId) {
-      // Find user_id from barberId
+      // Find user_id and current role from barberId
       const { data: barber, error: barberError } = await supabaseAdmin
         .from('barbers')
-        .select('user_id')
+        .select('user_id, users(role)')
         .eq('id', barberId)
         .single()
       
       if (barberError || !barber) throw new Error('Barbeiro não encontrado.')
       userId = barber.user_id
+      currentRole = barber.users?.role || 'barber'
     } else if (email) {
       // Check if user already exists in auth.users by email
-      const { data: existingUserId } = await supabaseAdmin.rpc("get_auth_user_id_by_email", { 
-        p_email: email 
-      })
-      userId = existingUserId
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('id, role')
+        .eq('email', email.toLowerCase())
+        .maybeSingle()
+      
+      if (existingUser) {
+        userId = existingUser.id
+        currentRole = existingUser.role || 'barber'
+      }
     }
+
+    const finalRole = (preserveRole && currentRole === 'owner') ? 'owner' : 'barber'
 
     if (!userId) {
       if (!email || !password) throw new Error('E-mail e senha são obrigatórios para novo barbeiro.')
@@ -89,7 +100,7 @@ serve(async (req) => {
         user_metadata: { 
           name: name,
           phone: phone,
-          role: 'barber',
+          role: finalRole,
           barbershop_id: targetBarbershopId
         }
       })
@@ -102,7 +113,7 @@ serve(async (req) => {
         user_metadata: {
           name: name,
           phone: phone,
-          role: 'barber',
+          role: finalRole,
           barbershop_id: targetBarbershopId
         }
       }
@@ -121,7 +132,7 @@ serve(async (req) => {
         id: userId,
         name: name,
         phone: phone,
-        role: 'barber',
+        role: finalRole,
         barbershop_id: targetBarbershopId,
         avatar_url: avatarUrl || null
       })

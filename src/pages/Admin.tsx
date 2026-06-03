@@ -31,6 +31,12 @@ export default function Admin() {
         return;
       }
 
+      // Check if user should be in barber panel instead
+      if (profile?.role === 'owner' && localStorage.getItem('force_barber_panel') === 'true' && profile.has_barber_panel) {
+        navigate("/barber-dashboard", { replace: true });
+        return;
+      }
+
       const fetchBarbershopId = async () => {
         if (profile?.barbershop_id) {
           setBarbershopId(profile.barbershop_id);

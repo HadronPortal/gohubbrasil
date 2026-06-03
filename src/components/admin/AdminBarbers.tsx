@@ -157,6 +157,10 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
         if (password && password.trim() && !/^[*•●]+$/.test(password.trim())) {
           body.password = password.trim();
         }
+        // PRESERVE ROLE OWNER: Tell the Edge Function NOT to change role to barber if it's currently owner
+        // The RPC update_barber_admin already handles only name/phone/avatar/commission, 
+        // but create-barber (used for credentials) needs to know.
+        body.preserveRole = true;
       } else {
         body.email = email.trim().toLowerCase();
         body.password = password.trim();
