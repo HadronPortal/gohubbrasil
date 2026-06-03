@@ -148,7 +148,7 @@ export default function SuperAdmin() {
   }
 
   if (!isSuperAdmin) {
-    return <Navigate to="/" />;
+    return <Navigate to="/" replace />;
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, isEdit = false) => {
