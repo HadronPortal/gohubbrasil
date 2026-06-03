@@ -73,18 +73,28 @@ export default function Admin() {
           </div>
 
           {profile?.has_barber_panel && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => {
-                localStorage.setItem('force_barber_panel', 'true');
-                navigate("/barber-dashboard");
-              }}
-              className="w-full bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] hover:border-[#f0c040] text-[10px] h-10 gap-2 font-bold font-oswald tracking-wider"
-            >
-              <RefreshCw className="w-3 h-3 text-[#f0c040]" />
-              ALTERNAR PARA PAINEL BARBEIRO
-            </Button>
+            <div className="grid grid-cols-2 gap-3">
+              <Button 
+                variant="outline" 
+                size="sm"
+                disabled
+                className="bg-[#f0c040] border-[#f0c040] text-[#1c2333] opacity-100 text-[10px] h-10 gap-2 font-bold font-oswald tracking-wider cursor-default"
+              >
+                PAINEL DONO
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  localStorage.setItem('force_barber_panel', 'true');
+                  navigate("/barber-dashboard");
+                }}
+                className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] hover:border-[#f0c040] text-[10px] h-10 gap-2 font-bold font-oswald tracking-wider"
+              >
+                <RefreshCw className="w-3 h-3 text-[#f0c040]" />
+                PAINEL BARBEIRO
+              </Button>
+            </div>
           )}
         </div>
 
