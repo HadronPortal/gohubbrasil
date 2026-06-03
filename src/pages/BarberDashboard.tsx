@@ -15,13 +15,13 @@ export default function BarberDashboard() {
   useEffect(() => {
     if (!authLoading) {
       if (!user) {
-        navigate("/login");
+        navigate("/login", { replace: true });
         return;
       }
       
       if (!isBarber) {
         toast.error("Acesso restrito");
-        navigate("/");
+        navigate("/", { replace: true });
         return;
       }
     }
