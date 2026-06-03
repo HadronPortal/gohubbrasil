@@ -48,6 +48,7 @@ interface Appointment {
     logo_url: string | null;
   };
   barber_name?: string;
+  barber_avatar_url?: string | null;
   service_name?: string;
 }
 
@@ -83,8 +84,12 @@ function AppointmentCard({
 
       <div className="grid grid-cols-2 gap-4 pt-2 border-t border-[#1c2333]">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-[#1c2333] border border-[#2a3347] flex items-center justify-center">
-            <User className="w-4 h-4 text-[#8a9ab5]" />
+          <div className="w-8 h-8 rounded-full bg-[#1c2333] border border-[#2a3347] flex items-center justify-center overflow-hidden">
+            {appt.barber_avatar_url ? (
+              <img src={appt.barber_avatar_url} alt={appt.barber_name} className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-4 h-4 text-[#8a9ab5]" />
+            )}
           </div>
           <div className="flex flex-col">
             <span className="text-[8px] text-[#8a9ab5] uppercase tracking-tighter">BARBEIRO</span>
