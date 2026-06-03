@@ -54,10 +54,6 @@ export default function Admin() {
     }
   }, [user, profile, authLoading, navigate]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/login", { replace: true });
-  };
 
   if (authLoading || loadingBarbershop) {
     return <LoadingScreen />;

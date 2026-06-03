@@ -276,11 +276,6 @@ export default function ClientHome() {
     navigate("/", { replace: true });
   };
 
-  const signOut = async () => {
-    // Redundant but keeping for local state consistency if needed elsewhere
-    await supabase.auth.signOut();
-    navigate("/login", { replace: true });
-  };
 
   if (authLoading || isLoading) {
     return <LoadingScreen />;

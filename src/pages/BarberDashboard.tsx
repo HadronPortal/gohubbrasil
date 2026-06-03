@@ -28,10 +28,6 @@ export default function BarberDashboard() {
     }
   }, [user, isBarber, authLoading, navigate]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/login", { replace: true });
-  };
 
   if (authLoading) {
     return <LoadingScreen />;
