@@ -26,6 +26,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const role = String(data.role || '').toLowerCase()
       const isSuperAdmin = role === 'superadmin'
       const isOwner = role === 'owner'
+      const isBarber = role === 'barber'
       const isAdmin = isSuperAdmin || isOwner || role === 'admin'
       
       finalProfile = {
@@ -33,7 +34,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         role, // Use normalized role
         isOwner,
         isAdmin,
-        isSuperAdmin
+        isSuperAdmin,
+        isBarber
       }
       
       console.log("AUTH PROFILE DEBUG", {
@@ -42,7 +44,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         role: data.role,
         isAdmin,
         isOwner,
-        isSuperAdmin
+        isSuperAdmin,
+        isBarber
       });
     } else {
       finalProfile = { role: 'client', isOwner: false, isAdmin: false, isSuperAdmin: false };
@@ -88,7 +91,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       loading,
       isSuperAdmin: profile?.isSuperAdmin || false,
       isOwner: profile?.isOwner || false,
-      isAdmin: profile?.isAdmin || false
+      isAdmin: profile?.isAdmin || false,
+      isBarber: profile?.isBarber || false
     }}>
       {children}
     </AuthContext.Provider>
