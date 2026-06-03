@@ -43,10 +43,7 @@ interface Appointment {
   status: string;
   price_charged: number;
   created_at: string;
-  barbershop?: {
-    name: string;
-    logo_url: string | null;
-  };
+  barbershop_name?: string;
   barber_name?: string;
   barber_avatar_url?: string | null;
   service_name?: string;
@@ -72,7 +69,7 @@ function AppointmentCard({
             </h4>
           </div>
           <p className="text-[10px] text-[#8a9ab5] uppercase tracking-wider font-medium">
-            {appt.barbershop_name || appt.barbershop?.name}
+            {appt.barbershop_name}
           </p>
         </div>
         <div className="text-right">
@@ -272,7 +269,7 @@ export default function ClientHome() {
           <div className="flex items-center gap-2">
             <Store className="w-5 h-5 text-[#f0c040]" />
             <span className="text-[10px] font-bold tracking-widest text-[#f0c040] uppercase truncate max-w-[150px]">
-              {appointments.find(a => a.barbershop_id === barbershopId)?.barbershop?.name || barbershopName || "Sua Barbearia"}
+              {appointments.find(a => a.barbershop_id === barbershopId)?.barbershop_name || barbershopName || "Sua Barbearia"}
             </span>
           </div>
           <div className="flex items-center gap-3">
