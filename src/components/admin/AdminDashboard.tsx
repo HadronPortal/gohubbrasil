@@ -11,13 +11,12 @@ interface Stats {
 }
 
 interface Appointment {
-  id: string;
-  starts_at: string;
-  status: string;
-  price_charged: number | null;
   client_name: string;
   barber_name: string;
   service_name: string;
+  starts_at: string;
+  price_charged: number | null;
+  status: string;
 }
 
 export default function AdminDashboard({ 
@@ -43,26 +42,13 @@ export default function AdminDashboard({
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true);
-      const start = startOfDay(new Date()).toISOString();
-      const end = endOfDay(new Date()).toISOString();
+      const today = new Date().toISOString().slice(0, 10);
 
-      const { data: appts, error } = await supabase
-        .from("owner_appointments_view")
-        .select("*")
-        .eq("barbershop_id", barbershopId)
-        .gte("starts_at", start)
-        .lte("starts_at", end)
-        .neq("status", "cancelled")
-        .order("starts_at", { ascending: true });
-
-      console.log("OWNER DASHBOARD DEBUG", {
-        ownerProfile: profile,
-        barbershopId,
-        start,
-        end,
-        appts,
-        error
+      const { data, error } = await supabase.rpc("get_owner_dashboard_appointments", {
+        p_day: today
       });
+
+      console.log("OWNER DASHBOARD RPC", { data, error });
 
       if (error) {
         console.error("OWNER DASHBOARD ERROR", error);
@@ -71,8 +57,9 @@ export default function AdminDashboard({
         return;
       }
 
-      if (appts) {
-        setAppointments(appts as Appointment[]);
+      if (data) {
+        const appts = data as Appointment[];
+        setAppointments(appts);
         
         const revenue = appts.reduce((acc, a) => acc + (Number(a.price_charged) || 0), 0);
         
@@ -149,8 +136,8 @@ export default function AdminDashboard({
               NENHUM AGENDAMENTO PARA HOJE
             </p>
           ) : (
-            appointments.map((appt) => (
-              <div key={appt.id} className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] space-y-3">
+            appointments.map((appt, idx) => (
+              <div key={`${appt.starts_at}-${idx}`} className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] space-y-3">
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="text-sm font-bold text-[#c8d4e8] font-oswald uppercase tracking-wider">

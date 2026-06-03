@@ -346,6 +346,17 @@ export type Database = {
         Returns: Json
       }
       get_auth_user_id_by_email: { Args: { p_email: string }; Returns: string }
+      get_owner_dashboard_appointments: {
+        Args: { p_day: string }
+        Returns: {
+          barber_name: string
+          client_name: string
+          price_charged: number
+          service_name: string
+          starts_at: string
+          status: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
