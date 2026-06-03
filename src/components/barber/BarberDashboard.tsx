@@ -15,12 +15,16 @@ interface DashboardSummary {
 }
 
 interface Appointment {
+  id: string;
   client_name: string;
   client_phone: string;
   service_name: string;
   starts_at: string;
-  price_charged: number;
-  commission_value: number;
+  price?: number;
+  price_charged?: number;
+  service_price?: number;
+  commission_amount?: number;
+  commission_value?: number;
   status: string;
 }
 
