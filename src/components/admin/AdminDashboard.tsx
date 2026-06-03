@@ -67,7 +67,8 @@ export default function AdminDashboard({
         const { count: barberCount } = await supabase
           .from("barbers")
           .select("id", { count: "exact", head: true })
-          .eq("barbershop_id", barbershopId);
+          .eq("barbershop_id", barbershopId)
+          .eq("active", true);
 
         // Estimativa simples de slots (considerando 18 slots por barbeiro)
         const totalPossibleSlots = (barberCount || 0) * 18;

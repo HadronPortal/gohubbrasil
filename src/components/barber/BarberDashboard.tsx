@@ -30,6 +30,7 @@ export default function BarberDashboard({ profile }: { profile: any }) {
         .from("barbers")
         .select("id")
         .eq("user_id", profile.id)
+        .eq("active", true)
         .single();
 
       if (barberError || !barberData) {

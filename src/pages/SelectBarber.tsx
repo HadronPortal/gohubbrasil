@@ -66,7 +66,8 @@ export default function SelectBarber() {
       const { data: barbersData, error: barbersError } = await supabase
         .from("barbers")
         .select("id, user_id, barbershop_id, bio, active, commission_pct")
-        .eq("barbershop_id", barbershopId);
+        .eq("barbershop_id", barbershopId)
+        .eq("active", true);
 
       console.log("BARBERS QUERY", { barbershopId, barberData: barbersData, barberError: barbersError });
 

@@ -43,7 +43,8 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
     const { data: barbersData, error: barbersError } = await supabase
       .from("barbers")
       .select("id, user_id, barbershop_id, bio, active, commission_pct")
-      .eq("barbershop_id", barbershopId);
+      .eq("barbershop_id", barbershopId)
+      .eq("active", true);
 
     if (barbersError) {
       console.error("Error fetching barbers:", barbersError);
@@ -219,7 +220,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
     setIsLoading(true);
     try {
       const { data, error } = await supabase.rpc('delete_barber_safe', {
-        p_barber_id: id
+        barber_id: id
       });
       
       if (error) throw error;
