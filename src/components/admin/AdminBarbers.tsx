@@ -176,7 +176,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
             password,
             avatarUrl: finalAvatarUrl,
             bio,
-            commissionPct: parseFloat(commission) || 0,
+            commissionPct: parsePercentage(commission) || 0,
             barbershopId
           }
         });
