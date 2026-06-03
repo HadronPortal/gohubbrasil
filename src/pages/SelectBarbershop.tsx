@@ -24,13 +24,13 @@ export default function SelectBarbershop() {
   
   const signOut = async () => {
     await supabase.auth.signOut();
-    navigate("/login");
+    navigate("/login", { replace: true });
   };
 
   useEffect(() => {
     const checkSavedBarbershop = async () => {
       if (!authLoading && !user) {
-        navigate("/login");
+        navigate("/login", { replace: true });
       } else if (user && profile) {
         // Check if we should skip auto-redirect (manual selection mode)
         const params = new URLSearchParams(window.location.search);
@@ -39,13 +39,13 @@ export default function SelectBarbershop() {
         if (!manualSelection) {
           // Se for superadmin, redireciona para o painel do superadmin
           if (profile.isSuperAdmin) {
-            navigate("/super-admin");
+            navigate("/super-admin", { replace: true });
             return;
           }
           
           // Se for dono (owner) ou admin, redireciona para o painel admin
           if (profile.isOwner || profile.role === 'admin') {
-            navigate("/admin");
+            navigate("/admin", { replace: true });
             return;
           }
         }
@@ -67,7 +67,7 @@ export default function SelectBarbershop() {
           });
 
           if (foundBarbershop) {
-            navigate("/client-home");
+            navigate("/client-home", { replace: true });
             return;
           } else {
             // Se não existe mais, limpa o localStorage
@@ -107,7 +107,7 @@ export default function SelectBarbershop() {
       localStorage.setItem(`selectedBarbershopId:${user.id}`, shop.id);
       localStorage.setItem(`selectedBarbershopName:${user.id}`, shop.name);
     }
-    navigate("/client-home");
+    navigate("/client-home", { replace: true });
   };
 
   if (isLoading || authLoading) {
