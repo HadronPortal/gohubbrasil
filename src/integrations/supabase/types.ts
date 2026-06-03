@@ -346,6 +346,7 @@ export type Database = {
         Returns: Json
       }
       get_auth_user_id_by_email: { Args: { p_email: string }; Returns: string }
+      get_barber_dashboard: { Args: { p_day: string }; Returns: Json }
       get_owner_dashboard_appointments: {
         Args: { p_day: string }
         Returns: {
