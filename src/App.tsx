@@ -54,10 +54,12 @@ const router = createBrowserRouter([
 
 function App() {
   useEffect(() => {
+    let handler: any = null;
+
     // Handling Android Back Button
     const setupBackButton = async () => {
       try {
-        const handler = await CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+        handler = await CapacitorApp.addListener('backButton', ({ canGoBack }) => {
           const protectedRoutes = [
             '/client-home',
             '/admin',
@@ -73,13 +75,8 @@ function App() {
             path.startsWith(route)
           );
 
-          // Se estiver em uma rota protegida ou na raiz (seleção de barbearia logada)
-          // não permite voltar para o login.
           if (isProtected || path === '/') {
-            // Se não puder voltar mais (está na home do perfil), podemos apenas ignorar
-            // ou minimizar o app se canGoBack for false (comportamento padrão Android em homes)
             if (!canGoBack || path === '/client-home' || path === '/admin' || path === '/barber-dashboard' || path === '/super-admin') {
-              // App.exitApp(); // Se quiser fechar o app ao voltar na home
               return;
             }
           }
@@ -88,16 +85,18 @@ function App() {
             window.history.back();
           }
         });
-
-        return () => {
-          handler.remove();
-        };
       } catch (e) {
         console.log("Capacitor App plugin not available, skipping back button handler.");
       }
     };
 
     setupBackButton();
+
+    return () => {
+      if (handler) {
+        handler.remove();
+      }
+    };
   }, []);
 
   return (
