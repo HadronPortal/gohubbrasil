@@ -71,9 +71,10 @@ export default function FreeSlotsView({ barbershopId, onBack }: FreeSlotsViewPro
 
   // Block form state
   const [blockBarberId, setBlockBarberId] = useState<string>("all");
-  const [blockStartTime, setBlockStartTime] = useState("09:00");
-  const [blockEndTime, setBlockEndTime] = useState("10:00");
+  const [blockStartTime, setBlockStartTime] = useState("");
+  const [blockEndTime, setBlockEndTime] = useState("");
   const [blockReason, setBlockReason] = useState("");
+  const [blockDate, setBlockDate] = useState<Date | undefined>(new Date());
 
   useEffect(() => {
     fetchSlotsAndBlocks();
@@ -144,9 +145,45 @@ export default function FreeSlotsView({ barbershopId, onBack }: FreeSlotsViewPro
     }
   };
 
+  const generateTimeOptions = () => {
+    const options = [];
+    const interval = parseInt(slotInterval) || 30;
+    let current = new Date();
+    current.setHours(0, 0, 0, 0);
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+
+    while (isBefore(current, end)) {
+      options.push(format(current, "HH:mm"));
+      current = addMinutes(current, interval);
+    }
+    return options;
+  };
+
   const handleCreateBlock = async () => {
     try {
-      const dateStr = format(selectedDate, "yyyy-MM-dd");
+      if (!blockDate) {
+        toast.error("Selecione a data");
+        return;
+      }
+      if (!blockStartTime) {
+        toast.error("Selecione o horário de início");
+        return;
+      }
+      if (!blockEndTime) {
+        toast.error("Selecione o horário de fim");
+        return;
+      }
+
+      const [startH, startM] = blockStartTime.split(":").map(Number);
+      const [endH, endM] = blockEndTime.split(":").map(Number);
+      
+      if (endH < startH || (endH === startH && endM <= startM)) {
+        toast.error("Horário de fim deve ser maior que o de início");
+        return;
+      }
+
+      const dateStr = format(blockDate, "yyyy-MM-dd");
       
       const { data, error } = await supabase.rpc('create_barbershop_time_block_local', {
         p_day: dateStr,
@@ -167,6 +204,14 @@ export default function FreeSlotsView({ barbershopId, onBack }: FreeSlotsViewPro
     } catch (error: any) {
       toast.error("Erro ao bloquear: " + error.message);
     }
+  };
+
+  const handleStartTimeChange = (time: string) => {
+    setBlockStartTime(time);
+    const [h, m] = time.split(":").map(Number);
+    const date = new Date();
+    date.setHours(h, m + (parseInt(slotInterval) || 30));
+    setBlockEndTime(format(date, "HH:mm"));
   };
 
   const handleDeleteBlock = async (id: string) => {
@@ -239,7 +284,12 @@ export default function FreeSlotsView({ barbershopId, onBack }: FreeSlotsViewPro
         <div className="grid grid-cols-2 gap-3">
           <Button 
             variant="outline" 
-            onClick={() => setIsBlockModalOpen(true)}
+            onClick={() => {
+              setBlockDate(selectedDate);
+              setBlockStartTime("");
+              setBlockEndTime("");
+              setIsBlockModalOpen(true);
+            }}
             className="bg-[#141b2a] border-[#2a3347] border-dashed text-[#8a9ab5] hover:text-[#f0c040] hover:border-[#f0c040]"
           >
             <Lock className="w-4 h-4 mr-2" />
@@ -288,12 +338,12 @@ export default function FreeSlotsView({ barbershopId, onBack }: FreeSlotsViewPro
                   onClick={() => {
                     setBlockBarberId(slot.barber_id);
                     setBlockStartTime(slot.time_label);
-                    // Calculate end time label if needed or just use current block defaults
-                    const startH = parseInt(slot.time_label.split(":")[0]);
-                    const startM = parseInt(slot.time_label.split(":")[1]);
+                    setBlockDate(selectedDate);
+                    
+                    const [startH, startM] = slot.time_label.split(":").map(Number);
                     const end = new Date();
                     end.setHours(startH, startM + parseInt(slotInterval));
-                    setBlockEndTime(end.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false }));
+                    setBlockEndTime(format(end, "HH:mm"));
                     setIsBlockModalOpen(true);
                   }}
                 >
@@ -380,16 +430,17 @@ export default function FreeSlotsView({ barbershopId, onBack }: FreeSlotsViewPro
 
       {/* Block Modal */}
       <Dialog open={isBlockModalOpen} onOpenChange={setIsBlockModalOpen}>
-        <DialogContent className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8] max-w-[350px]">
-          <DialogHeader>
-            <DialogTitle className="font-oswald uppercase tracking-widest text-[#f0c040]">BLOQUEAR HORÁRIO</DialogTitle>
+        <DialogContent className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8] max-w-[350px] p-0 overflow-hidden rounded-[8px]">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="font-oswald uppercase tracking-widest text-[#f0c040] text-lg">BLOQUEAR HORÁRIO</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          
+          <div className="p-6 space-y-5">
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Barbeiro</label>
               <Select value={blockBarberId} onValueChange={setBlockBarberId}>
-                <SelectTrigger className="bg-[#141b2a] border-[#2a3347]">
-                  <SelectValue />
+                <SelectTrigger className="bg-[#141b2a] border-[#2a3347] h-11 text-xs">
+                  <SelectValue placeholder="Selecione o barbeiro" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8]">
                   <SelectItem value="all">Todos os Barbeiros</SelectItem>
@@ -399,31 +450,89 @@ export default function FreeSlotsView({ barbershopId, onBack }: FreeSlotsViewPro
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Data</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal bg-[#141b2a] border-[#2a3347] h-11 text-xs text-[#c8d4e8]",
+                      !blockDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4 text-[#f0c040]" />
+                    {blockDate ? format(blockDate, "dd/MM/yyyy") : <span>Selecione a data</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-[#1c2333] border-[#2a3347]" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={blockDate}
+                    onSelect={(date) => date && setBlockDate(date)}
+                    className="bg-[#1c2333] text-[#c8d4e8]"
+                    locale={ptBR}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Início</label>
-                <Input type="time" value={blockStartTime} onChange={e => setBlockStartTime(e.target.value)} className="bg-[#141b2a] border-[#2a3347]" />
+                <Select value={blockStartTime} onValueChange={handleStartTimeChange}>
+                  <SelectTrigger className="bg-[#141b2a] border-[#2a3347] h-11 text-xs">
+                    <SelectValue placeholder="Início" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8] max-h-[200px]">
+                    {generateTimeOptions().map(time => (
+                      <SelectItem key={`start-${time}`} value={time}>{time}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Fim</label>
-                <Input type="time" value={blockEndTime} onChange={e => setBlockEndTime(e.target.value)} className="bg-[#141b2a] border-[#2a3347]" />
+                <Select value={blockEndTime} onValueChange={setBlockEndTime}>
+                  <SelectTrigger className="bg-[#141b2a] border-[#2a3347] h-11 text-xs">
+                    <SelectValue placeholder="Fim" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8] max-h-[200px]">
+                    {generateTimeOptions().map(time => (
+                      <SelectItem key={`end-${time}`} value={time}>{time}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
+
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Motivo (Opcional)</label>
               <Input 
                 placeholder="Ex: Almoço, Manutenção" 
                 value={blockReason} 
                 onChange={e => setBlockReason(e.target.value)} 
-                className="bg-[#141b2a] border-[#2a3347]" 
+                className="bg-[#141b2a] border-[#2a3347] h-11 text-xs focus-visible:ring-[#f0c040]/30" 
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsBlockModalOpen(false)}
+                className="bg-transparent border-[#2a3347] text-[#8a9ab5] hover:bg-[#141b2a] font-bold uppercase font-oswald tracking-widest h-11"
+              >
+                CANCELAR
+              </Button>
+              <Button 
+                onClick={handleCreateBlock} 
+                className="bg-[#f0c040] text-[#1c2333] hover:bg-[#d4a935] font-bold uppercase font-oswald tracking-widest h-11"
+              >
+                BLOQUEAR
+              </Button>
+            </div>
           </div>
-          <DialogFooter>
-            <Button onClick={handleCreateBlock} className="w-full bg-[#f0c040] text-[#1c2333] hover:bg-[#d4a935] font-bold uppercase font-oswald tracking-widest">
-              CONFIRMAR BLOQUEIO
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
