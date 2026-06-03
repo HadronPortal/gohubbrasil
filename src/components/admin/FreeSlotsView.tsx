@@ -315,7 +315,7 @@ export default function FreeSlotsView({ barbershopId, onBack }: FreeSlotsViewPro
                   </div>
                   <div>
                     <span className="text-[11px] font-bold text-red-500 uppercase tracking-widest">
-                      {format(new Date(block.starts_at), "HH:mm")} - {format(new Date(block.ends_at), "HH:mm")}
+                      {new Date(block.starts_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })} - {new Date(block.ends_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}
                     </span>
                     <p className="text-[9px] text-[#8a9ab5] uppercase tracking-widest">
                       {block.barber_name} {block.reason ? `• ${block.reason}` : ""}
