@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, User, LogOut } from "lucide-react";
+import { LogoutButton } from "@/components/LogoutButton";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { AdminGear } from "@/components/AdminGear";
@@ -28,10 +29,6 @@ export default function SelectBarber() {
   const navigate = useNavigate();
   const { user, profile, loading: authLoading } = useAuth();
   
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/login", { replace: true });
-  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -161,18 +158,8 @@ export default function SelectBarber() {
                 <User className="w-6 h-6 text-[#8a9ab5]" />
               )}
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={async () => {
-                await signOut();
-                navigate("/login", { replace: true });
-              }} 
-              className="text-[#8a9ab5] hover:text-[#f0c040]"
-              title="Sair"
-            >
-              <LogOut className="w-5 h-5" />
-            </Button>
+            <LogoutButton showText />
+          </div>
           </div>
         </div>
 
