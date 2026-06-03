@@ -37,6 +37,14 @@ interface DashboardData {
   history: Appointment[];
 }
 
+const money = (value: any) => {
+  const number = Number(value ?? 0);
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(Number.isFinite(number) ? number : 0);
+};
+
 export default function BarberDashboard({ profile }: { profile: any }) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -74,28 +82,13 @@ export default function BarberDashboard({ profile }: { profile: any }) {
     }
   };
 
-  const getStatusInfo = (status: string) => {
-    switch (status) {
-      case "pending": 
-        return { label: "PENDENTE", color: "text-yellow-500 border-yellow-500/30 bg-yellow-500/10" };
-      case "confirmed": 
-        return { label: "CONFIRMADO", color: "text-green-500 border-green-500/30 bg-green-500/10" };
-      case "cancelled": 
-        return { label: "CANCELADO", color: "text-red-500 border-red-500/30 bg-red-500/10" };
-      case "completed":
-        return { label: "CONCLUÍDO", color: "text-blue-500 border-blue-500/30 bg-blue-500/10" };
-      default: 
-        return { label: status.toUpperCase(), color: "text-gray-500 border-gray-500/30 bg-gray-500/10" };
-    }
-  };
-
   const openWhatsApp = (phone: string) => {
     if (!phone) return;
     const cleanPhone = phone.replace(/\D/g, "");
     window.open(`https://wa.me/55${cleanPhone}`);
   };
 
-  if (isLoading && !data) return <div className="text-[#8a9ab5] font-oswald text-xs tracking-widest uppercase">CARREGANDO...</div>;
+  if (isLoading && !data) return <div className="text-[#8a9ab5] font-oswald text-xs tracking-widest uppercase p-6">CARREGANDO...</div>;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -114,7 +107,7 @@ export default function BarberDashboard({ profile }: { profile: any }) {
             <TrendingUp className="w-4 h-4 text-[#8a9ab5] mb-1" />
             <span className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Faturamento hoje</span>
             <span className="text-2xl font-bold text-[#f0c040] font-oswald">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(data?.summary.gross_today || 0)}
+              {money(data?.summary.gross_today)}
             </span>
           </CardContent>
         </Card>
@@ -124,7 +117,7 @@ export default function BarberDashboard({ profile }: { profile: any }) {
             <DollarSign className="w-4 h-4 text-[#8a9ab5] mb-1" />
             <span className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Minha comissão hoje</span>
             <span className="text-2xl font-bold text-green-500 font-oswald">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(data?.summary.commission_today || 0)}
+              {money(data?.summary.commission_today)}
             </span>
           </CardContent>
         </Card>
@@ -147,15 +140,15 @@ export default function BarberDashboard({ profile }: { profile: any }) {
         </TabsList>
 
         <TabsContent value="today" className="mt-6 space-y-4">
-          <AppointmentList appointments={data?.today || []} onWhatsApp={openWhatsApp} emptyMessage="Nenhum agendamento para hoje" />
+          <AppointmentList appointments={data?.today || []} onWhatsApp={openWhatsApp} emptyMessage="Nenhum agendamento para hoje" onRefresh={fetchDashboardData} />
         </TabsContent>
 
         <TabsContent value="upcoming" className="mt-6 space-y-4">
-          <AppointmentList appointments={data?.upcoming || []} onWhatsApp={openWhatsApp} emptyMessage="Nenhum agendamento futuro" />
+          <AppointmentList appointments={data?.upcoming || []} onWhatsApp={openWhatsApp} emptyMessage="Nenhum agendamento futuro" onRefresh={fetchDashboardData} />
         </TabsContent>
 
         <TabsContent value="history" className="mt-6 space-y-4">
-          <AppointmentList appointments={data?.history || []} onWhatsApp={openWhatsApp} emptyMessage="Nenhum histórico encontrado" />
+          <AppointmentList appointments={data?.history || []} onWhatsApp={openWhatsApp} emptyMessage="Nenhum histórico encontrado" onRefresh={fetchDashboardData} />
         </TabsContent>
       </Tabs>
     </div>
