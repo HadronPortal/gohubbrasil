@@ -45,12 +45,14 @@ export function ProfileModal({ isOpen, onOpenChange }: ProfileModalProps) {
     setLoading(true);
 
     try {
+      const cleanPhone = String(phone || '').replace(/\D/g, '');
+
       // 1. Update public.users (Name and Phone)
       const { error: profileError } = await supabase
         .from("users")
         .update({
-          name,
-          phone,
+          name: name.trim(),
+          phone: cleanPhone || null,
         })
         .eq("id", user.id);
 
@@ -104,8 +106,9 @@ export function ProfileModal({ isOpen, onOpenChange }: ProfileModalProps) {
         setConfirmPassword("");
       }
 
+      toast.success("Perfil atualizado");
       await refreshProfile();
-      toast.success("Perfil atualizado com sucesso!");
+      onOpenChange(false);
     } catch (error: any) {
       console.error("Error updating profile:", error);
       toast.error(error.message || "Erro ao atualizar perfil");
@@ -172,8 +175,9 @@ export function ProfileModal({ isOpen, onOpenChange }: ProfileModalProps) {
               </Label>
               <Input
                 id="phone"
+                type="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
                 placeholder="(00) 00000-0000"
                 className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8] h-11 focus-visible:ring-[#f0c040] rounded-none"
               />
