@@ -9,29 +9,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
 
   const loadProfile = async (userId: string) => {
-    // 1. Fetch panel info and profile via RPC
+    // 1. Fetch user profile from public.users table
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (userError) {
+      console.error("Error loading profile from public.users:", userError);
+      setLoading(false);
+      return;
+    }
+
+    if (!userData) {
+      console.error("No user data found in public.users");
+      setLoading(false);
+      return;
+    }
+
+    // 2. Fetch panel info via RPC to determine roles and flags
     const { data: panelData, error: panelError } = await supabase.rpc('get_my_app_panels');
     
     if (panelError) {
       console.error("Error loading panels:", panelError);
-      setLoading(false);
-      return;
+      // We still have userData, so we can continue with basic role if panel fails
     }
 
-    if (!panelData) {
-      console.error("No panel data returned");
-      setLoading(false);
-      return;
-    }
-
-    const role = String(panelData.role || 'client').toLowerCase();
+    const role = String(userData.role || 'client').toLowerCase();
     const isSuperAdmin = role === 'superadmin';
     const isOwner = role === 'owner';
     const isBarber = role === 'barber';
     const isAdmin = isSuperAdmin || isOwner || role === 'admin';
     
-    // As per requirement, if owner has a barber panel, clear the force flag on login 
-    // to ensure they always land on the Owner Panel first.
     if (isOwner) {
       localStorage.removeItem('force_barber_panel');
     }
@@ -39,21 +49,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const finalProfile = {
       id: userId,
       role,
-      name: panelData.name,
-      phone: panelData.phone,
-      avatar_url: panelData.avatar_url,
-      barbershop_id: panelData.barbershop_id || null,
+      name: userData.name,
+      phone: userData.phone,
+      avatar_url: userData.avatar_url,
+      barbershop_id: userData.barbershop_id || null,
       isOwner,
       isAdmin,
       isSuperAdmin,
       isBarber,
-      has_barber_panel: panelData.has_barber_panel || false
+      has_barber_panel: panelData?.has_barber_panel || false
     };
     
-    console.log("AUTH PROFILE DEBUG (via RPC)", {
+    console.log("AUTH PROFILE DEBUG (public.users)", {
       userId,
-      profile: finalProfile,
-      panels: panelData
+      profile: finalProfile
     });
 
     setProfile(finalProfile);
