@@ -3,9 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn, toSaoPauloDateKey, isFinished, isCanceled } from "@/lib/utils";
+import { cn, getDateKeyBR, isTodayBR, isAfterTodayBR, isFinished, isCanceled } from "@/lib/utils";
 import { money } from "@/utils/format";
-import { getInitial, isFinished as isFinishedOld, isCanceled as isCanceledOld } from "@/lib/utils";
+import { getInitial } from "@/lib/utils";
+
 import { Lock } from "lucide-react";
 
 import { UserAvatar } from "@/components/UserAvatar";
@@ -77,11 +78,11 @@ export default function AdminDashboard({
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true);
-      const todayStr = new Date().toISOString().slice(0, 10);
 
       const { data, error } = await supabase.rpc("get_owner_dashboard_appointments", {
-        p_day: todayStr
+        p_day: null
       }) as { data: RPCResponse | null, error: any };
+
 
       console.log("OWNER DASHBOARD RPC", { data, error });
 
@@ -110,9 +111,24 @@ export default function AdminDashboard({
         // Hoje e Próximos: starts_at ASC
         // Histórico: starts_at DESC
         setAppointments({
-          today: (data.today || []).sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()),
-          upcoming: (data.upcoming || []).sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()),
-          history: (data.history || []).sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime()),
+        const allCombined = [
+          ...(data.today || []),
+          ...(data.upcoming || []),
+          ...(data.history || [])
+        ];
+        
+        // Remove duplicates by ID
+        const unique = Array.from(new Map(allCombined.map(a => [(a as any).id || Math.random(), a])).values());
+
+        setAppointments({
+          today: unique.filter(a => isTodayBR(a.starts_at) && !isFinished(a.status) && !isCanceled(a.status))
+            .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()),
+          upcoming: unique.filter(a => isAfterTodayBR(a.starts_at) && !isFinished(a.status) && !isCanceled(a.status))
+            .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()),
+          history: unique.filter(a => isFinished(a.status) || isCanceled(a.status) || new Date(a.starts_at).getTime() < Date.now())
+            .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime()),
+        });
+
         });
       }
     } catch (err: any) {

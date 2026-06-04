@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { money } from "@/utils/format";
 import { Lock } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
-import { toSaoPauloDateKey, isFinished, isCanceled } from "@/lib/utils";
+import { getDateKeyBR, isTodayBR, isAfterTodayBR, isFinished, isCanceled } from "@/lib/utils";
 import FreeSlotsView from "../admin/FreeSlotsView";
 
 
@@ -51,9 +51,9 @@ export default function BarberDashboard({ profile }: { profile: any }) {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
 
   const [showFreeSlots, setShowFreeSlots] = useState(false);
-  const todayKey = toSaoPauloDateKey(new Date());
 
   useEffect(() => {
+
     if (profile) fetchDashboardData();
   }, [profile, selectedDate]);
 
@@ -62,8 +62,9 @@ export default function BarberDashboard({ profile }: { profile: any }) {
     try {
       setIsLoading(true);
       const { data: rpcData, error: rpcError } = await supabase.rpc('get_barber_dashboard', {
-        p_day: selectedDate
+        p_day: null
       });
+
 
       console.log("BARBER DASHBOARD RPC", { data: rpcData, error: rpcError });
 
@@ -95,16 +96,18 @@ export default function BarberDashboard({ profile }: { profile: any }) {
   // Remover duplicatas por ID caso existam
   const uniqueAppointments = Array.from(new Map(allAppointments.map(a => [a.id, a])).values());
 
-  const activeAppointments = uniqueAppointments
-    .filter(a => !isFinished(a.status) && !isCanceled(a.status))
+  const todayAppointments = uniqueAppointments
+    .filter(a => isTodayBR(a.starts_at) && !isFinished(a.status) && !isCanceled(a.status))
+    .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
+
+  const nextAppointments = uniqueAppointments
+    .filter(a => isAfterTodayBR(a.starts_at) && !isFinished(a.status) && !isCanceled(a.status))
     .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
 
   const historyAppointments = uniqueAppointments
-    .filter(a => isFinished(a.status) || isCanceled(a.status) || new Date(a.starts_at).getTime() < new Date().getTime() - 12 * 60 * 60 * 1000)
+    .filter(a => isFinished(a.status) || isCanceled(a.status) || new Date(a.starts_at).getTime() < Date.now())
     .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
 
-  const todayAppointments = activeAppointments.filter(a => toSaoPauloDateKey(a.starts_at) === todayKey);
-  const nextAppointments = activeAppointments.filter(a => toSaoPauloDateKey(a.starts_at) > todayKey);
 
 
   const openWhatsApp = (phone: string) => {

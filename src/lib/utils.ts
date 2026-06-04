@@ -10,7 +10,7 @@ export const getInitial = (name?: string | null, email?: string | null) => {
   return value.charAt(0).toUpperCase();
 };
 
-export const toSaoPauloDateKey = (value: string | number | Date) => {
+export const getDateKeyBR = (value: string | number | Date) => {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone: 'America/Sao_Paulo',
     year: 'numeric',
@@ -19,9 +19,18 @@ export const toSaoPauloDateKey = (value: string | number | Date) => {
   }).format(new Date(value));
 };
 
+export const todayKey = getDateKeyBR(new Date());
+
+export const isTodayBR = (startsAt: string | number | Date) =>
+  getDateKeyBR(startsAt) === todayKey;
+
+export const isAfterTodayBR = (startsAt: string | number | Date) =>
+  getDateKeyBR(startsAt) > todayKey;
+
 export const isFinished = (status?: string | null) =>
   ['completed', 'finalizado'].includes(String(status || '').toLowerCase());
 
 export const isCanceled = (status?: string | null) =>
   ['cancelled', 'canceled', 'cancelado'].includes(String(status || '').toLowerCase());
+
 
