@@ -86,11 +86,6 @@ export default function BarberDashboard({ profile }: { profile: any }) {
     }
   };
 
-  const isFinished = (status: string) => ['completed', 'finalizado'].includes(String(status).toLowerCase());
-  const isCanceled = (status: string) => ['cancelled', 'canceled', 'cancelado'].includes(String(status).toLowerCase());
-  const isPast = (appt: Appointment) => new Date(appt.starts_at).getTime() < Date.now();
-  const isHistory = (appt: Appointment) => isFinished(appt.status) || isCanceled(appt.status) || isPast(appt);
-
   const allAppointments = [
     ...(data?.today || []),
     ...(data?.upcoming || []),
@@ -101,12 +96,16 @@ export default function BarberDashboard({ profile }: { profile: any }) {
   const uniqueAppointments = Array.from(new Map(allAppointments.map(a => [a.id, a])).values());
 
   const activeAppointments = uniqueAppointments
-    .filter(a => !isHistory(a))
+    .filter(a => !isFinished(a.status) && !isCanceled(a.status))
     .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
 
   const historyAppointments = uniqueAppointments
-    .filter(a => isHistory(a))
+    .filter(a => isFinished(a.status) || isCanceled(a.status) || new Date(a.starts_at).getTime() < new Date().getTime() - 12 * 60 * 60 * 1000)
     .sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
+
+  const todayAppointments = activeAppointments.filter(a => toSaoPauloDateKey(a.starts_at) === todayKey);
+  const nextAppointments = activeAppointments.filter(a => toSaoPauloDateKey(a.starts_at) > todayKey);
+
 
   const openWhatsApp = (phone: string) => {
     if (!phone) return;
@@ -180,12 +179,18 @@ export default function BarberDashboard({ profile }: { profile: any }) {
 
       {/* Tabs */}
       <Tabs defaultValue="active" className="w-full">
-        <TabsList className="w-full bg-[#141b2a] border border-[#2a3347] grid grid-cols-2 h-12 p-1">
+        <TabsList className="w-full bg-[#141b2a] border border-[#2a3347] grid grid-cols-3 h-12 p-1">
           <TabsTrigger 
             value="active" 
             className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]"
           >
-            Hoje / Próximos
+            Hoje
+          </TabsTrigger>
+          <TabsTrigger 
+            value="upcoming" 
+            className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]"
+          >
+            Próximos
           </TabsTrigger>
           <TabsTrigger 
             value="history" 
@@ -197,12 +202,22 @@ export default function BarberDashboard({ profile }: { profile: any }) {
 
         <TabsContent value="active" className="mt-6 space-y-4">
           <AppointmentList 
-            appointments={activeAppointments} 
+            appointments={todayAppointments} 
             onWhatsApp={openWhatsApp} 
-            emptyMessage="Nenhum agendamento ativo" 
+            emptyMessage="Nenhum agendamento para hoje" 
             onRefresh={fetchDashboardData} 
           />
         </TabsContent>
+
+        <TabsContent value="upcoming" className="mt-6 space-y-4">
+          <AppointmentList 
+            appointments={nextAppointments} 
+            onWhatsApp={openWhatsApp} 
+            emptyMessage="Nenhum agendamento futuro" 
+            onRefresh={fetchDashboardData} 
+          />
+        </TabsContent>
+
 
         <TabsContent value="history" className="mt-6 space-y-4">
           <AppointmentList 
@@ -281,10 +296,19 @@ function AppointmentList({ appointments, onWhatsApp, emptyMessage, onRefresh }: 
         return (
           <div key={i} className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] space-y-4">
             <div className="flex justify-between items-start">
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold text-[#c8d4e8] font-oswald uppercase tracking-wider">{appt.client_name}</h4>
-                <p className="text-[10px] text-[#8a9ab5] uppercase tracking-widest">{appt.service_name}</p>
+              <div className="flex items-center gap-3">
+                <UserAvatar 
+                  name={appt.client_name} 
+                  avatarUrl={null} 
+                  size="sm" 
+                  className="border-[#f0c040]/30" 
+                />
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-[#c8d4e8] font-oswald uppercase tracking-wider">{appt.client_name}</h4>
+                  <p className="text-[10px] text-[#8a9ab5] uppercase tracking-widest">{appt.service_name}</p>
+                </div>
               </div>
+
               <span className={`text-[9px] font-bold px-2 py-1 rounded-[2px] border uppercase tracking-widest ${getStatusInfo(appt.status).color}`}>
                 {getStatusInfo(appt.status).label}
               </span>
