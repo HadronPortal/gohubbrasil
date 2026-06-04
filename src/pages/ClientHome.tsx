@@ -15,6 +15,7 @@ import {
   Scissors
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ProfileModal } from "@/components/ProfileModal";
 import { getInitial } from "@/lib/utils";
 import { LogoutButton } from "@/components/LogoutButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -148,6 +149,7 @@ export default function ClientHome() {
   const [isLoading, setIsLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const barbershopId = profile?.barbershop_id;
   const barbershopName = user ? localStorage.getItem(`selectedBarbershopName:${user.id}`) : null;
@@ -291,12 +293,17 @@ export default function ClientHome() {
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <Avatar className="w-10 h-10 border border-[#2a3347]">
-              <AvatarImage src={profile?.avatar_url || undefined} alt="Profile" className="object-cover" />
-              <AvatarFallback>
-                {getInitial(profile?.name, user?.email)}
-              </AvatarFallback>
-            </Avatar>
+            <button 
+              onClick={() => setIsProfileModalOpen(true)}
+              className="transition-transform active:scale-95 outline-none"
+            >
+              <Avatar className="w-10 h-10 border border-[#2a3347] hover:border-[#f0c040] transition-colors">
+                <AvatarImage src={profile?.avatar_url || undefined} alt="Profile" className="object-cover" />
+                <AvatarFallback>
+                  {getInitial(profile?.name, user?.email)}
+                </AvatarFallback>
+              </Avatar>
+            </button>
             <LogoutButton showText />
           </div>
         </div>
@@ -424,6 +431,11 @@ export default function ClientHome() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ProfileModal 
+        isOpen={isProfileModalOpen} 
+        onOpenChange={setIsProfileModalOpen} 
+      />
     </div>
   );
 }

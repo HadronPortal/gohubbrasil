@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Calendar, Users, Scissors, LogOut, ArrowLeft, RefreshCw, User } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ProfileModal } from "@/components/ProfileModal";
 import { LogoutButton } from "@/components/LogoutButton";
 import { toast } from "sonner";
 import { getInitial } from "@/lib/utils";
@@ -19,6 +20,7 @@ export default function Admin() {
   const [loadingBarbershop, setLoadingBarbershop] = useState(true);
   const { user, profile, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading) {
@@ -78,12 +80,17 @@ export default function Admin() {
               PAINEL ADMIN
             </h1>
             <div className="flex items-center gap-3">
-              <Avatar className="w-10 h-10 border border-[#f0c040] shadow-[0_0_15px_rgba(240,192,64,0.2)]">
-                <AvatarImage src={profile?.avatar_url || undefined} alt="Profile" className="object-cover" />
-                <AvatarFallback>
-                  {getInitial(profile?.name, user?.email)}
-                </AvatarFallback>
-              </Avatar>
+              <button 
+                onClick={() => setIsProfileModalOpen(true)}
+                className="transition-transform active:scale-95 outline-none"
+              >
+                <Avatar className="w-10 h-10 border border-[#f0c040] shadow-[0_0_15px_rgba(240,192,64,0.2)] hover:scale-105 transition-all">
+                  <AvatarImage src={profile?.avatar_url || undefined} alt="Profile" className="object-cover" />
+                  <AvatarFallback>
+                    {getInitial(profile?.name, user?.email)}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
               <LogoutButton showText />
             </div>
           </div>
@@ -150,6 +157,11 @@ export default function Admin() {
           <span className="text-[10px] font-bold font-oswald tracking-wider uppercase">SERVIÇOS</span>
         </button>
       </div>
+
+      <ProfileModal 
+        isOpen={isProfileModalOpen} 
+        onOpenChange={setIsProfileModalOpen} 
+      />
     </div>
   );
 }

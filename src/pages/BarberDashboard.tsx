@@ -5,6 +5,7 @@ import { LogOut, RefreshCw, User } from "lucide-react";
 import { LogoutButton } from "@/components/LogoutButton";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ProfileModal } from "@/components/ProfileModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { getInitial } from "@/lib/utils";
 import { LoadingScreen } from "@/components/LoadingScreen";
@@ -14,6 +15,7 @@ import { toast } from "sonner";
 export default function BarberDashboard() {
   const { user, profile, isBarber, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading) {
@@ -52,12 +54,17 @@ export default function BarberDashboard() {
               PAINEL BARBEIRO
             </h1>
             <div className="flex items-center gap-3">
-              <Avatar className="w-10 h-10 border border-[#f0c040] shadow-[0_0_15px_rgba(240,192,64,0.2)]">
-                <AvatarImage src={profile?.avatar_url || undefined} alt="Profile" className="object-cover" />
-                <AvatarFallback>
-                  {getInitial(profile?.name, user?.email)}
-                </AvatarFallback>
-              </Avatar>
+              <button 
+                onClick={() => setIsProfileModalOpen(true)}
+                className="transition-transform active:scale-95 outline-none"
+              >
+                <Avatar className="w-10 h-10 border border-[#f0c040] shadow-[0_0_15px_rgba(240,192,64,0.2)] hover:scale-105 transition-all">
+                  <AvatarImage src={profile?.avatar_url || undefined} alt="Profile" className="object-cover" />
+                  <AvatarFallback>
+                    {getInitial(profile?.name, user?.email)}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
               <LogoutButton showText />
             </div>
           </div>
@@ -91,6 +98,11 @@ export default function BarberDashboard() {
         {/* Dashboard Content */}
         {profile && <BarberDashboardContent profile={profile} />}
       </div>
+
+      <ProfileModal 
+        isOpen={isProfileModalOpen} 
+        onOpenChange={setIsProfileModalOpen} 
+      />
     </div>
   );
 }
