@@ -14,7 +14,9 @@ import { LogoutButton } from "@/components/LogoutButton";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
+import { UserAvatar } from "@/components/UserAvatar";
 import { getInitial } from "@/lib/utils";
+
 import {
   Dialog,
   DialogContent,
@@ -315,15 +317,14 @@ export default function SuperAdmin() {
                 onClick={() => setIsProfileModalOpen(true)}
                 className="transition-transform active:scale-95 outline-none"
               >
-                <div className="w-10 h-10 rounded-full bg-[#141414] border border-[#C6A355] flex items-center justify-center overflow-hidden hover:scale-105 transition-all">
-                  {profile?.avatar_url ? (
-                    <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    <AvatarFallback className="bg-[#141414]">
-                      {getInitial(profile?.name, user?.email)}
-                    </AvatarFallback>
-                  )}
-                </div>
+                <UserAvatar 
+                  name={profile?.name} 
+                  email={user?.email} 
+                  avatarUrl={profile?.avatar_url} 
+                  size="md" 
+                  className="bg-[#141414] border border-[#C6A355] hover:scale-105 transition-all" 
+                />
+
               </button>
               <LogoutButton showText />
             </div>

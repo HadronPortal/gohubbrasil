@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Camera, Plus, UserPlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { UserAvatar } from "@/components/UserAvatar";
+
 
 interface Barber {
   id?: string;
@@ -326,13 +328,13 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
             onClick={() => handleEdit(barber)}
             className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] flex items-center gap-4 cursor-pointer hover:border-[#f0c040]/50 transition-all"
           >
-            <div className="w-12 h-12 rounded-full border border-[#f0c040] overflow-hidden flex items-center justify-center bg-[#1c2333]">
-              {barber.avatar_url ? (
-                <img src={barber.avatar_url} alt={barber.name} className="w-full h-full object-cover" />
-              ) : (
-                <UserPlus className="w-5 h-5 text-[#8a9ab5]" />
-              )}
-            </div>
+            <UserAvatar 
+              name={barber.name} 
+              avatarUrl={barber.avatar_url} 
+              size="md" 
+              className="border-[#f0c040]" 
+            />
+
             <div className="flex-1">
               <h4 className="text-sm font-bold text-[#c8d4e8] font-oswald uppercase tracking-wider">{barber.name}</h4>
               <div className="flex flex-col gap-0.5">
