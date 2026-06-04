@@ -59,7 +59,7 @@ interface Barbershop {
 
 export default function SuperAdmin() {
   const navigate = useNavigate();
-  const { profile, isSuperAdmin, loading: authLoading } = useAuth();
+  const { user, profile, isSuperAdmin, loading: authLoading } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [barbershops, setBarbershops] = useState<Barbershop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
