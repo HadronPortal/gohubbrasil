@@ -14,6 +14,7 @@ import { LogoutButton } from "@/components/LogoutButton";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
+import { getInitial } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -659,6 +660,11 @@ export default function SuperAdmin() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ProfileModal 
+        isOpen={isProfileModalOpen} 
+        onOpenChange={setIsProfileModalOpen} 
+      />
     </div>
   );
 }
