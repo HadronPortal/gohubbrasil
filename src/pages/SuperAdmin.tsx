@@ -661,7 +661,7 @@ export default function SuperAdmin() {
                             size="sm" 
                             onClick={() => {
                               setPaymentModalShop(shop);
-                              setPaymentValue(String(shop.monthly_price || ""));
+                              setPaymentValue(formatCurrencyInput(shop.monthly_price));
                               setPaidUntil(shop.paid_until || "");
                             }}
                             className="h-8 text-[10px] uppercase font-bold bg-[#C6A355] text-black border-none hover:bg-[#D4B466] w-full"
