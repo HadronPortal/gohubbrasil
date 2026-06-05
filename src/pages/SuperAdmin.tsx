@@ -314,6 +314,20 @@ export default function SuperAdmin() {
     
     setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
+    const paidUntilValue = formData.get("paid_until") as string;
+    const monthlyPriceValue = parseCurrency(formData.get("monthly_price") as string);
+    let subscriptionStatus = formData.get("subscription_status") as string;
+    let blocked = editingBarbershop.blocked;
+
+    if (paidUntilValue) {
+      const paidUntilDate = new Date(paidUntilValue);
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      if (paidUntilDate >= now) {
+        subscriptionStatus = 'active';
+        blocked = false;
+      }
+    }
 
     try {
       let logoUrl = editingBarbershop.logo_url;
@@ -328,11 +342,20 @@ export default function SuperAdmin() {
           address: formData.get("address") as string,
           phone: formData.get("phone") as string,
           description: formData.get("description") as string,
-          subscription_status: formData.get("subscription_status") as string,
-          monthly_price: Number(formData.get("monthly_price")),
+          subscription_status: subscriptionStatus,
+          monthly_price: monthlyPriceValue,
+          paid_until: paidUntilValue,
+          blocked: blocked,
           logo_url: logoUrl
         })
         .eq("id", editingBarbershop.id);
+
+      if (error) throw error;
+
+      // Se a data estiver vencida, garantir que o status seja atualizado
+      if (paidUntilValue) {
+        await supabase.rpc('refresh_barbershop_payment_status');
+      }
 
       if (error) throw error;
 
