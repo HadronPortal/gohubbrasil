@@ -11,6 +11,8 @@ interface WhatsAppConnection {
   pairing_code?: string;
   last_error?: string;
   phone?: string;
+  connected_at?: string;
+  code_expires_at?: string;
 }
 
 export default function AdminWhatsApp() {
@@ -29,8 +31,10 @@ export default function AdminWhatsApp() {
         return;
       }
 
-      if (data) {
-        setConnection(data as WhatsAppConnection);
+      // RPC returns { connection: { status, pairing_code, ... } }
+      const connectionData = (data as any)?.connection;
+      if (connectionData) {
+        setConnection(connectionData);
       } else {
         setConnection({ status: 'disconnected' });
       }
@@ -71,7 +75,7 @@ export default function AdminWhatsApp() {
       // Remove any non-numeric characters just in case, though user should type numbers
       const cleanPhone = phone.replace(/\D/g, '');
       
-      const { data, error } = await supabase.rpc('request_my_whatsapp_pairing', {
+      const { error } = await supabase.rpc('request_my_whatsapp_pairing', {
         p_phone: cleanPhone
       });
 
@@ -80,8 +84,14 @@ export default function AdminWhatsApp() {
         return;
       }
 
-      toast.success("Solicitação enviada! Aguarde o código.");
-      fetchConnection();
+      // Immediately fetch status after requesting
+      const { data: connectionResult } = await supabase.rpc('get_my_whatsapp_connection');
+      const connectionData = (connectionResult as any)?.connection;
+      if (connectionData) {
+        setConnection(connectionData);
+      }
+
+      toast.success("Solicitação enviada!");
     } catch (err) {
       toast.error("Erro ao processar solicitação");
     } finally {
@@ -131,15 +141,15 @@ export default function AdminWhatsApp() {
             <p className="text-sm text-[#8a9ab5]">No WhatsApp, vá em Aparelhos conectados {'>'} Conectar com número de telefone e digite este código.</p>
           </div>
 
-          <div className="bg-[#1c2333] border-2 border-dashed border-[#f0c040] p-6 rounded-[4px] w-full max-w-[280px]">
+          <div className="bg-[#1c2333] border-2 border-dashed border-[#f0c040] p-6 rounded-[4px] w-full max-w-[280px] flex items-center justify-center min-h-[100px]">
             {connection.pairing_code ? (
-              <span className="text-4xl font-bold text-[#f0c040] font-oswald tracking-[0.2em]">
+              <span className="text-5xl font-bold text-[#f0c040] font-oswald tracking-[0.2em]">
                 {connection.pairing_code}
               </span>
             ) : (
-              <div className="flex items-center justify-center gap-2 text-[#8a9ab5]">
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span className="text-xs uppercase tracking-widest font-bold">Gerando...</span>
+              <div className="flex flex-col items-center justify-center gap-2 text-[#8a9ab5]">
+                <Loader2 className="w-8 h-8 animate-spin text-[#f0c040]" />
+                <span className="text-xs uppercase tracking-widest font-bold">Gerando código...</span>
               </div>
             )}
           </div>
