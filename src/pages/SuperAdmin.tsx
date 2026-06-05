@@ -578,25 +578,26 @@ export default function SuperAdmin() {
                         </div>
 
                         <div className="flex gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => {
-                            setEditingBarbershop(shop);
-                            setEditLogoPreview(shop.logo_url);
-                          }}
-                          className="h-9 w-9 bg-[#1A1A1A] hover:bg-[#C6A355] hover:text-black transition-colors"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => setDeletingId(shop.id)}
-                          className="h-9 w-9 bg-[#1A1A1A] hover:bg-red-900 hover:text-white transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => {
+                              setEditingBarbershop(shop);
+                              setEditLogoPreview(shop.logo_url);
+                            }}
+                            className="h-9 w-9 bg-[#1A1A1A] hover:bg-[#C6A355] hover:text-black transition-colors"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => setDeletingId(shop.id)}
+                            className="h-9 w-9 bg-[#1A1A1A] hover:bg-red-900 hover:text-white transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
