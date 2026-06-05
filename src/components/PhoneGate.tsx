@@ -17,13 +17,22 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Only show if we have a user and profile, but phone is missing
     if (!authLoading && user && profile) {
-      if (!profile.phone) {
-        setIsOpen(true);
-      } else {
-        setIsOpen(false);
-      }
+      // Logic requested by user:
+      // 1. Must be Google login
+      // 2. Must not be superadmin
+      // 3. Phone must be missing/empty
+      
+      const isGoogleLogin = 
+        user?.app_metadata?.provider === 'google' || 
+        user?.identities?.some((i: any) => i.provider === 'google');
+
+      const phoneMissing = !profile?.phone || String(profile.phone).trim() === '';
+      const isSuperAdmin = profile?.role === 'superadmin';
+
+      const shouldAskPhone = isGoogleLogin && !isSuperAdmin && phoneMissing;
+
+      setIsOpen(shouldAskPhone);
     }
   }, [authLoading, user, profile]);
 
@@ -46,9 +55,19 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
 
       toast.success("Telefone atualizado com sucesso!");
       
-      // Refresh profile in context so the state is updated and modal closes
+      // Refresh profile in context so the state is updated
       await refreshProfile();
       setIsOpen(false);
+
+      // Redirect to correct panel
+      const role = profile?.role?.toLowerCase();
+      let target = "/";
+      if (role === "superadmin") target = "/super-admin";
+      else if (role === "owner" || role === "admin") target = "/admin";
+      else if (role === "barber") target = "/barber-dashboard";
+      else if (profile?.barbershop_id) target = "/client-home";
+      
+      window.location.href = `${window.location.origin}${target}`;
     } catch (error: any) {
       toast.error("Erro ao salvar telefone");
       console.error(error);
