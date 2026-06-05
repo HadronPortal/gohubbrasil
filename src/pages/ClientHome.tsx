@@ -39,27 +39,14 @@ import {
 
 interface Appointment {
   id: string;
-  client_id: string;
-  barbershop_id: string;
-  barber_id: string;
-  service_id: string;
-  starts_at: string;
-  ends_at: string;
   status: string;
-  price_charged: number;
-  price?: number;
-  service_price?: number;
-  created_at: string;
-  barber_name?: string;
-  barber_avatar_url?: string | null;
-  service_name?: string;
-  services?: {
-    name: string;
-    price: number;
-  };
-  barbershops?: {
-    name: string;
-  };
+  starts_at: string;
+  price: number;
+  barbershop_name: string;
+  barber_name: string;
+  barber_avatar_url: string | null;
+  service_name: string;
+  barbershop_id?: string;
 }
 
 function AppointmentCard({ 
