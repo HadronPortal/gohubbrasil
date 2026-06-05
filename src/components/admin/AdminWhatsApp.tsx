@@ -134,6 +134,8 @@ export default function AdminWhatsApp() {
     }
 
     if (connection?.status === 'pairing' || connection?.status === 'pairing_requested') {
+      const showCode = connection.status === 'pairing' && connection.pairing_code;
+
       return (
         <div className="bg-[#141b2a] border border-[#f0c040]/30 p-8 rounded-[4px] flex flex-col items-center text-center space-y-6 animate-in fade-in duration-500">
           <div className="space-y-2">
@@ -142,7 +144,7 @@ export default function AdminWhatsApp() {
           </div>
 
           <div className="bg-[#1c2333] border-2 border-dashed border-[#f0c040] p-6 rounded-[4px] w-full max-w-[280px] flex items-center justify-center min-h-[100px]">
-            {connection.pairing_code ? (
+            {showCode ? (
               <span className="text-5xl font-bold text-[#f0c040] font-oswald tracking-[0.2em]">
                 {connection.pairing_code}
               </span>
@@ -174,6 +176,7 @@ export default function AdminWhatsApp() {
       );
     }
 
+    // Default: disconnected or error
     return (
       <div className="bg-[#141b2a] border border-[#2a3347] p-6 rounded-[4px] space-y-6 animate-in slide-in-from-bottom-4 duration-500">
         <div className="flex items-center gap-4">
@@ -223,7 +226,7 @@ export default function AdminWhatsApp() {
                 GERANDO...
               </>
             ) : (
-              connection?.status === 'disconnected' || connection?.status === 'error' ? "GERAR NOVO CÓDIGO" : "GERAR CÓDIGO DE PAREAMENTO"
+              "GERAR CÓDIGO DE PAREAMENTO"
             )}
           </Button>
 
