@@ -7,43 +7,25 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Phone } from "lucide-react";
+import { Loader2, Phone as PhoneIcon } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function PhoneGate({ children }: { children: React.ReactNode }) {
+  const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const checkPhone = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user) {
-          setChecking(false);
-          return;
-        }
-
-        const { data: profile, error } = await supabase
-          .from("users")
-          .select("phone")
-          .eq("id", session.user.id)
-          .maybeSingle();
-
-        if (error) {
-          console.error("Error checking phone:", error);
-        } else if (profile && !profile.phone) {
-          setIsOpen(true);
-        }
-      } catch (err) {
-        console.error("Fatal error checking phone:", err);
-      } finally {
-        setChecking(false);
+    // Only show if we have a user and profile, but phone is missing
+    if (!authLoading && user && profile) {
+      if (!profile.phone) {
+        setIsOpen(true);
+      } else {
+        setIsOpen(false);
       }
-    };
-
-    checkPhone();
-  }, []);
+    }
+  }, [authLoading, user, profile]);
 
   const handleSavePhone = async () => {
     if (!phone || phone.length < 10) {
@@ -53,7 +35,6 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
 
     setIsLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Não autenticado");
 
       const { error } = await supabase
@@ -64,8 +45,10 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
       if (error) throw error;
 
       toast.success("Telefone atualizado com sucesso!");
+      
+      // Refresh profile in context so the state is updated and modal closes
+      await refreshProfile();
       setIsOpen(false);
-      window.location.reload(); 
     } catch (error: any) {
       toast.error("Erro ao salvar telefone");
       console.error(error);
@@ -73,8 +56,6 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     }
   };
-
-  if (checking) return null;
 
   return (
     <>
@@ -92,7 +73,7 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
             </p>
             <div className="space-y-1.5">
               <Label className="text-[10px] uppercase text-[#8a9ab5] tracking-widest font-bold flex items-center gap-2">
-                <Phone className="w-3 h-3 text-[#f0c040]" /> WHATSAPP
+                <PhoneIcon className="w-3 h-3 text-[#f0c040]" /> WHATSAPP
               </Label>
               <Input
                 type="tel"
