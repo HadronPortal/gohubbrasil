@@ -758,7 +758,18 @@ export default function SuperAdmin() {
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[10px] uppercase text-gray-500">Valor Mensal</Label>
-                  <Input name="monthly_price" type="text" placeholder="0,00" defaultValue={formatCurrencyInput(editingBarbershop?.monthly_price)} className="bg-[#0A0A0A] border-[#1F1F1F]" />
+                  <Input 
+                    name="monthly_price" 
+                    type="text" 
+                    placeholder="R$ 0,00" 
+                    value={editMonthlyPrice}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "");
+                      const numberValue = value ? parseInt(value) / 100 : 0;
+                      setEditMonthlyPrice(formatCurrencyInput(numberValue));
+                    }}
+                    className="bg-[#0A0A0A] border-[#1F1F1F]" 
+                  />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[10px] uppercase text-gray-500">Status Assinatura</Label>
