@@ -492,7 +492,19 @@ export default function SuperAdmin() {
                         </div>
                         <div className="space-y-1">
                           <Label htmlFor="monthly_price" className="text-[10px] uppercase text-gray-500 tracking-widest">Valor Mensal</Label>
-                          <Input id="monthly_price" name="monthly_price" type="text" placeholder="0,00" className="bg-[#0A0A0A] border-[#1F1F1F] h-10" />
+                          <Input 
+                            id="monthly_price" 
+                            name="monthly_price" 
+                            type="text" 
+                            placeholder="R$ 0,00" 
+                            value={createMonthlyPrice}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, "");
+                              const numberValue = value ? parseInt(value) / 100 : 0;
+                              setCreateMonthlyPrice(formatCurrencyInput(numberValue));
+                            }}
+                            className="bg-[#0A0A0A] border-[#1F1F1F] h-10" 
+                          />
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
