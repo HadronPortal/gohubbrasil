@@ -130,6 +130,7 @@ export default function Admin() {
         {activeTab === "barbeiros" && <AdminBarbers barbershopId={barbershopId} />}
         {activeTab === "servicos" && <AdminServices barbershopId={barbershopId} />}
         {activeTab === "whatsapp" && <AdminWhatsApp />}
+        {activeTab === "financeiro" && <AdminFinancial barbershopId={barbershopId} />}
       </div>
 
       {/* Bottom Menu */}
