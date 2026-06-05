@@ -111,6 +111,10 @@ export default function SuperAdmin() {
   const [editLogoFile, setEditLogoFile] = useState<File | null>(null);
   const [editLogoPreview, setEditLogoPreview] = useState<string | null>(null);
 
+  // Create/Edit Form State
+  const [createMonthlyPrice, setCreateMonthlyPrice] = useState("");
+  const [editMonthlyPrice, setEditMonthlyPrice] = useState("");
+
   // Delete State
   const [deletingId, setDeletingId] = useState<string | null>(null);
   
