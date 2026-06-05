@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Calendar, Users, Scissors, LogOut, ArrowLeft, RefreshCw, User } from "lucide-react";
+import { Calendar, Users, Scissors, LogOut, ArrowLeft, RefreshCw, User, MessageSquare } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ProfileModal } from "@/components/ProfileModal";
 import { LogoutButton } from "@/components/LogoutButton";
@@ -11,11 +11,12 @@ import { getInitial } from "@/lib/utils";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import AdminBarbers from "@/components/admin/AdminBarbers";
 import AdminServices from "@/components/admin/AdminServices";
+import AdminWhatsApp from "@/components/admin/AdminWhatsApp";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingScreen } from "@/components/LoadingScreen";
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState<"agenda" | "barbeiros" | "servicos">("agenda");
+  const [activeTab, setActiveTab] = useState<"agenda" | "barbeiros" | "servicos" | "whatsapp">("agenda");
   const [barbershopId, setBarbershopId] = useState<string | null>(null);
   const [loadingBarbershop, setLoadingBarbershop] = useState(true);
   const { user, profile, isAdmin, loading: authLoading } = useAuth();
@@ -135,10 +136,11 @@ export default function Admin() {
         )}
         {activeTab === "barbeiros" && <AdminBarbers barbershopId={barbershopId} />}
         {activeTab === "servicos" && <AdminServices barbershopId={barbershopId} />}
+        {activeTab === "whatsapp" && <AdminWhatsApp />}
       </div>
 
       {/* Bottom Menu */}
-      <div className="fixed bottom-0 w-full max-w-[390px] grid grid-cols-3 bg-[#141b2a] border-t border-[#2a3347] py-4 px-2">
+      <div className="fixed bottom-0 w-full max-w-[390px] grid grid-cols-4 bg-[#141b2a] border-t border-[#2a3347] py-4 px-2">
         <button
           onClick={() => setActiveTab("agenda")}
           className={`flex flex-col items-center gap-1 transition-all ${
@@ -165,6 +167,15 @@ export default function Admin() {
         >
           <Scissors className="w-6 h-6" />
           <span className="text-[10px] font-bold font-oswald tracking-wider uppercase">SERVIÇOS</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("whatsapp")}
+          className={`flex flex-col items-center gap-1 transition-all ${
+            activeTab === "whatsapp" ? "text-[#f0c040]" : "text-[#8a9ab5]"
+          }`}
+        >
+          <MessageSquare className="w-6 h-6" />
+          <span className="text-[10px] font-bold font-oswald tracking-wider uppercase">WHATSAPP</span>
         </button>
       </div>
 
