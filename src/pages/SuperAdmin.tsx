@@ -236,7 +236,9 @@ export default function SuperAdmin() {
           phone: formData.get("barbershop_phone") as string,
           logoUrl,
           description: formData.get("description") as string,
-          paymentStatus: (formData.get("payment_status") as string) || "pending",
+          subscriptionStatus: (formData.get("subscription_status") as string) || "trialing",
+          monthlyPrice: Number(formData.get("monthly_price") || 0),
+          paidUntil: formData.get("paid_until") as string,
           ownerName: formData.get("owner_name") as string,
           ownerEmail: formData.get("owner_email") as string,
           ownerPhone: formData.get("owner_phone") as string,
@@ -291,7 +293,8 @@ export default function SuperAdmin() {
           address: formData.get("address") as string,
           phone: formData.get("phone") as string,
           description: formData.get("description") as string,
-          payment_status: formData.get("payment_status") as string,
+          subscription_status: formData.get("subscription_status") as string,
+          monthly_price: Number(formData.get("monthly_price")),
           logo_url: logoUrl
         })
         .eq("id", editingBarbershop.id);
@@ -423,17 +426,29 @@ export default function SuperAdmin() {
                           <Input id="barbershop_phone" name="barbershop_phone" required className="bg-[#0A0A0A] border-[#1F1F1F] h-10" />
                         </div>
                         <div className="space-y-1">
-                          <Label htmlFor="payment_status" className="text-[10px] uppercase text-gray-500 tracking-widest">Status Pagamento</Label>
-                          <Select name="payment_status" defaultValue="pending">
+                          <Label htmlFor="monthly_price" className="text-[10px] uppercase text-gray-500 tracking-widest">Valor Mensal (R$)</Label>
+                          <Input id="monthly_price" name="monthly_price" type="number" step="0.01" defaultValue="0" className="bg-[#0A0A0A] border-[#1F1F1F] h-10" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <Label htmlFor="subscription_status" className="text-[10px] uppercase text-gray-500 tracking-widest">Status Assinatura</Label>
+                          <Select name="subscription_status" defaultValue="trialing">
                             <SelectTrigger className="bg-[#0A0A0A] border-[#1F1F1F] h-10">
                               <SelectValue placeholder="Selecione" />
                             </SelectTrigger>
                             <SelectContent className="bg-[#141414] border-[#1F1F1F] text-white">
-                              <SelectItem value="paid">Em dia</SelectItem>
-                              <SelectItem value="pending">Pendente</SelectItem>
-                              <SelectItem value="overdue">Vencido</SelectItem>
+                              <SelectItem value="trialing">Trialing</SelectItem>
+                              <SelectItem value="active">Active</SelectItem>
+                              <SelectItem value="past_due">Past Due</SelectItem>
+                              <SelectItem value="blocked">Blocked</SelectItem>
+                              <SelectItem value="cancelled">Cancelled</SelectItem>
                             </SelectContent>
                           </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="paid_until" className="text-[10px] uppercase text-gray-500 tracking-widest">Pago Até (Vencimento)</Label>
+                          <Input id="paid_until" name="paid_until" type="date" className="bg-[#0A0A0A] border-[#1F1F1F] h-10" />
                         </div>
                       </div>
                       <div className="space-y-1">
@@ -648,15 +663,21 @@ export default function SuperAdmin() {
                   <Input name="name" defaultValue={editingBarbershop?.name} className="bg-[#0A0A0A] border-[#1F1F1F]" />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[10px] uppercase text-gray-500">Status Pagamento</Label>
-                  <Select name="payment_status" defaultValue={editingBarbershop?.payment_status || "pending"}>
+                  <Label className="text-[10px] uppercase text-gray-500">Valor Mensal (R$)</Label>
+                  <Input name="monthly_price" type="number" step="0.01" defaultValue={editingBarbershop?.monthly_price || 0} className="bg-[#0A0A0A] border-[#1F1F1F]" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase text-gray-500">Status Assinatura</Label>
+                  <Select name="subscription_status" defaultValue={editingBarbershop?.subscription_status || "trialing"}>
                     <SelectTrigger className="bg-[#0A0A0A] border-[#1F1F1F] h-10">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-[#141414] border-[#1F1F1F] text-white">
-                      <SelectItem value="paid">Em dia</SelectItem>
-                      <SelectItem value="pending">Pendente</SelectItem>
-                      <SelectItem value="overdue">Vencido</SelectItem>
+                      <SelectItem value="trialing">Trialing</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="past_due">Past Due</SelectItem>
+                      <SelectItem value="blocked">Blocked</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
