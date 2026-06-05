@@ -76,7 +76,7 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
     <>
       {children}
       <Dialog open={isOpen} onOpenChange={() => {}}>
-        <DialogContent className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] p-6 rounded-[8px]" hideClose>
+        <DialogContent className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] p-6 rounded-[8px] [&>button]:hidden">
           <DialogHeader>
             <DialogTitle className="font-oswald uppercase text-[#f0c040] tracking-widest text-lg">
               Precisamos do seu WhatsApp
