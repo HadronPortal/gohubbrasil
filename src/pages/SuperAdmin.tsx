@@ -737,8 +737,8 @@ export default function SuperAdmin() {
                   <Input name="name" defaultValue={editingBarbershop?.name} className="bg-[#0A0A0A] border-[#1F1F1F]" />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[10px] uppercase text-gray-500">Valor Mensal (R$)</Label>
-                  <Input name="monthly_price" type="number" step="0.01" defaultValue={editingBarbershop?.monthly_price || 0} className="bg-[#0A0A0A] border-[#1F1F1F]" />
+                  <Label className="text-[10px] uppercase text-gray-500">Valor Mensal</Label>
+                  <Input name="monthly_price" type="text" placeholder="0,00" defaultValue={formatCurrencyInput(editingBarbershop?.monthly_price)} className="bg-[#0A0A0A] border-[#1F1F1F]" />
                 </div>
                 <div className="space-y-1">
                   <Label className="text-[10px] uppercase text-gray-500">Status Assinatura</Label>
@@ -747,13 +747,21 @@ export default function SuperAdmin() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-[#141414] border-[#1F1F1F] text-white">
-                      <SelectItem value="trialing">Trialing</SelectItem>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="past_due">Past Due</SelectItem>
-                      <SelectItem value="blocked">Blocked</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                      {Object.entries(STATUS_TRANSLATIONS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase text-gray-500">Pago Até (Vencimento)</Label>
+                  <Input name="paid_until" type="date" defaultValue={editingBarbershop?.paid_until || ""} className="bg-[#0A0A0A] border-[#1F1F1F]" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase text-gray-500">Telefone</Label>
+                  <Input name="phone" defaultValue={editingBarbershop?.phone || ""} className="bg-[#0A0A0A] border-[#1F1F1F]" />
                 </div>
               </div>
               <div className="space-y-1">
