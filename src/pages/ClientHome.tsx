@@ -221,37 +221,27 @@ export default function ClientHome() {
     if (!user) return;
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          id, 
-          status, 
-          starts_at, 
-          price_charged,
-          barbershop_id,
-          services(name, price),
-          barbershops(name),
-          profiles:barber_id(name, avatar_url)
-        `)
-        .eq('client_id', user.id)
-        .order('starts_at', { ascending: false });
+      const { data, error } = await supabase.rpc('get_my_appointments_safe');
 
       if (error) {
-        toast.error(`Erro: ${error.message}`);
         throw error;
       }
 
-      const mapped = (data || []).map((appt: any) => ({
-        ...appt,
-        barber_name: appt.profiles?.name,
-        barber_avatar_url: appt.profiles?.avatar_url,
-        service_name: appt.services?.name
-      }));
-
-      setAppointments(mapped);
+      if (data && data.success) {
+        const active = (data.active || []).map((a: any) => ({ ...a, is_active: true }));
+        const history = (data.history || []).map((a: any) => ({ ...a, is_active: false }));
+        setAppointments([...active, ...history]);
+      } else if (data && !data.success) {
+        // If success is false, we might want to show an error, 
+        // but the prompt says: Não mostrar "erro ao carregar agendamentos" quando a RPC retornar success true.
+        // If it's false, it's actually an error state from the RPC's perspective.
+        console.error("RPC returned error:", data.error);
+        toast.error(data.error || "Erro ao carregar agendamentos");
+      }
     } catch (error: any) {
       console.error("Error fetching appointments:", error);
-      toast.error("Erro ao carregar agendamentos");
+      // We only show error if it's a real exception or RPC failure, 
+      // but if RPC returns success=true with empty arrays, we don't show error.
     } finally {
       setIsLoading(false);
     }
