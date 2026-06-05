@@ -33,6 +33,7 @@ interface Stats {
 }
 
 interface Appointment {
+  id: string;
   client_name: string;
   client_phone: string | null;
   barber_name: string;
