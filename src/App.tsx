@@ -11,6 +11,8 @@ import SuperAdmin from "./pages/SuperAdmin";
 import ClientHome from "./pages/ClientHome";
 import BarberDashboard from "./pages/BarberDashboard";
 import AuthCallback from "./pages/AuthCallback";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -54,6 +56,14 @@ const router = createBrowserRouter([
   {
     path: "/auth/callback",
     element: <AuthCallback />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPassword />,
   },
 ]);
 

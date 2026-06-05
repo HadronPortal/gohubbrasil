@@ -215,7 +215,13 @@ export default function Login() {
           </Button>
 
           <div className="flex justify-between items-center px-1">
-            <button type="button" className="text-[11px] text-[#8a9ab5] uppercase tracking-wider font-light">Esqueceu a senha?</button>
+            <button 
+              type="button" 
+              onClick={() => navigate("/forgot-password")}
+              className="text-[11px] text-[#8a9ab5] uppercase tracking-wider font-light"
+            >
+              Esqueceu a senha?
+            </button>
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
@@ -229,7 +235,7 @@ export default function Login() {
             </button>
           </div>
 
-          <div className="relative pt-2">
+          <div className="relative pt-6">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-[#2a3347]"></span>
             </div>
