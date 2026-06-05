@@ -77,10 +77,9 @@ export default function SelectBarbershop() {
   }, [user, profile, authLoading, navigate]);
 
   const fetchBarbershops = async () => {
-    const { data, error } = await supabase
-      .from("barbershops")
-      .select("*")
-      .order("name", { ascending: true });
+    setIsLoading(true);
+    // Use the new RPC to only get available barbershops for clients
+    const { data, error } = await supabase.rpc('get_available_barbershops');
 
     console.log("BARBERSHOPS DEBUG", { data, error });
 

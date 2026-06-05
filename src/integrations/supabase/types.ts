@@ -159,39 +159,54 @@ export type Database = {
       barbershops: {
         Row: {
           address: string
+          blocked: boolean | null
           created_at: string | null
           description: string | null
           id: string
           logo_url: string | null
+          monthly_price: number | null
           name: string
+          paid_until: string | null
           payment_due_date: string | null
           payment_status: string | null
           phone: string | null
           slug: string | null
+          subscription_status: string | null
+          trial_ends_at: string | null
         }
         Insert: {
           address: string
+          blocked?: boolean | null
           created_at?: string | null
           description?: string | null
           id?: string
           logo_url?: string | null
+          monthly_price?: number | null
           name: string
+          paid_until?: string | null
           payment_due_date?: string | null
           payment_status?: string | null
           phone?: string | null
           slug?: string | null
+          subscription_status?: string | null
+          trial_ends_at?: string | null
         }
         Update: {
           address?: string
+          blocked?: boolean | null
           created_at?: string | null
           description?: string | null
           id?: string
           logo_url?: string | null
+          monthly_price?: number | null
           name?: string
+          paid_until?: string | null
           payment_due_date?: string | null
           payment_status?: string | null
           phone?: string | null
           slug?: string | null
+          subscription_status?: string | null
+          trial_ends_at?: string | null
         }
         Relationships: []
       }
@@ -299,6 +314,10 @@ export type Database = {
       }
     }
     Functions: {
+      barbershop_is_payment_blocked: {
+        Args: { p_barbershop_id: string }
+        Returns: boolean
+      }
       cancel_my_appointment: {
         Args: { p_appointment_id: string }
         Returns: Json
@@ -356,6 +375,32 @@ export type Database = {
         Returns: Json
       }
       get_auth_user_id_by_email: { Args: { p_email: string }; Returns: string }
+      get_available_barbershops: {
+        Args: never
+        Returns: {
+          address: string
+          blocked: boolean | null
+          created_at: string | null
+          description: string | null
+          id: string
+          logo_url: string | null
+          monthly_price: number | null
+          name: string
+          paid_until: string | null
+          payment_due_date: string | null
+          payment_status: string | null
+          phone: string | null
+          slug: string | null
+          subscription_status: string | null
+          trial_ends_at: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "barbershops"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_barber_dashboard: { Args: { p_day: string }; Returns: Json }
       get_owner_dashboard_appointments: {
         Args: { p_day: string }
@@ -367,6 +412,38 @@ export type Database = {
           starts_at: string
           status: string
         }[]
+      }
+      get_superadmin_barbershops: {
+        Args: never
+        Returns: {
+          address: string
+          blocked: boolean
+          description: string
+          id: string
+          logo_url: string
+          monthly_price: number
+          name: string
+          owner_name: string
+          owner_phone: string
+          paid_until: string
+          phone: string
+          subscription_status: string
+          trial_ends_at: string
+        }[]
+      }
+      mark_barbershop_paid: {
+        Args: {
+          p_amount: number
+          p_barbershop_id: string
+          p_paid_until: string
+          p_provider?: string
+          p_reference?: string
+        }
+        Returns: Json
+      }
+      refresh_barbershop_payment_status: {
+        Args: { p_barbershop_id: string }
+        Returns: Json
       }
     }
     Enums: {
