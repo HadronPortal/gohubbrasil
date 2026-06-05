@@ -12,6 +12,7 @@ import AdminDashboard from "@/components/admin/AdminDashboard";
 import AdminBarbers from "@/components/admin/AdminBarbers";
 import AdminServices from "@/components/admin/AdminServices";
 import AdminWhatsApp from "@/components/admin/AdminWhatsApp";
+import AdminFinancial from "@/components/admin/AdminFinancial";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingScreen } from "@/components/LoadingScreen";
 
