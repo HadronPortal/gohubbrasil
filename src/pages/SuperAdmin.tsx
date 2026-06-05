@@ -88,8 +88,8 @@ const parseCurrency = (value: string): number => {
 const formatCurrencyInput = (value: number | string | null | undefined): string => {
   if (value === null || value === undefined) return "";
   return new Intl.NumberFormat('pt-BR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    style: 'currency',
+    currency: 'BRL',
   }).format(Number(value));
 };
 
