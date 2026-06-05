@@ -105,10 +105,16 @@ export default function AdminFinancial({ barbershopId }: { barbershopId: string 
     setIsLoading(true);
     try {
       const { start, end } = getPeriodDates();
-      const { data: res, error } = await supabase.rpc("get_financial_report", {
-        p_barbershop_id: barbershopId,
-        p_start_date: start,
-        p_end_date: end
+      
+      // Conforme solicitado pelo usuário, usamos a RPC get_owner_financial_report
+      // p_start_date e p_end_date no formato YYYY-MM-DD
+      const formattedStart = format(new Date(start), "yyyy-MM-dd");
+      const formattedEnd = format(new Date(end), "yyyy-MM-dd");
+
+      const { data: res, error } = await supabase.rpc("get_owner_financial_report", {
+        p_start_date: formattedStart,
+        p_end_date: formattedEnd,
+        p_barbershop_id: null // nulo para pegar a barbearia do dono logado (conforme política/função)
       });
 
       if (error) throw error;
@@ -118,7 +124,33 @@ export default function AdminFinancial({ barbershopId }: { barbershopId: string 
         return;
       }
 
-      setData(res);
+      // Adaptando os dados retornados pela nova RPC para o estado local
+      // A RPC retorna summary.gross, summary.commission, summary.net etc.
+      if (res && res.summary) {
+        const adaptedData: FinancialData = {
+          summary: {
+            gross_revenue: Number(res.summary.gross || 0),
+            total_commission: Number(res.summary.commission || 0),
+            net_revenue: Number(res.summary.net || 0),
+            completed_count: Number(res.summary.completed_count || 0),
+            cancelled_count: Number(res.summary.cancelled_count || 0),
+            average_ticket: Number(res.summary.average_ticket || 0)
+          },
+          barber_ranking: (res.barbers || []).map((b: any) => ({
+            name: b.name,
+            completed_count: Number(b.completed_count || 0),
+            gross_revenue: Number(b.gross || 0),
+            commission_total: Number(b.commission || 0),
+            net_revenue: Number(b.net || 0)
+          })),
+          service_ranking: (res.services || []).map((s: any) => ({
+            name: s.name,
+            quantity: Number(s.quantity || 0),
+            total_revenue: Number(s.total_revenue || 0)
+          }))
+        };
+        setData(adaptedData);
+      }
     } catch (err: any) {
       console.error("FINANCIAL ERROR", err);
       toast.error("Erro ao carregar relatório financeiro");
