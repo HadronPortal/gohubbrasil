@@ -17,7 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { LoadingScreen } from "@/components/LoadingScreen";
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState<"agenda" | "barbeiros" | "servicos" | "whatsapp">("agenda");
+  const [activeTab, setActiveTab] = useState<"agenda" | "barbeiros" | "servicos" | "whatsapp" | "financeiro">("agenda");
   const [barbershopId, setBarbershopId] = useState<string | null>(null);
   const [loadingBarbershop, setLoadingBarbershop] = useState(true);
   const { user, profile, isAdmin, loading: authLoading } = useAuth();
