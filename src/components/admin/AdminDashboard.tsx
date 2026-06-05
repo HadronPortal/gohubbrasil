@@ -159,22 +159,6 @@ export default function AdminDashboard({
   return (
     <div className="space-y-10 animate-in fade-in duration-500">
 
-      {/* Horários Livres Card */}
-      <div 
-        onClick={() => setShowFreeSlots(true)}
-        className="bg-[#141b2a] border border-[#f0c040]/30 p-4 rounded-[4px] cursor-pointer hover:border-[#f0c040] transition-all flex items-center justify-between group"
-      >
-        <div className="flex items-center gap-3">
-          <div className="bg-[#f0c040]/10 p-2 rounded group-hover:bg-[#f0c040]/20 transition-colors">
-            <Lock className="w-5 h-5 text-[#f0c040]" />
-          </div>
-          <div>
-            <h4 className="text-sm font-bold text-[#f0c040] font-oswald tracking-widest uppercase">HORÁRIOS LIVRES / BLOQUEIOS</h4>
-            <p className="text-[10px] text-[#8a9ab5] uppercase tracking-widest">Configurar disponibilidade da barbearia</p>
-          </div>
-        </div>
-      </div>
-
       {/* Summary Grid */}
 
       <div className="grid grid-cols-2 gap-4">

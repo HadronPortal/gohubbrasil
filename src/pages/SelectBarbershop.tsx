@@ -177,7 +177,8 @@ export default function SelectBarbershop() {
             <div
               key={shop.id}
               onClick={() => handleSelect(shop)}
-              className="flex items-center gap-4 p-4 rounded-[4px] bg-[#141b2a] border border-[#2a3347] hover:border-[#f0c040] transition-all cursor-pointer group"
+              className="flex items-center gap-4 p-4 rounded-[4px] bg-[#141b2a] border border-[#2a3347] hover:border-[#f0c040] transition-all cursor-pointer group select-none touch-manipulation"
+              onContextMenu={(e) => e.preventDefault()}
             >
               <div className="w-16 h-16 rounded-lg bg-[#1c2333] border border-[#2a3347] flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:border-[#f0c040]/50">
                 {shop.logo_url ? (

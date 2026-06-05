@@ -15,6 +15,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./contexts/AuthContext";
+import { PhoneGate } from "./components/PhoneGate";
 
 const router = createBrowserRouter([
   {
@@ -116,7 +117,9 @@ function App() {
 
   return (
     <AuthProvider>
-      <RouterProvider router={router} />
+      <PhoneGate>
+        <RouterProvider router={router} />
+      </PhoneGate>
       <Toaster position="top-center" richColors />
     </AuthProvider>
   );

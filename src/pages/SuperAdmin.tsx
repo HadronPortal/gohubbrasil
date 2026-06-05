@@ -54,6 +54,10 @@ interface Barbershop {
   logo_url: string | null;
   description: string | null;
   payment_status: string | null;
+  subscription_status: string | null;
+  monthly_price: number | null;
+  paid_until: string | null;
+  blocked: boolean;
   owner?: {
     name: string;
     phone?: string;
@@ -80,6 +84,11 @@ export default function SuperAdmin() {
 
   // Delete State
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  
+  // Payment Modal State
+  const [paymentModalShop, setPaymentModalShop] = useState<Barbershop | null>(null);
+  const [paymentValue, setPaymentValue] = useState("");
+  const [paidUntil, setPaidUntil] = useState("");
 
   useEffect(() => {
     if (isSuperAdmin) {
@@ -137,6 +146,28 @@ export default function SuperAdmin() {
       toast.success("Status de pagamento atualizado");
     } catch (error: any) {
       toast.error("Erro ao atualizar status");
+    }
+  };
+
+  const handleMarkPaid = async () => {
+    if (!paymentModalShop || !paidUntil) return;
+    
+    setIsSubmitting(true);
+    try {
+      const { data, error } = await supabase.rpc('mark_barbershop_paid', {
+        p_barbershop_id: paymentModalShop.id,
+        p_paid_until: paidUntil
+      });
+
+      if (error) throw error;
+      
+      toast.success("Pagamento registrado com sucesso");
+      setPaymentModalShop(null);
+      fetchBarbershops();
+    } catch (error: any) {
+      toast.error("Erro ao registrar pagamento");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -511,27 +542,40 @@ export default function SuperAdmin() {
                       </div>
                     </div>
 
-                    <div className="pt-4 border-t border-[#1F1F1F] flex items-center justify-between">
-                      <div className="space-y-1 flex-1 pr-4">
-                        <Label className="text-[9px] uppercase text-gray-600 tracking-tighter">Status Pagamento</Label>
-                        <Select 
-                          value={shop.payment_status || "pending"} 
-                          onValueChange={(val) => handleUpdatePaymentStatus(shop.id, val)}
-                        >
-                          <SelectTrigger className={cn(
-                            "h-8 text-[10px] uppercase font-bold border-none bg-[#0A0A0A]",
-                            shop.payment_status === 'paid' ? "text-green-500" : 
-                            shop.payment_status === 'overdue' ? "text-red-500" : "text-yellow-500"
+                    <div className="pt-4 border-t border-[#1F1F1F] space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <Label className="text-[9px] uppercase text-gray-600 tracking-tighter">Status</Label>
+                          <div className={cn(
+                            "text-[10px] font-bold uppercase",
+                            shop.blocked ? "text-red-500" : "text-green-500"
                           )}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="bg-[#141414] border-[#1F1F1F] text-white">
-                            <SelectItem value="paid">Em dia</SelectItem>
-                            <SelectItem value="pending">Pendente</SelectItem>
-                            <SelectItem value="overdue">Vencido</SelectItem>
-                          </SelectContent>
-                        </Select>
+                            {shop.subscription_status || "Trialing"} {shop.blocked && "(BLOQUEADO)"}
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[9px] uppercase text-gray-600 tracking-tighter">Vencimento</Label>
+                          <div className="text-[10px] text-gray-300">
+                            {shop.paid_until ? format(new Date(shop.paid_until), "dd/MM/yyyy") : "Não definido"}
+                          </div>
+                        </div>
                       </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1 flex-1 pr-4">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => {
+                              setPaymentModalShop(shop);
+                              setPaymentValue(String(shop.monthly_price || ""));
+                              setPaidUntil(shop.paid_until || "");
+                            }}
+                            className="h-8 text-[10px] uppercase font-bold bg-[#C6A355] text-black border-none hover:bg-[#D4B466] w-full"
+                          >
+                            MARCAR PAGO
+                          </Button>
+                        </div>
 
                       <div className="flex gap-2">
                         <Button 
@@ -662,7 +706,46 @@ export default function SuperAdmin() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Payment Modal */}
+      <Dialog open={!!paymentModalShop} onOpenChange={(open) => !open && setPaymentModalShop(null)}>
+        <DialogContent className="bg-[#141414] border-[#1F1F1F] text-white">
+          <DialogHeader>
+            <DialogTitle className="font-oswald uppercase text-[#C6A355]">Registrar Pagamento</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-1">
+              <Label className="text-[10px] uppercase text-gray-500">Valor Mensal (Atual: {money(paymentModalShop?.monthly_price)})</Label>
+              <Input 
+                type="number" 
+                value={paymentValue} 
+                onChange={(e) => setPaymentValue(e.target.value)}
+                className="bg-[#0A0A0A] border-[#1F1F1F]"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[10px] uppercase text-gray-500">Novo Vencimento (Pago até)</Label>
+              <Input 
+                type="date" 
+                value={paidUntil} 
+                onChange={(e) => setPaidUntil(e.target.value)}
+                className="bg-[#0A0A0A] border-[#1F1F1F]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              onClick={handleMarkPaid}
+              disabled={isSubmitting}
+              className="bg-[#C6A355] hover:bg-[#D4B466] text-black font-oswald uppercase tracking-widest w-full"
+            >
+              {isSubmitting ? "PROCESSANDO..." : "CONFIRMAR PAGAMENTO"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <ProfileModal 
+
         isOpen={isProfileModalOpen} 
         onOpenChange={setIsProfileModalOpen} 
       />
