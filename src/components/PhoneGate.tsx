@@ -2,44 +2,48 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, 
-  DialogTrigger 
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter 
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Phone } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 export function PhoneGate({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [checking, setChecking] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
+    const checkPhone = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) {
+          setChecking(false);
+          return;
+        }
+
+        const { data: profile, error } = await supabase
+          .from("users")
+          .select("phone")
+          .eq("id", session.user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error checking phone:", error);
+        } else if (profile && !profile.phone) {
+          setIsOpen(true);
+        }
+      } catch (err) {
+        console.error("Fatal error checking phone:", err);
+      } finally {
+        setChecking(false);
+      }
+    };
+
     checkPhone();
   }, []);
-
-  const checkPhone = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      setChecking(false);
-      return;
-    }
-
-    const { data: profile } = await supabase
-      .from("users")
-      .select("phone")
-      .eq("id", user.id)
-      .single();
-
-    if (profile && !profile.phone) {
-      setIsOpen(true);
-    }
-    setChecking(false);
-  };
 
   const handleSavePhone = async () => {
     if (!phone || phone.length < 10) {
@@ -61,7 +65,7 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
 
       toast.success("Telefone atualizado com sucesso!");
       setIsOpen(false);
-      window.location.reload(); // Refresh to continue flow
+      window.location.reload(); 
     } catch (error: any) {
       toast.error("Erro ao salvar telefone");
       console.error(error);

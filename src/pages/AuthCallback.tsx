@@ -42,7 +42,7 @@ export default function AuthCallback() {
               role: "client",
               barbershop_id: null,
               name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
-              phone: user.user_metadata?.phone || "",
+              phone: user.user_metadata?.phone || null,
               avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
             })
             .select()

@@ -528,7 +528,7 @@ export default function SuperAdmin() {
               Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="h-64 bg-[#141414] animate-pulse rounded-md" />
               ))
-            ) : barbershops.map((shop) => (
+            ) : (barbershops || []).map((shop) => (
               <Card key={shop.id} className="bg-[#141414] border-[#1F1F1F] hover:border-gray-700 transition-colors group overflow-hidden">
                 <CardContent className="p-0">
                   <div className="p-6 space-y-4">

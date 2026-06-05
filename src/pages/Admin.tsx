@@ -123,16 +123,8 @@ export default function Admin() {
         </div>
 
         {/* Tab Content */}
-{activeTab === "agenda" && (
-          <div className="space-y-4">
-             <div className="bg-[#141b2a] border border-[#f0c040]/30 p-4 rounded-[4px] cursor-pointer hover:border-[#f0c040]" onClick={() => {
-                // Manter acesso a horários livres conforme solicitado. 
-                // Assumindo que precisa de um wrapper que exponha isso ou modificar AdminDashboard
-             }}>
-                <h4 className="text-sm font-bold text-[#f0c040]">HORÁRIOS LIVRES</h4>
-             </div>
-             <AdminDashboard barbershopId={barbershopId} profile={profile} />
-          </div>
+        {activeTab === "agenda" && (
+          <AdminDashboard barbershopId={barbershopId} profile={profile} />
         )}
         {activeTab === "barbeiros" && <AdminBarbers barbershopId={barbershopId} />}
         {activeTab === "servicos" && <AdminServices barbershopId={barbershopId} />}
