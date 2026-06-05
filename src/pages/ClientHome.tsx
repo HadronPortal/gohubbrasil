@@ -36,6 +36,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { checkBarbershopAccess } from "@/utils/paymentCheck";
 
 interface Appointment {
   id: string;
@@ -157,6 +158,7 @@ export default function ClientHome() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const barbershopId = profile?.barbershop_id;
+  const [isBlocked, setIsBlocked] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -185,8 +187,23 @@ export default function ClientHome() {
         return;
       }
 
-      fetchBarbershop();
-      fetchAppointments();
+      const checkAccess = async () => {
+        const blocked = await checkBarbershopAccess(
+          barbershopId, 
+          'client', 
+          navigate, 
+          async () => {
+            await supabase.rpc('set_my_selected_barbershop', { p_barbershop_id: null });
+            localStorage.removeItem('selectedBarbershopId');
+          }
+        );
+        if (!blocked) {
+          fetchBarbershop();
+          fetchAppointments();
+        }
+      };
+
+      checkAccess();
 
       // Recarregar quando a janela ganha foco para refletir finalizações do barbeiro
       const handleFocus = () => {
