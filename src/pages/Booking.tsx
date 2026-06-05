@@ -70,6 +70,19 @@ export default function Booking() {
   const fetchAvailableSlots = async () => {
     setIsLoadingSlots(true);
     try {
+      // Check if barbershop is blocked by payment
+      const { data: isBlocked, error: blockError } = await supabase.rpc('barbershop_is_payment_blocked', {
+        p_barbershop_id: barbershopId
+      });
+
+      if (blockError) {
+        console.error("Error checking payment block:", blockError);
+      } else if (isBlocked) {
+        toast.error("Barbearia bloqueada por falta de pagamento. Agendamento não permitido.");
+        setIsLoadingSlots(false);
+        return;
+      }
+
       const { data, error } = await supabase.rpc('get_barbershop_available_slots', {
         p_day: format(selectedDate, "yyyy-MM-dd"),
         p_barber_id: selectedBarberId,
