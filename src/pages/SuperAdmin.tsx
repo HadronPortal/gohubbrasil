@@ -623,13 +623,31 @@ export default function SuperAdmin() {
                             "text-[10px] font-bold uppercase",
                             shop.blocked ? "text-red-500" : "text-green-500"
                           )}>
-                            {shop.subscription_status || "Trialing"} {shop.blocked && "(BLOQUEADO)"}
+                            {STATUS_TRANSLATIONS[shop.subscription_status || "trialing"] || shop.subscription_status}
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-[9px] uppercase text-gray-600 tracking-tighter">Vencimento</Label>
+                          <Label className="text-[9px] uppercase text-gray-600 tracking-tighter">Valor Mensal</Label>
+                          <div className="text-[10px] text-gray-300 font-medium">
+                            {money(shop.monthly_price)}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <Label className="text-[9px] uppercase text-gray-600 tracking-tighter">Vencimento (Pago Até)</Label>
                           <div className="text-[10px] text-gray-300">
                             {shop.paid_until ? format(new Date(shop.paid_until), "dd/MM/yyyy") : "Não definido"}
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-[9px] uppercase text-gray-600 tracking-tighter">Bloqueada</Label>
+                          <div className={cn(
+                            "text-[10px] font-bold uppercase",
+                            shop.blocked ? "text-red-500" : "text-green-500"
+                          )}>
+                            {shop.blocked ? "Sim" : "Não"}
                           </div>
                         </div>
                       </div>
