@@ -16,31 +16,70 @@ export default function BarberDashboard() {
   const { user, profile, isBarber, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isCheckingBarber, setIsCheckingBarber] = useState(true);
+  const [barberRecord, setBarberRecord] = useState<any>(null);
 
   useEffect(() => {
-    if (!authLoading) {
+    async function checkBarberRecord() {
+      if (!user) {
+        setIsCheckingBarber(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('barbers')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (error) throw error;
+        setBarberRecord(data);
+      } catch (err) {
+        console.error("Error checking barber record:", err);
+      } finally {
+        setIsCheckingBarber(false);
+      }
+    }
+
+    if (!authLoading && user) {
+      checkBarberRecord();
+    } else if (!authLoading && !user) {
+      setIsCheckingBarber(false);
+    }
+  }, [authLoading, user]);
+
+  useEffect(() => {
+    // Only run redirection logic when all loading is finished
+    if (!authLoading && !isCheckingBarber) {
       if (!user) {
         navigate("/login", { replace: true });
         return;
       }
       
+      if (!profile) {
+        // Fallback if profile didn't load for some reason but session exists
+        return;
+      }
+
       // Priority Rule: If owner and force flag is not set, redirect to admin panel
-      if (profile?.role === 'owner' && localStorage.getItem('force_barber_panel') !== 'true') {
+      if (profile.role === 'owner' && localStorage.getItem('force_barber_panel') !== 'true') {
         navigate("/admin", { replace: true });
         return;
       }
       
-      // Allow owner even if not explicitly marked as isBarber (as per requirement)
-      if (!isBarber && profile?.role !== 'owner') {
+      const canAccess = profile.role === 'barber' || (profile.role === 'owner' && !!barberRecord);
+
+      if (!canAccess) {
         toast.error("Acesso restrito");
         navigate("/", { replace: true });
         return;
       }
     }
-  }, [user, profile, isBarber, authLoading, navigate]);
+  }, [user, profile, isCheckingBarber, barberRecord, authLoading, navigate]);
 
 
-  if (authLoading) {
+  if (authLoading || isCheckingBarber) {
     return <LoadingScreen />;
   }
 
