@@ -293,19 +293,16 @@ export default function ClientHome() {
   
   const now = new Date();
   
-  const isFinished = (status: string) => ['completed', 'finalizado'].includes(String(status).toLowerCase());
-  const isCanceled = (status: string) => ['cancelled', 'canceled', 'cancelado'].includes(String(status).toLowerCase());
-  const isPast = (appt: Appointment) => new Date(appt.starts_at).getTime() < Date.now();
-  const isHistory = (appt: Appointment) => isFinished(appt.status) || isCanceled(appt.status) || isPast(appt);
+  const isHistory = (appt: Appointment) => {
+    // We already have active/history lists from RPC, but let's keep a helper 
+    // to distinguish them in the local state if needed.
+    // However, the RPC returns them already separated.
+    // If we added `is_active` in mapped data, we use that.
+    return !(appt as any).is_active;
+  };
 
-  const sortActive = (items: Appointment[]) =>
-    [...items].sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
-
-  const sortHistory = (items: Appointment[]) =>
-    [...items].sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
-
-  const upcomingAppointments = sortActive(appointments.filter(a => !isHistory(a)));
-  const historyAppointments = sortHistory(appointments.filter(a => isHistory(a)));
+  const upcomingAppointments = appointments.filter(a => (a as any).is_active);
+  const historyAppointments = appointments.filter(a => !(a as any).is_active);
 
 
   return (
