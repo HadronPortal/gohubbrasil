@@ -233,7 +233,7 @@ export default function AdminDashboard({
               </p>
             ) : (
               appointments.today.map((appt, idx) => (
-                <AppointmentCard key={`today-${idx}`} appt={appt} />
+                <AppointmentCard key={`today-${idx}`} appt={appt} onCancelSuccess={fetchDashboardData} />
               ))
             )}
           </TabsContent>
@@ -245,7 +245,7 @@ export default function AdminDashboard({
               </p>
             ) : (
               appointments.upcoming.map((appt, idx) => (
-                <AppointmentCard key={`upcoming-${idx}`} appt={appt} />
+                <AppointmentCard key={`upcoming-${idx}`} appt={appt} onCancelSuccess={fetchDashboardData} />
               ))
             )}
           </TabsContent>
@@ -268,7 +268,11 @@ export default function AdminDashboard({
 }
 
 
-function AppointmentCard({ appt }: { appt: Appointment }) {
+function AppointmentCard({ appt, onCancelSuccess }: { appt: Appointment, onCancelSuccess?: () => void }) {
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
+
   const getStatusInfo = (status: string) => {
     switch (status.toLowerCase()) {
       case "pending": 
@@ -286,6 +290,34 @@ function AppointmentCard({ appt }: { appt: Appointment }) {
         return { label: status.toUpperCase(), color: "text-gray-500 border-gray-500/30 bg-gray-500/10" };
     }
   };
+
+  const handleCancel = async () => {
+    try {
+      setIsCancelling(true);
+      const { data, error } = await supabase.rpc("cancel_appointment_by_owner", {
+        p_appointment_id: appt.id,
+        p_reason: cancelReason || null
+      });
+
+      if (error) throw error;
+
+      if (data && (data as any).success === false) {
+        toast.error((data as any).error || "Erro ao cancelar agendamento");
+        return;
+      }
+
+      toast.success("Agendamento cancelado. O cliente será avisado pelo WhatsApp.");
+      setIsCancelModalOpen(false);
+      onCancelSuccess?.();
+    } catch (err: any) {
+      console.error("CANCEL ERROR", err);
+      toast.error(err.message || "Erro ao cancelar agendamento");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  const isCancelable = !isFinished(appt.status) && !isCanceled(appt.status) && new Date(appt.starts_at).getTime() > Date.now();
 
   return (
     <div className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] space-y-3">
@@ -309,9 +341,22 @@ function AppointmentCard({ appt }: { appt: Appointment }) {
             )}
           </div>
         </div>
-        <span className={`text-[9px] font-bold px-2 py-1 rounded-[2px] border uppercase tracking-widest ${getStatusInfo(appt.status).color}`}>
-          {getStatusInfo(appt.status).label}
-        </span>
+        <div className="flex flex-col items-end gap-2">
+          <span className={`text-[9px] font-bold px-2 py-1 rounded-[2px] border uppercase tracking-widest ${getStatusInfo(appt.status).color}`}>
+            {getStatusInfo(appt.status).label}
+          </span>
+          {isCancelable && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsCancelModalOpen(true)}
+              className="h-7 text-[8px] text-red-500 hover:text-white hover:bg-red-500/20 font-bold uppercase tracking-widest border border-red-500/20 px-2 flex items-center gap-1"
+            >
+              <Trash2 className="w-3 h-3" />
+              CANCELAR
+            </Button>
+          )}
+        </div>
       </div>
       
       <div className="py-2 px-3 bg-[#1c2333] rounded-[4px] border border-[#2a3347]/30">
@@ -334,6 +379,44 @@ function AppointmentCard({ appt }: { appt: Appointment }) {
           {money(appt.price)}
         </span>
       </div>
+
+      <AlertDialog open={isCancelModalOpen} onOpenChange={setIsCancelModalOpen}>
+        <AlertDialogContent className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-oswald uppercase text-[#f0c040] tracking-widest">
+              CANCELAR AGENDAMENTO?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-[#8a9ab5] text-[10px] uppercase tracking-widest leading-relaxed">
+              O cliente receberá uma notificação automática no WhatsApp informando sobre o cancelamento.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="py-4 space-y-2">
+            <label className="text-[9px] font-bold text-[#8a9ab5] uppercase tracking-widest">
+              MOTIVO (OPCIONAL)
+            </label>
+            <Input
+              placeholder="EX: IMPREVISTO NO ESTABELECIMENTO"
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8] placeholder:text-[#2a3347] text-xs uppercase font-oswald tracking-widest rounded-none h-12 focus-visible:ring-[#f0c040]"
+            />
+          </div>
+
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="bg-transparent border-[#2a3347] text-[#8a9ab5] hover:bg-[#1c2333] hover:text-white font-oswald uppercase text-xs tracking-widest rounded-none h-12">
+              VOLTAR
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancel}
+              disabled={isCancelling}
+              className="bg-red-500 hover:bg-red-600 text-white font-oswald uppercase text-xs tracking-widest rounded-none h-12 border-none"
+            >
+              {isCancelling ? "CANCELANDO..." : "CONFIRMAR CANCELAMENTO"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
