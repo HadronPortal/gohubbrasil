@@ -304,6 +304,7 @@ export default function SuperAdmin() {
         setLogoFile(null);
         setLogoPreview(null);
         setOwnerIsBarber(false);
+        setCreateMonthlyPrice("");
         fetchBarbershops();
       }
     } catch (error: any) {
