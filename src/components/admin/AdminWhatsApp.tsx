@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageSquare, RefreshCw, Smartphone, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { MessageSquare, RefreshCw, Smartphone, CheckCircle2, AlertCircle, Loader2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +20,7 @@ export default function AdminWhatsApp() {
   const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const fetchConnection = useCallback(async (silent = false) => {
     if (!silent) setIsLoading(true);
@@ -99,6 +100,19 @@ export default function AdminWhatsApp() {
     }
   };
 
+  const handleCopyCode = async () => {
+    if (connection?.pairing_code) {
+      try {
+        await navigator.clipboard.writeText(connection.pairing_code);
+        setCopied(true);
+        toast.success("Código copiado!");
+        setTimeout(() => setCopied(false), 3000);
+      } catch (err) {
+        toast.error("Erro ao copiar código");
+      }
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 space-y-4">
@@ -140,14 +154,34 @@ export default function AdminWhatsApp() {
         <div className="bg-[#141b2a] border border-[#f0c040]/30 p-8 rounded-[4px] flex flex-col items-center text-center space-y-6 animate-in fade-in duration-500">
           <div className="space-y-2">
             <h3 className="text-xl font-bold text-[#f0c040] font-oswald tracking-widest uppercase">Código de Pareamento</h3>
-            <p className="text-sm text-[#8a9ab5]">No WhatsApp, vá em Aparelhos conectados {'>'} Conectar com número de telefone e digite este código.</p>
+            <p className="text-sm text-[#8a9ab5]">Abra o WhatsApp {'>'} Aparelhos conectados {'>'} Conectar com número de telefone {'>'} cole ou digite o código</p>
           </div>
 
-          <div className="bg-[#1c2333] border-2 border-dashed border-[#f0c040] p-6 rounded-[4px] w-full max-w-[280px] flex items-center justify-center min-h-[100px]">
+          <div className="bg-[#1c2333] border-2 border-dashed border-[#f0c040] p-6 rounded-[4px] w-full max-w-[280px] flex flex-col items-center justify-center min-h-[140px] space-y-4">
             {showCode ? (
-              <span className="text-5xl font-bold text-[#f0c040] font-oswald tracking-[0.2em]">
-                {connection.pairing_code}
-              </span>
+              <>
+                <span className="text-5xl font-bold text-[#f0c040] font-oswald tracking-[0.2em]">
+                  {connection.pairing_code}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyCode}
+                  className="bg-[#141b2a] border-[#f0c040]/30 text-[#f0c040] hover:bg-[#f0c040]/10 text-[10px] font-bold uppercase tracking-widest h-8 gap-2"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3 h-3" />
+                      Código copiado
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3" />
+                      Copiar código
+                    </>
+                  )}
+                </Button>
+              </>
             ) : (
               <div className="flex flex-col items-center justify-center gap-2 text-[#8a9ab5]">
                 <Loader2 className="w-8 h-8 animate-spin text-[#f0c040]" />
