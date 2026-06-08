@@ -6,11 +6,14 @@ const AuthContext = createContext<any>({})
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const [initialAuthLoading, setInitialAuthLoading] = useState(true)
+  const [isRefreshingSession, setIsRefreshingSession] = useState(false)
   const [hasInitializedAuth, setHasInitializedAuth] = useState(false)
 
   const loadProfile = async (userId: string, isSilent = false) => {
-    if (!isSilent) setLoading(true);
+    console.log(`[AUTH] Profile loading started (${isSilent ? 'silent' : 'foreground'}) for ${userId}`);
+    if (!isSilent) setInitialAuthLoading(true);
+    else setIsRefreshingSession(true);
     
     try {
       // 1. Fetch user profile from public.users table
@@ -21,16 +24,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .maybeSingle();
 
       if (userError) {
-        console.error("Error loading profile from public.users:", userError);
-        setLoading(false);
-        setHasInitializedAuth(true);
+        console.error("[AUTH] Error loading profile from public.users:", userError);
         return;
       }
 
       if (!userData) {
-        console.error("No user data found in public.users");
-        setLoading(false);
-        setHasInitializedAuth(true);
+        console.error("[AUTH] No user data found in public.users");
         return;
       }
 
@@ -38,7 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { data: panelData, error: panelError } = await supabase.rpc('get_my_app_panels');
       
       if (panelError) {
-        console.error("Error loading panels:", panelError);
+        console.error("[AUTH] Error loading panels:", panelError);
       }
 
       const role = String(userData.role || 'client').toLowerCase();
@@ -66,23 +65,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
       
       setProfile(finalProfile);
+      console.log("[AUTH] Profile loaded successfully:", finalProfile.role);
     } catch (err) {
-      console.error("Unexpected error in loadProfile:", err);
+      console.error("[AUTH] Unexpected error in loadProfile:", err);
     } finally {
-      setLoading(false);
+      setInitialAuthLoading(false);
+      setIsRefreshingSession(false);
       setHasInitializedAuth(true);
+      console.log("[AUTH] Profile loading end");
     }
   }
 
   useEffect(() => {
     // Initial session check
     const initSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUser(session.user);
-        await loadProfile(session.user.id);
-      } else {
-        setLoading(false);
+      console.log("[AUTH] Initial session check start");
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          console.log("[AUTH] Session found, loading profile");
+          setUser(session.user);
+          await loadProfile(session.user.id);
+        } else {
+          console.log("[AUTH] No session found");
+          setInitialAuthLoading(false);
+          setHasInitializedAuth(true);
+        }
+      } catch (error) {
+        console.error("[AUTH] Error in initSession:", error);
+        setInitialAuthLoading(false);
         setHasInitializedAuth(true);
       }
     };
@@ -91,7 +102,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log("Auth state change:", event);
+        console.log("[AUTH] Auth state change:", event);
         
         if (session?.user) {
           const isNewUser = !user || user.id !== session.user.id;
@@ -99,12 +110,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           
           // Only show global loading if it's a new login or sign out/in event
           // For events like TOKEN_REFRESHED, we load profile silently
-          const isSilent = hasInitializedAuth && !isNewUser && (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN');
+          const isSilent = hasInitializedAuth && !isNewUser;
           await loadProfile(session.user.id, isSilent);
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
           setProfile(null);
-          setLoading(false);
+          setInitialAuthLoading(false);
           setHasInitializedAuth(true);
         }
       }
@@ -113,7 +124,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Re-validate session when window regains focus or visibility
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && user) {
-        // Debounced or simple background refresh
+        console.log("[AUTH] Visibility changed to visible, refreshing profile in background");
         loadProfile(user.id, true);
       }
     };
@@ -132,7 +143,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     <AuthContext.Provider value={{ 
       user, 
       profile, 
-      loading: !hasInitializedAuth || loading,
+      loading: initialAuthLoading && !hasInitializedAuth,
+      isRefreshingSession,
       hasInitializedAuth,
       refreshProfile: () => user && loadProfile(user.id, true),
       isSuperAdmin: profile?.isSuperAdmin || false,
