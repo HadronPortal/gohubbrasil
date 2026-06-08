@@ -68,7 +68,11 @@ export default function Admin() {
   }, [user, profile, authLoading, isAdmin, navigate]);
 
 
-  if (authLoading || loadingBarbershop) {
+  if (authLoading && !profile) {
+    return <LoadingScreen />;
+  }
+
+  if (loadingBarbershop && !barbershopId) {
     return <LoadingScreen />;
   }
 
