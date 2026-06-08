@@ -127,7 +127,11 @@ export default function SuperAdmin() {
     if (isSuperAdmin) {
       fetchBarbershops();
     }
-  }, [isSuperAdmin]);
+    
+    if (!authLoading && !user) {
+      navigate("/login", { replace: true });
+    }
+  }, [isSuperAdmin, user, authLoading, navigate]);
 
   const fetchBarbershops = async () => {
     setIsLoading(true);
