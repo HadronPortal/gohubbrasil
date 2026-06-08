@@ -25,45 +25,47 @@ export default function Admin() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   useEffect(() => {
-    if (!authLoading) {
-      if (!user) {
-        navigate("/login", { replace: true });
+    if (authLoading) return;
+
+    if (!user) {
+      navigate("/login", { replace: true });
+      return;
+    }
+    
+    if (profile && !isAdmin && profile.role !== "owner") {
+      toast.error("Acesso restrito");
+      navigate("/", { replace: true });
+      return;
+    }
+
+    // Check if user should be in barber panel instead
+    if (profile?.role === 'owner' && localStorage.getItem('force_barber_panel') === 'true' && profile.has_barber_panel) {
+      if (window.location.pathname !== "/barber-dashboard") {
+        navigate("/barber-dashboard", { replace: true });
+      }
+      return;
+    }
+
+    const fetchBarbershopId = async () => {
+      if (profile?.barbershop_id) {
+        setBarbershopId(profile.barbershop_id);
+        setLoadingBarbershop(false);
         return;
+      }
+
+      if (profile?.isSuperAdmin) {
+        // Fallback for superadmin who doesn't have a barbershop_id linked
+        const { data } = await supabase.from("barbershops").select("id").limit(1).maybeSingle();
+        if (data) {
+          setBarbershopId(data.id);
+        }
       }
       
-      if (profile && !isAdmin && profile.role !== "owner") {
-        toast.error("Acesso restrito");
-        navigate("/", { replace: true });
-        return;
-      }
+      setLoadingBarbershop(false);
+    };
 
-      // Check if user should be in barber panel instead
-      if (profile?.role === 'owner' && localStorage.getItem('force_barber_panel') === 'true' && profile.has_barber_panel) {
-        navigate("/barber-dashboard", { replace: true });
-        return;
-      }
-
-      const fetchBarbershopId = async () => {
-        if (profile?.barbershop_id) {
-          setBarbershopId(profile.barbershop_id);
-          setLoadingBarbershop(false);
-          return;
-        }
-
-        if (profile?.isSuperAdmin) {
-          // Fallback for superadmin who doesn't have a barbershop_id linked
-          const { data } = await supabase.from("barbershops").select("id").limit(1).maybeSingle();
-          if (data) {
-            setBarbershopId(data.id);
-          }
-        }
-        
-        setLoadingBarbershop(false);
-      };
-
-      fetchBarbershopId();
-    }
-  }, [user, profile, authLoading, navigate]);
+    fetchBarbershopId();
+  }, [user, profile, authLoading, isAdmin, navigate]);
 
 
   if (authLoading || loadingBarbershop) {

@@ -32,39 +32,47 @@ export default function SelectBarbershop() {
   };
 
   useEffect(() => {
-    const checkSavedBarbershop = async () => {
-      if (!authLoading && !user) {
-        navigate("/login", { replace: true });
-      } else if (user && profile) {
-        if (profile.role === 'client' && profile.barbershop_id) {
-          const params = new URLSearchParams(window.location.search);
-          const manualSelection = params.get("select") === "true" || location.state?.select === true;
-          
-          if (!manualSelection) {
-            navigate("/client-home", { replace: true });
-            return;
-          }
-        }
+    if (authLoading) return;
 
+    const checkSavedBarbershop = async () => {
+      if (!user) {
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      if (profile) {
         const params = new URLSearchParams(window.location.search);
         const manualSelection = params.get("select") === "true" || location.state?.select === true;
-
+        
         if (!manualSelection) {
+          if (profile.role === 'client' && profile.barbershop_id) {
+            if (window.location.pathname !== "/client-home") {
+              navigate("/client-home", { replace: true });
+            }
+            return;
+          }
+
           // Se for superadmin, redireciona para o painel do superadmin
           if (profile.isSuperAdmin) {
-            navigate("/super-admin", { replace: true });
+            if (window.location.pathname !== "/super-admin") {
+              navigate("/super-admin", { replace: true });
+            }
             return;
           }
           
           // Se for dono (owner) ou admin, redireciona para o painel admin
           if (profile.isOwner || profile.role === 'admin') {
-            navigate("/admin", { replace: true });
+            if (window.location.pathname !== "/admin") {
+              navigate("/admin", { replace: true });
+            }
             return;
           }
 
           // Se for barbeiro
           if (profile.role === 'barber') {
-            navigate("/barber-dashboard", { replace: true });
+            if (window.location.pathname !== "/barber-dashboard") {
+              navigate("/barber-dashboard", { replace: true });
+            }
             return;
           }
         }
@@ -74,7 +82,7 @@ export default function SelectBarbershop() {
     };
 
     checkSavedBarbershop();
-  }, [user, profile, authLoading, navigate]);
+  }, [user, profile, authLoading, navigate, location.pathname, location.state]);
 
   const fetchBarbershops = async () => {
     setIsLoading(true);
