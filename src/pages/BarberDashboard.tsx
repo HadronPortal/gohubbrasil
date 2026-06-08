@@ -78,7 +78,11 @@ export default function BarberDashboard() {
   }, [user, profile, isCheckingBarber, barberRecord, authLoading, navigate]);
 
 
-  if (authLoading || isCheckingBarber) {
+  if (authLoading && !profile) {
+    return <LoadingScreen />;
+  }
+
+  if (isCheckingBarber && !barberRecord) {
     return <LoadingScreen />;
   }
 
