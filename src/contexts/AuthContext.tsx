@@ -10,8 +10,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const loadProfile = async (userId: string) => {
     try {
-      console.log("Loading profile for:", userId);
-      // 1. Fetch user profile from public.users table
+      console.log("AuthContext: Loading profile for", userId);
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('*')
@@ -19,57 +18,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .maybeSingle();
 
       if (userError) {
-        console.error("Error loading profile from public.users:", userError);
-        setLoading(false);
+        console.error("AuthContext: Error loading users table:", userError);
         return;
       }
 
-      if (!userData) {
-        console.error("No user data found in public.users");
-        setLoading(false);
-        return;
-      }
-
-      // 2. Fetch panel info via RPC to determine roles and flags
       const { data: panelData, error: panelError } = await supabase.rpc('get_my_app_panels');
-      
-      if (panelError) {
-        console.error("Error loading panels:", panelError);
-        // We still have userData, so we can continue with basic role if panel fails
-      }
+      if (panelError) console.error("AuthContext: Error loading panels RPC:", panelError);
 
-      const role = String(userData.role || 'client').toLowerCase();
-      const isSuperAdmin = role === 'superadmin';
-      const isOwner = role === 'owner';
-      const isBarber = role === 'barber';
-      const isAdmin = isSuperAdmin || isOwner || role === 'admin';
+      const role = String(userData?.role || 'client').toLowerCase();
       
-      if (isOwner) {
-        localStorage.removeItem('force_barber_panel');
-      }
-
       const finalProfile = {
         id: userId,
         role,
-        name: userData.name,
-        phone: userData.phone,
-        avatar_url: userData.avatar_url,
-        barbershop_id: userData.barbershop_id || null,
-        isOwner,
-        isAdmin,
-        isSuperAdmin,
-        isBarber,
+        name: userData?.name,
+        phone: userData?.phone,
+        avatar_url: userData?.avatar_url,
+        barbershop_id: userData?.barbershop_id || null,
+        isOwner: role === 'owner',
+        isAdmin: role === 'superadmin' || role === 'owner' || role === 'admin',
+        isSuperAdmin: role === 'superadmin',
+        isBarber: role === 'barber',
         has_barber_panel: panelData?.has_barber_panel || false
       };
-      
-      console.log("AUTH PROFILE DEBUG (public.users)", {
-        userId,
-        profile: finalProfile
-      });
 
       setProfile(finalProfile);
     } catch (err) {
-      console.error("Unexpected error in loadProfile:", err);
+      console.error("AuthContext: Unexpected error in loadProfile:", err);
     } finally {
       setLoading(false);
     }
@@ -78,35 +52,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let isMounted = true;
 
-    const initializeAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+    // Initial session check
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (!isMounted) return;
-
       if (session?.user) {
         setUser(session.user);
-        await loadProfile(session.user.id);
+        loadProfile(session.user.id);
       } else {
         setLoading(false);
       }
-    };
-
-    initializeAuth();
+    });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!isMounted) return;
         
-        console.log("Auth Event:", event);
+        console.log("AuthContext: Auth event:", event);
         
-        if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED') {
-          setUser(session?.user ?? null);
-          if (session?.user) {
-            await loadProfile(session.user.id);
-          } else {
-            setLoading(false);
-          }
-        } else if (event === 'SIGNED_OUT') {
+        if (session?.user) {
+          setUser(session.user);
+          // Only re-load profile if user ID changed or on critical events
+          loadProfile(session.user.id);
+        } else {
           setUser(null);
           setProfile(null);
           setLoading(false);
