@@ -295,7 +295,7 @@ export default function ClientHome() {
   };
 
 
-  if (authLoading || isLoading) {
+  if ((authLoading && !profile) || isLoading) {
     return <LoadingScreen />;
   }
 

@@ -7,6 +7,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [hasInitialized, setHasInitialized] = useState(false)
 
   const loadProfile = async (userId: string) => {
     // 1. Fetch user profile from public.users table
@@ -19,12 +20,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (userError) {
       console.error("Error loading profile from public.users:", userError);
       setLoading(false);
+      setHasInitialized(true);
       return;
     }
 
     if (!userData) {
       console.error("No user data found in public.users");
       setLoading(false);
+      setHasInitialized(true);
       return;
     }
 
@@ -67,6 +70,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     setProfile(finalProfile);
     setLoading(false);
+    setHasInitialized(true);
   }
 
   useEffect(() => {
@@ -76,6 +80,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         loadProfile(session.user.id)
       } else {
         setLoading(false)
+        setHasInitialized(true)
       }
     })
 
@@ -84,10 +89,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null)
         
         if (session?.user) {
+          // Se já inicializou, não mostra loading global novamente
+          // Apenas atualiza os dados em background
+          if (!hasInitialized) {
+            setLoading(true)
+          }
           loadProfile(session.user.id)
         } else {
           setProfile(null)
           setLoading(false)
+          setHasInitialized(true)
         }
       }
     )
@@ -100,6 +111,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       user, 
       profile, 
       loading,
+      hasInitialized,
       refreshProfile: () => user && loadProfile(user.id),
       isSuperAdmin: profile?.isSuperAdmin || false,
       isOwner: profile?.isOwner || false,

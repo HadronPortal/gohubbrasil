@@ -129,7 +129,7 @@ export default function SelectBarbershop() {
     }
   };
 
-  if (isLoading || authLoading) {
+  if ((authLoading && !profile) || isLoading) {
     return <LoadingScreen />;
   }
 
