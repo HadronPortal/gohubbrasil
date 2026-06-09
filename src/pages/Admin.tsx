@@ -66,7 +66,7 @@ export default function Admin() {
   }, [user, profile, authLoading, navigate]);
 
 
-  if (authLoading || loadingBarbershop) {
+  if ((authLoading && !profile) || loadingBarbershop) {
     return <LoadingScreen />;
   }
 
