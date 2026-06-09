@@ -131,7 +131,13 @@ export default function SelectBarbershop() {
     }
   };
 
-  if ((authLoading && !profile) || isLoading) {
+  console.log('loading gate select barbershop', {
+    authLoading,
+    profile: !!profile,
+    isLoading,
+  });
+
+  if ((authLoading && !profile) || (isLoading && !profile)) {
     return <LoadingScreen />;
   }
 

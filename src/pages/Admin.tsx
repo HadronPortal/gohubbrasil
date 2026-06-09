@@ -72,7 +72,13 @@ export default function Admin() {
   }, [user, profile, authLoading, navigate]);
 
 
-  if ((authLoading && !profile) || loadingBarbershop) {
+  console.log('loading gate admin', {
+    authLoading,
+    profile: !!profile,
+    loadingBarbershop,
+  });
+
+  if ((authLoading && !profile) || (loadingBarbershop && !profile)) {
     return <LoadingScreen />;
   }
 
