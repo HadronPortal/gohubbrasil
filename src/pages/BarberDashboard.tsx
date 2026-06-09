@@ -9,11 +9,12 @@ import { ProfileModal } from "@/components/ProfileModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { getInitial } from "@/lib/utils";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { AuthErrorScreen } from "@/components/AuthErrorScreen";
 import BarberDashboardContent from "@/components/barber/BarberDashboard";
 import { toast } from "sonner";
 
 export default function BarberDashboard() {
-  const { user, profile, isBarber, loading: authLoading } = useAuth();
+  const { user, profile, isBarber, loading: authLoading, initError } = useAuth();
   const navigate = useNavigate();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isCheckingBarber, setIsCheckingBarber] = useState(true);
@@ -77,6 +78,10 @@ export default function BarberDashboard() {
     }
   }, [user, profile, isCheckingBarber, barberRecord, authLoading, navigate]);
 
+
+  if (initError && !profile) {
+    return <AuthErrorScreen error={initError} />;
+  }
 
   if (authLoading && !profile) {
     return <LoadingScreen />;

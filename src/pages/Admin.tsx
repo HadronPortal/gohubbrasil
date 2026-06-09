@@ -15,12 +15,13 @@ import AdminWhatsApp from "@/components/admin/AdminWhatsApp";
 import AdminFinancial from "@/components/admin/AdminFinancial";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { AuthErrorScreen } from "@/components/AuthErrorScreen";
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState<"agenda" | "barbeiros" | "servicos" | "whatsapp" | "financeiro">("agenda");
   const [barbershopId, setBarbershopId] = useState<string | null>(null);
   const [loadingBarbershop, setLoadingBarbershop] = useState(true);
-  const { user, profile, isAdmin, loading: authLoading } = useAuth();
+  const { user, profile, isAdmin, loading: authLoading, initError } = useAuth();
   const navigate = useNavigate();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
@@ -67,6 +68,10 @@ export default function Admin() {
     fetchBarbershopId();
   }, [user, profile, authLoading, isAdmin, navigate]);
 
+
+  if (initError && !profile) {
+    return <AuthErrorScreen error={initError} />;
+  }
 
   if (authLoading && !profile) {
     return <LoadingScreen />;

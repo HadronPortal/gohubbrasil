@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AdminGear } from "@/components/AdminGear";
 import { UserAvatar } from "@/components/UserAvatar";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { AuthErrorScreen } from "@/components/AuthErrorScreen";
 
 import { toast } from "sonner";
 
@@ -23,7 +24,7 @@ export default function SelectBarbershop() {
   const [barbershops, setBarbershops] = useState<Barbershop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const { user, profile, loading: authLoading, refreshProfile } = useAuth();
+  const { user, profile, loading: authLoading, refreshProfile, initError } = useAuth();
   const location = useLocation();
   
   const signOut = async () => {
@@ -136,6 +137,10 @@ export default function SelectBarbershop() {
       }
     }
   };
+
+  if (initError && !profile) {
+    return <AuthErrorScreen error={initError} />;
+  }
 
   if (authLoading && !profile) {
     return <LoadingScreen />;
