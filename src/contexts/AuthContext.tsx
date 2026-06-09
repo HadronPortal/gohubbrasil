@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const loadProfile = async (userId: string) => {
     try {
+      console.log("Loading profile for:", userId);
       // 1. Fetch user profile from public.users table
       const { data: userData, error: userError } = await supabase
         .from('users')
@@ -19,11 +20,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (userError) {
         console.error("Error loading profile from public.users:", userError);
+        setLoading(false);
         return;
       }
 
       if (!userData) {
         console.error("No user data found in public.users");
+        setLoading(false);
         return;
       }
 
@@ -94,18 +97,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       async (event, session) => {
         if (!isMounted) return;
         
-        // Only trigger update if user actually changed or explicitly signed in/out
-        // to avoid loops or unnecessary flashes
-        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED') {
+        console.log("Auth Event:", event);
+        
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'TOKEN_REFRESHED') {
           setUser(session?.user ?? null);
-          
           if (session?.user) {
-            setLoading(true);
             await loadProfile(session.user.id);
           } else {
-            setProfile(null);
             setLoading(false);
           }
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setProfile(null);
+          setLoading(false);
         }
       }
     );
