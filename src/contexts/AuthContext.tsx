@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 
 const AuthContext = createContext<any>({})
@@ -9,9 +9,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [initialAuthLoading, setInitialAuthLoading] = useState(true)
   const [isRefreshingSession, setIsRefreshingSession] = useState(false)
   const [hasInitializedAuth, setHasInitializedAuth] = useState(false)
+  const [initError, setInitError] = useState<string | null>(null)
+  
+  const initializationStarted = useRef(false);
+  const timeoutRef = useRef<any>(null);
 
-  const loadProfile = async (userId: string, isSilent = false) => {
-    console.log(`[AUTH] Profile loading started (${isSilent ? 'silent' : 'foreground'}) for ${userId}`);
+  const loadProfile = useCallback(async (userId: string, isSilent = false) => {
+    console.log(`[AUTH] profile loading start (${isSilent ? 'silent' : 'foreground'}) for ${userId}`);
+    
     if (!isSilent) setInitialAuthLoading(true);
     else setIsRefreshingSession(true);
     
@@ -25,11 +30,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (userError) {
         console.error("[AUTH] Error loading profile from public.users:", userError);
-        return;
+        throw userError;
       }
 
       if (!userData) {
         console.error("[AUTH] No user data found in public.users");
+        // Don't throw, maybe just a new user without record yet
+        setProfile({ id: userId, role: 'client', name: 'Usuário' });
         return;
       }
 
@@ -65,40 +72,74 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       };
       
       setProfile(finalProfile);
-      console.log("[AUTH] Profile loaded successfully:", finalProfile.role);
-    } catch (err) {
-      console.error("[AUTH] Unexpected error in loadProfile:", err);
+      console.log("[AUTH] profile loaded:", finalProfile.role);
+    } catch (err: any) {
+      console.error("[AUTH] error in loadProfile:", err);
+      setInitError(err.message || "Erro ao carregar perfil");
     } finally {
       setInitialAuthLoading(false);
       setIsRefreshingSession(false);
       setHasInitializedAuth(true);
-      console.log("[AUTH] Profile loading end");
+      console.log("[AUTH] profile loading end");
+      
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
     }
-  }
+  }, []);
 
-  useEffect(() => {
-    // Initial session check
-    const initSession = async () => {
-      console.log("[AUTH] Initial session check start");
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          console.log("[AUTH] Session found, loading profile");
-          setUser(session.user);
-          await loadProfile(session.user.id);
-        } else {
-          console.log("[AUTH] No session found");
-          setInitialAuthLoading(false);
-          setHasInitializedAuth(true);
-        }
-      } catch (error) {
-        console.error("[AUTH] Error in initSession:", error);
+  const initAuth = useCallback(async () => {
+    if (initializationStarted.current) return;
+    initializationStarted.current = true;
+    
+    console.log("[AUTH] auth init start");
+
+    // Safety timeout: 5 seconds
+    timeoutRef.current = setTimeout(() => {
+      console.warn("[AUTH] loading timeout fallback triggered");
+      setInitialAuthLoading(false);
+      setHasInitializedAuth(true);
+      if (timeoutRef.current) timeoutRef.current = null;
+    }, 5000);
+
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error("[AUTH] Session error:", sessionError);
+        throw sessionError;
+      }
+
+      if (session?.user) {
+        console.log("[AUTH] session found");
+        setUser(session.user);
+        await loadProfile(session.user.id);
+      } else {
+        console.log("[AUTH] no session found");
         setInitialAuthLoading(false);
         setHasInitializedAuth(true);
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
       }
-    };
+    } catch (error: any) {
+      console.error("[AUTH] Error in initAuth:", error);
+      setInitError(error.message || "Erro na autenticação");
+      setInitialAuthLoading(false);
+      setHasInitializedAuth(true);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    } finally {
+      console.log("[AUTH] auth init finally");
+    }
+  }, [loadProfile]);
 
-    initSession();
+  useEffect(() => {
+    initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -108,11 +149,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const isNewUser = !user || user.id !== session.user.id;
           setUser(session.user);
           
-          // Only show global loading if it's a new login or sign out/in event
-          // For events like TOKEN_REFRESHED, we load profile silently
-          const isSilent = hasInitializedAuth && !isNewUser;
-          await loadProfile(session.user.id, isSilent);
+          // Re-load profile on significant events
+          if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || isNewUser) {
+            const isSilent = hasInitializedAuth && !isNewUser;
+            await loadProfile(session.user.id, isSilent);
+          }
         } else if (event === 'SIGNED_OUT') {
+          console.log("[AUTH] user signed out");
           setUser(null);
           setProfile(null);
           setInitialAuthLoading(false);
@@ -121,10 +164,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     );
 
-    // Re-validate session when window regains focus or visibility
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && user) {
-        console.log("[AUTH] Visibility changed to visible, refreshing profile in background");
+        console.log("[AUTH] Visibility changed - background refresh");
         loadProfile(user.id, true);
       }
     };
@@ -136,8 +178,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       subscription.unsubscribe();
       window.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleVisibilityChange);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     }
-  }, [user?.id, hasInitializedAuth]);
+  }, [user?.id, initAuth, loadProfile]);
 
   return (
     <AuthContext.Provider value={{ 
@@ -146,6 +189,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       loading: initialAuthLoading && !hasInitializedAuth,
       isRefreshingSession,
       hasInitializedAuth,
+      initError,
       refreshProfile: () => user && loadProfile(user.id, true),
       isSuperAdmin: profile?.isSuperAdmin || false,
       isOwner: profile?.isOwner || false,
