@@ -102,17 +102,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         console.log("AUTH EVENT:", event);
 
-        // Don't clear state on TOKEN_REFRESHED if we already have a user
-        if (event === 'TOKEN_REFRESHED' && user && session?.user) {
-          setUser(session.user);
+        // Don't trigger loading for focus/refresh events if we already have data
+        const isUpdateEvent = event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED';
+        const hasSession = !!session?.user;
+        const alreadyLoaded = hasInitialized && !!user;
+
+        // Special case: ignore focus/refresh if we're already settled
+        if (isUpdateEvent && alreadyLoaded) {
+          if (session?.user) setUser(session.user);
+          await loadProfile(session.user.id, true);
           return;
         }
 
+        // For other events, update user state
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Pass true to loadProfile to indicate it's an update (don't show loading screen)
-          await loadProfile(session.user.id, true);
+          // Only show loading if we really don't have a profile yet
+          const shouldShowLoading = !hasInitialized;
+          await loadProfile(session.user.id, !shouldShowLoading);
         } else {
           setProfile(null);
           setLoading(false);
