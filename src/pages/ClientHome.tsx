@@ -162,7 +162,9 @@ export default function ClientHome() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate("/login");
+      if (window.location.pathname !== "/login") {
+        navigate("/login");
+      }
     } else if (user && profile) {
       // Prioritize primary panels if roles are owner/admin/barber
       // unless they are specifically in client mode (no force flag)
@@ -170,19 +172,19 @@ export default function ClientHome() {
       const hasForceBarber = localStorage.getItem('force_barber_panel') === 'true';
 
       if (!hasForceBarber) {
-        if (role === 'superadmin') {
+        if (role === 'superadmin' && window.location.pathname !== "/super-admin") {
           navigate("/super-admin", { replace: true });
           return;
-        } else if (role === 'owner' || role === 'admin') {
+        } else if ((role === 'owner' || role === 'admin') && window.location.pathname !== "/admin") {
           navigate("/admin", { replace: true });
           return;
-        } else if (role === 'barber') {
+        } else if (role === 'barber' && window.location.pathname !== "/barber-dashboard") {
           navigate("/barber-dashboard", { replace: true });
           return;
         }
       }
 
-      if (!profile.barbershop_id) {
+      if (!profile.barbershop_id && window.location.pathname !== "/") {
         navigate("/", { replace: true });
         return;
       }

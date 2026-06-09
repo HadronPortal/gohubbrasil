@@ -53,7 +53,9 @@ export default function BarberDashboard() {
     // Only run redirection logic when all loading is finished
     if (!authLoading && !isCheckingBarber) {
       if (!user) {
-        navigate("/login", { replace: true });
+        if (window.location.pathname !== "/login") {
+          navigate("/login", { replace: true });
+        }
         return;
       }
       
@@ -64,7 +66,9 @@ export default function BarberDashboard() {
 
       // Priority Rule: If owner and force flag is not set, redirect to admin panel
       if (profile.role === 'owner' && localStorage.getItem('force_barber_panel') !== 'true') {
-        navigate("/admin", { replace: true });
+        if (window.location.pathname !== "/admin") {
+          navigate("/admin", { replace: true });
+        }
         return;
       }
       
@@ -72,7 +76,9 @@ export default function BarberDashboard() {
 
       if (!canAccess) {
         toast.error("Acesso restrito");
-        navigate("/", { replace: true });
+        if (window.location.pathname !== "/") {
+          navigate("/", { replace: true });
+        }
         return;
       }
     }

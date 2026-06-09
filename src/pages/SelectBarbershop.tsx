@@ -34,13 +34,15 @@ export default function SelectBarbershop() {
   useEffect(() => {
     const checkSavedBarbershop = async () => {
       if (!authLoading && !user) {
-        navigate("/login", { replace: true });
+        if (window.location.pathname !== "/login") {
+          navigate("/login", { replace: true });
+        }
       } else if (user && profile) {
         if (profile.role === 'client' && profile.barbershop_id) {
           const params = new URLSearchParams(window.location.search);
           const manualSelection = params.get("select") === "true" || location.state?.select === true;
           
-          if (!manualSelection) {
+          if (!manualSelection && window.location.pathname !== "/client-home") {
             navigate("/client-home", { replace: true });
             return;
           }
@@ -51,19 +53,19 @@ export default function SelectBarbershop() {
 
         if (!manualSelection) {
           // Se for superadmin, redireciona para o painel do superadmin
-          if (profile.isSuperAdmin) {
+          if (profile.isSuperAdmin && window.location.pathname !== "/super-admin") {
             navigate("/super-admin", { replace: true });
             return;
           }
           
           // Se for dono (owner) ou admin, redireciona para o painel admin
-          if (profile.isOwner || profile.role === 'admin') {
+          if ((profile.isOwner || profile.role === 'admin') && window.location.pathname !== "/admin") {
             navigate("/admin", { replace: true });
             return;
           }
 
           // Se for barbeiro
-          if (profile.role === 'barber') {
+          if (profile.role === 'barber' && window.location.pathname !== "/barber-dashboard") {
             navigate("/barber-dashboard", { replace: true });
             return;
           }
