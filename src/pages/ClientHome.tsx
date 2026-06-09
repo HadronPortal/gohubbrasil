@@ -297,7 +297,16 @@ export default function ClientHome() {
   };
 
 
-  if ((authLoading && !profile) || isLoading) {
+  console.log('loading gate client home', {
+    authLoading,
+    profile: !!profile,
+    profileId: profile?.id,
+    barbershopId,
+    isLoading,
+    hasInitialized: !!profile,
+  });
+
+  if ((authLoading && !profile) || (isLoading && !profile)) {
     return <LoadingScreen />;
   }
 

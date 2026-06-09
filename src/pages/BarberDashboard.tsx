@@ -85,7 +85,13 @@ export default function BarberDashboard() {
   }, [user, profile, isCheckingBarber, barberRecord, authLoading, navigate]);
 
 
-  if ((authLoading && !profile) || isCheckingBarber) {
+  console.log('loading gate barber dashboard', {
+    authLoading,
+    profile: !!profile,
+    isCheckingBarber,
+  });
+
+  if ((authLoading && !profile) || (isCheckingBarber && !profile)) {
     return <LoadingScreen />;
   }
 

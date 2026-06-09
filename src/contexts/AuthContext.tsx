@@ -141,6 +141,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       profile, 
       loading,
       hasInitialized,
+      setLoading,
       refreshProfile: () => user && loadProfile(user.id, true),
       isSuperAdmin: profile?.isSuperAdmin || false,
       isOwner: profile?.isOwner || false,

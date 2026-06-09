@@ -14,6 +14,7 @@ import { LogoutButton } from "@/components/LogoutButton";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
+import { LoadingScreen } from "@/components/LoadingScreen";
 import { UserAvatar } from "@/components/UserAvatar";
 import { getInitial } from "@/lib/utils";
 import { money } from "@/utils/format";
@@ -206,13 +207,13 @@ export default function SuperAdmin() {
     }
   };
 
+  console.log('loading gate super admin', {
+    authLoading,
+    profile: !!profile,
+  });
+
   if (authLoading && !profile) {
-    return (
-      <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center p-4">
-        <Scissors className="w-12 h-12 text-[#C6A355] animate-bounce mb-4" />
-        <p className="text-white font-oswald tracking-widest uppercase">Carregando...</p>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (!isSuperAdmin) {
