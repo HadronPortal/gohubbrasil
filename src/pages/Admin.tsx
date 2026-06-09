@@ -27,19 +27,25 @@ export default function Admin() {
   useEffect(() => {
     if (!authLoading) {
       if (!user) {
-        navigate("/login", { replace: true });
+        if (window.location.pathname !== "/login") {
+          navigate("/login", { replace: true });
+        }
         return;
       }
       
       if (profile && !isAdmin && profile.role !== "owner") {
         toast.error("Acesso restrito");
-        navigate("/", { replace: true });
+        if (window.location.pathname !== "/") {
+          navigate("/", { replace: true });
+        }
         return;
       }
 
       // Check if user should be in barber panel instead
       if (profile?.role === 'owner' && localStorage.getItem('force_barber_panel') === 'true' && profile.has_barber_panel) {
-        navigate("/barber-dashboard", { replace: true });
+        if (window.location.pathname !== "/barber-dashboard") {
+          navigate("/barber-dashboard", { replace: true });
+        }
         return;
       }
 
