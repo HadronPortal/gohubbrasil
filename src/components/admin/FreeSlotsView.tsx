@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, startOfDay, addMinutes, isBefore, isAfter, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { TimePicker } from "@/components/ui/TimePicker";
 import { Calendar as CalendarIcon, Clock, Lock, Settings, Trash2, ArrowLeft, User } from "lucide-react";
 import { toast } from "sonner";
@@ -489,32 +490,18 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Início</label>
-                <Select value={blockStartTime} onValueChange={handleStartTimeChange}>
-                  <SelectTrigger className="bg-[#141b2a] border-[#2a3347] h-11 text-xs">
-                    <SelectValue placeholder="Início" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8] max-h-[200px]">
-                    {generateTimeOptions().map(time => (
-                      <SelectItem key={`start-${time}`} value={time}>{time}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Fim</label>
-                <Select value={blockEndTime} onValueChange={setBlockEndTime}>
-                  <SelectTrigger className="bg-[#141b2a] border-[#2a3347] h-11 text-xs">
-                    <SelectValue placeholder="Fim" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8] max-h-[200px]">
-                    {generateTimeOptions().map(time => (
-                      <SelectItem key={`end-${time}`} value={time}>{time}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <TimePicker 
+                label="Início" 
+                value={blockStartTime} 
+                onChange={handleStartTimeChange} 
+                minutesStep={5}
+              />
+              <TimePicker 
+                label="Fim" 
+                value={blockEndTime} 
+                onChange={setBlockEndTime} 
+                minutesStep={5}
+              />
             </div>
 
             <div className="space-y-1.5">

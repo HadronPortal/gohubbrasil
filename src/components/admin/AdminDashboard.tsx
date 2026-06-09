@@ -153,7 +153,7 @@ export default function AdminDashboard({
   if (isLoading) return <div className="text-[#8a9ab5] font-oswald text-xs tracking-widest uppercase">CARREGANDO...</div>;
 
   if (showFreeSlots && barbershopId) {
-    return <FreeSlotsView barbershopId={barbershopId} onBack={() => setShowFreeSlots(false)} />;
+    return <FreeSlotsView barbershopId={barbershopId} onBack={() => setShowFreeSlots(false)} profile={profile} />;
   }
 
   return (

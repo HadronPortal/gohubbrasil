@@ -119,7 +119,7 @@ export default function BarberDashboard({ profile }: { profile: any }) {
   if (isLoading && !data) return <div className="text-[#8a9ab5] font-oswald text-xs tracking-widest uppercase p-6">CARREGANDO...</div>;
 
   if (showFreeSlots) {
-    return <FreeSlotsView barbershopId={profile.barbershop_id} onBack={() => setShowFreeSlots(false)} />;
+    return <FreeSlotsView barbershopId={profile.barbershop_id} onBack={() => setShowFreeSlots(false)} profile={profile} />;
   }
 
   return (
