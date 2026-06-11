@@ -238,6 +238,9 @@ export default function ClientHome() {
     if (!user) return;
     setIsLoading(true);
     try {
+      // Auto complete past appointments
+      await supabase.rpc('auto_complete_past_appointments');
+
       const { data, error } = await supabase.rpc('get_my_appointments_safe');
 
       if (error) {

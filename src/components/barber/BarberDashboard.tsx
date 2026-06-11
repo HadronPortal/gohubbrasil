@@ -61,6 +61,10 @@ export default function BarberDashboard({ profile }: { profile: any }) {
   const fetchDashboardData = async () => {
     try {
       setIsLoading(true);
+      
+      // Auto complete past appointments before fetching data
+      await supabase.rpc('auto_complete_past_appointments');
+
       const { data: rpcData, error: rpcError } = await supabase.rpc('get_barber_dashboard', {
         p_day: null
       });

@@ -70,6 +70,9 @@ export default function Booking() {
   const fetchAvailableSlots = async () => {
     setIsLoadingSlots(true);
     try {
+      // Auto complete past appointments
+      await supabase.rpc('auto_complete_past_appointments');
+
       // Check if barbershop is blocked by payment
       const { data: isBlocked, error: blockError } = await supabase.rpc('barbershop_is_payment_blocked', {
         p_barbershop_id: barbershopId

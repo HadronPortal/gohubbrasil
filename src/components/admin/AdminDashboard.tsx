@@ -92,6 +92,9 @@ export default function AdminDashboard({
     try {
       setIsLoading(true);
 
+      // Auto complete past appointments before fetching data
+      await supabase.rpc('auto_complete_past_appointments');
+
       const { data, error } = await supabase.rpc("get_owner_dashboard_appointments", {
         p_day: null
       }) as { data: RPCResponse | null, error: any };
@@ -270,8 +273,10 @@ export default function AdminDashboard({
 
 function AppointmentCard({ appt, onCancelSuccess }: { appt: Appointment, onCancelSuccess?: () => void }) {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isFinishing, setIsFinishing] = useState(false);
 
   const getStatusInfo = (status: string) => {
     switch (status.toLowerCase()) {
@@ -288,6 +293,31 @@ function AppointmentCard({ appt, onCancelSuccess }: { appt: Appointment, onCance
         return { label: "FINALIZADO", color: "text-blue-500 border-blue-500/30 bg-blue-500/10" };
       default: 
         return { label: status.toUpperCase(), color: "text-gray-500 border-gray-500/30 bg-gray-500/10" };
+    }
+  };
+
+  const handleFinish = async () => {
+    try {
+      setIsFinishing(true);
+      const { data, error } = await supabase.rpc("finish_appointment_by_owner", {
+        p_appointment_id: appt.id
+      });
+
+      if (error) throw error;
+
+      if (data && (data as any).success === false) {
+        toast.error((data as any).error || "Erro ao finalizar agendamento");
+        return;
+      }
+
+      toast.success("Atendimento finalizado com sucesso!");
+      setIsFinishModalOpen(false);
+      onCancelSuccess?.();
+    } catch (err: any) {
+      console.error("FINISH ERROR", err);
+      toast.error(err.message || "Erro ao finalizar atendimento");
+    } finally {
+      setIsFinishing(false);
     }
   };
 
@@ -318,6 +348,7 @@ function AppointmentCard({ appt, onCancelSuccess }: { appt: Appointment, onCance
   };
 
   const isCancelable = !isFinished(appt.status) && !isCanceled(appt.status) && new Date(appt.starts_at).getTime() > Date.now();
+  const canBeFinished = ["pending", "confirmed"].includes(appt.status.toLowerCase());
 
   return (
     <div className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] space-y-3">
@@ -379,6 +410,43 @@ function AppointmentCard({ appt, onCancelSuccess }: { appt: Appointment, onCance
           {money(appt.price)}
         </span>
       </div>
+
+      {canBeFinished && (
+        <div className="pt-2">
+          <Button
+            onClick={() => setIsFinishModalOpen(true)}
+            className="w-full h-10 bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2 text-[10px] uppercase font-bold tracking-widest"
+          >
+            Finalizar atendimento
+          </Button>
+        </div>
+      )}
+
+      <AlertDialog open={isFinishModalOpen} onOpenChange={setIsFinishModalOpen}>
+        <AlertDialogContent className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-oswald uppercase text-[#f0c040] tracking-widest">
+              FINALIZAR ATENDIMENTO?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-[#8a9ab5] text-[10px] uppercase tracking-widest leading-relaxed">
+              Deseja marcar este atendimento como concluído e calcular a comissão?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="bg-transparent border-[#2a3347] text-[#8a9ab5] hover:bg-[#1c2333] hover:text-white font-oswald uppercase text-xs tracking-widest rounded-none h-12">
+              VOLTAR
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleFinish}
+              disabled={isFinishing}
+              className="bg-green-600 hover:bg-green-700 text-white font-oswald uppercase text-xs tracking-widest rounded-none h-12 border-none"
+            >
+              {isFinishing ? "FINALIZANDO..." : "CONFIRMAR FINALIZAÇÃO"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={isCancelModalOpen} onOpenChange={setIsCancelModalOpen}>
         <AlertDialogContent className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8]">
