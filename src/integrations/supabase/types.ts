@@ -314,6 +314,7 @@ export type Database = {
       }
     }
     Functions: {
+      auto_complete_past_appointments: { Args: never; Returns: Json }
       barbershop_is_payment_blocked: {
         Args: { p_barbershop_id: string }
         Returns: boolean
@@ -368,6 +369,10 @@ export type Database = {
       }
       ensure_owner_is_barber: {
         Args: { p_barbershop_id: string; p_owner_user_id: string }
+        Returns: Json
+      }
+      finish_appointment_by_owner: {
+        Args: { p_appointment_id: string }
         Returns: Json
       }
       finish_barber_appointment: {
