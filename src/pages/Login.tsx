@@ -205,9 +205,6 @@ export default function Login() {
                 <h1 className="mt-2 max-w-[210px] text-[26px] font-black leading-[1.06] tracking-normal text-white normal-case">
                   Encontre servicos perto de voce
                 </h1>
-                <p className="mt-2 max-w-[205px] text-[12px] font-semibold leading-relaxed text-white/82">
-                  Barbearias, clinicas, beleza, automotivos e muito mais em so um lugar.
-                </p>
               </div>
 
               <div className="relative h-28">
