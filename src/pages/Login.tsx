@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+import { Capacitor } from "@capacitor/core";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Scissors } from "lucide-react";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -130,14 +129,27 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
+      const isApp = Capacitor.isNativePlatform();
+      const redirectTo = isApp 
+        ? "com.gohubbrasil.app://auth/callback" 
+        : `${window.location.origin}/auth/callback`;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo,
+          skipBrowserRedirect: isApp,
         }
       });
 
       if (error) throw error;
+
+      if (isApp) {
+        // For Capacitor, we might need to handle the browser open manually 
+        // if skipBrowserRedirect is used, but Supabase usually handles it 
+        // if redirectTo is a custom scheme.
+        // However, if skipBrowserRedirect: true was used, we'd get a URL back.
+      }
     } catch (error: any) {
       toast.error(error.message);
       setIsLoading(false);

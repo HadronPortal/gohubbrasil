@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { App as CapacitorApp } from '@capacitor/app';
+import { supabase } from "@/integrations/supabase/client";
 import Login from "./pages/Login";
 import SelectBarbershop from "./pages/SelectBarbershop";
 import SelectBarber from "./pages/SelectBarber";
@@ -70,12 +71,13 @@ const router = createBrowserRouter([
 
 function App() {
   useEffect(() => {
-    let handler: any = null;
+    let backHandler: any = null;
+    let urlHandler: any = null;
 
     // Handling Android Back Button
     const setupBackButton = async () => {
       try {
-        handler = await CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+        backHandler = await CapacitorApp.addListener('backButton', ({ canGoBack }) => {
           const protectedRoutes = [
             '/client-home',
             '/admin',
@@ -106,11 +108,51 @@ function App() {
       }
     };
 
+    // Handling App Deep Links (OAuth Callback)
+    const setupUrlListener = async () => {
+      try {
+        urlHandler = await CapacitorApp.addListener('appUrlOpen', async (data) => {
+          console.log('App opened with URL:', data.url);
+          
+          if (data.url.includes('auth/callback')) {
+            // Extract the tokens from the URL
+            const url = new URL(data.url);
+            const params = new URLSearchParams(url.hash.substring(1)); // OAuth tokens are usually in the fragment
+            const accessToken = params.get('access_token');
+            const refreshToken = params.get('refresh_token');
+
+            if (accessToken && refreshToken) {
+              const { error } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+
+              if (error) {
+                console.error('Error setting session:', error);
+              } else {
+                // The AuthContext and AuthCallback page will handle the rest
+                // We might need to manually trigger a navigation if we're not on the callback page
+                if (!window.location.pathname.includes('/auth/callback')) {
+                  window.location.href = '/auth/callback' + url.hash;
+                }
+              }
+            }
+          }
+        });
+      } catch (e) {
+        console.log("Capacitor App plugin not available, skipping URL listener.");
+      }
+    };
+
     setupBackButton();
+    setupUrlListener();
 
     return () => {
-      if (handler) {
-        handler.remove();
+      if (backHandler) {
+        backHandler.remove();
+      }
+      if (urlHandler) {
+        urlHandler.remove();
       }
     };
   }, []);
