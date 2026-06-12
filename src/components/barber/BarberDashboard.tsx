@@ -11,6 +11,15 @@ import { Lock } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
 import { getDateKeyBR, isTodayBR, isAfterTodayBR, isFinished, isCanceled } from "@/lib/utils";
 import FreeSlotsView from "../admin/FreeSlotsView";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 
 interface DashboardSummary {

@@ -75,7 +75,7 @@ function AppointmentCard({
             {!isPast && <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />}
             <h4 className="text-xs font-bold text-[#f0c040] uppercase tracking-widest font-oswald">
               {appt.service_name}
-              {(appt.status.toLowerCase() === 'no_show' || client_attended === false) && (
+              {(appt.status.toLowerCase() === 'no_show' || (appt as any).client_attended === false) && (
                 <span className="ml-2 text-orange-500">(NÃO COMPARECEU)</span>
               )}
             </h4>
@@ -133,7 +133,7 @@ function AppointmentCard({
             AGENDAR NOVAMENTE
           </Button>
           <p className="text-[8px] text-[#8a9ab5] uppercase tracking-widest mt-2 text-center">
-            {(appt.status.toLowerCase() === 'no_show' || client_attended === false) ? 'Não compareceu' : 'Agendamento finalizado'}
+            {(appt.status.toLowerCase() === 'no_show' || (appt as any).client_attended === false) ? 'Não compareceu' : 'Agendamento finalizado'}
           </p>
         </div>
       ) : (
