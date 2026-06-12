@@ -182,7 +182,7 @@ export default function Login() {
   return (
     <div className="h-screen overflow-hidden bg-[#eef4ff] font-sans text-[#101a3d]">
       <div className="mx-auto h-screen w-full max-w-[430px] overflow-hidden bg-white shadow-2xl sm:my-4 sm:h-[calc(100vh-2rem)] sm:rounded-[28px]">
-        <section className="relative overflow-hidden bg-gradient-to-br from-[#24008f] via-[#0444da] to-[#05a8ff] px-5 pb-5 pt-8 text-white">
+        <section className="relative overflow-hidden bg-gradient-to-br from-[#24008f] via-[#0444da] to-[#05a8ff] px-5 pb-4 pt-5 text-white">
           <div className="absolute -left-16 top-8 h-36 w-36 rounded-full bg-white/10" />
           <div className="absolute -right-20 top-10 h-48 w-48 rounded-full bg-[#1bb6ff]/35" />
           <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#0068e8]/70 to-transparent" />
@@ -194,34 +194,34 @@ export default function Login() {
             <img
               src="/Logo-GoHub.png"
               alt="GoHub"
-              className="h-14 w-14 rounded-2xl bg-white object-contain p-2 shadow-lg"
+              className="h-10 w-10 rounded-xl bg-white object-contain p-1.5 shadow-lg"
             />
 
-            <div className="mt-10 grid grid-cols-[1fr_128px] items-center gap-2">
+            <div className="mt-4 grid grid-cols-[1fr_108px] items-center gap-2">
               <div>
-                <p className="text-[12px] font-black uppercase tracking-[0.24em] text-[#4de0ff]">
+                <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[#4de0ff]">
                   GoHub Brasil
                 </p>
-                <h1 className="mt-3 max-w-[210px] text-[32px] font-black leading-[1.06] tracking-normal text-white normal-case">
+                <h1 className="mt-2 max-w-[210px] text-[26px] font-black leading-[1.06] tracking-normal text-white normal-case">
                   Encontre servicos perto de voce
                 </h1>
-                <p className="mt-4 max-w-[205px] text-[13px] font-semibold leading-relaxed text-white/82">
+                <p className="mt-2 max-w-[205px] text-[12px] font-semibold leading-relaxed text-white/82">
                   Barbearias, clinicas, beleza, automotivos e muito mais em so um lugar.
                 </p>
               </div>
 
-              <div className="relative h-36">
-                <div className="absolute left-4 top-2 h-24 w-24 rounded-full bg-white/10 blur-sm" />
-                <div className="absolute left-4 top-4 flex h-[108px] w-[92px] items-center justify-center rounded-[48px_48px_52px_52px] bg-gradient-to-b from-[#5aa2ff] to-[#083bff] shadow-[0_18px_30px_rgba(0,0,0,0.25)]">
-                  <div className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-white shadow-[inset_0_-8px_14px_rgba(17,96,255,0.12)]">
-                    <Store className="h-9 w-9 text-[#0847ff]" />
+              <div className="relative h-28">
+                <div className="absolute left-3 top-1 h-20 w-20 rounded-full bg-white/10 blur-sm" />
+                <div className="absolute left-3 top-2 flex h-[88px] w-[76px] items-center justify-center rounded-[40px_40px_44px_44px] bg-gradient-to-b from-[#5aa2ff] to-[#083bff] shadow-[0_14px_24px_rgba(0,0,0,0.25)]">
+                  <div className="flex h-[56px] w-[56px] items-center justify-center rounded-full bg-white shadow-[inset_0_-6px_10px_rgba(17,96,255,0.12)]">
+                    <Store className="h-7 w-7 text-[#0847ff]" />
                   </div>
                 </div>
-                <div className="absolute bottom-1 left-12 h-4 w-12 rounded-full bg-black/20 blur-md" />
+                <div className="absolute bottom-0 left-10 h-4 w-10 rounded-full bg-black/20 blur-md" />
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-4 gap-2 rounded-[20px] bg-white/95 p-2 shadow-[0_18px_35px_rgba(6,25,89,0.25)] backdrop-blur">
+            <div className="mt-3 grid grid-cols-4 gap-2 rounded-[16px] bg-white/95 p-1.5 shadow-[0_14px_28px_rgba(6,25,89,0.25)] backdrop-blur">
               {serviceHighlights.map((item) => {
                 const Icon = item.icon;
 
@@ -229,10 +229,10 @@ export default function Login() {
                   <button
                     key={item.label}
                     type="button"
-                    className="flex min-h-[76px] flex-col items-center justify-center gap-2 rounded-2xl bg-[#f6f8ff] px-1 text-[#1235cf] active:scale-95"
+                    className="flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-xl bg-[#f6f8ff] px-1 text-[#1235cf] active:scale-95"
                   >
-                    <Icon className="h-6 w-6" />
-                    <span className="max-w-full truncate text-[9px] font-extrabold text-[#101a3d]">
+                    <Icon className="h-5 w-5" />
+                    <span className="max-w-full truncate text-[8px] font-extrabold text-[#101a3d]">
                       {item.label}
                     </span>
                   </button>
