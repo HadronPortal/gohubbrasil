@@ -10,7 +10,27 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        // First try to get session (might already be set by setSession in App.tsx)
+        let { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        // If no session, try to parse from URL (native or web hash)
+        if (!session) {
+          const hash = window.location.hash;
+          if (hash) {
+            const params = new URLSearchParams(hash.substring(1));
+            const accessToken = params.get('access_token');
+            const refreshToken = params.get('refresh_token');
+            
+            if (accessToken && refreshToken) {
+              const { data, error } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+              session = data.session;
+              if (error) throw error;
+            }
+          }
+        }
 
         if (sessionError) throw sessionError;
 
