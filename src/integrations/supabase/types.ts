@@ -34,11 +34,13 @@ export type Database = {
           appointment_time: string
           barber_id: string
           barbershop_id: string
+          client_attended: boolean | null
           client_id: string
           commission_amount: number | null
           confirmed_via_whatsapp: boolean | null
           created_at: string | null
           ends_at: string | null
+          finished_at: string | null
           id: string
           price: number | null
           price_charged: number | null
@@ -51,11 +53,13 @@ export type Database = {
           appointment_time: string
           barber_id: string
           barbershop_id: string
+          client_attended?: boolean | null
           client_id: string
           commission_amount?: number | null
           confirmed_via_whatsapp?: boolean | null
           created_at?: string | null
           ends_at?: string | null
+          finished_at?: string | null
           id?: string
           price?: number | null
           price_charged?: number | null
@@ -68,11 +72,13 @@ export type Database = {
           appointment_time?: string
           barber_id?: string
           barbershop_id?: string
+          client_attended?: boolean | null
           client_id?: string
           commission_amount?: number | null
           confirmed_via_whatsapp?: boolean | null
           created_at?: string | null
           ends_at?: string | null
+          finished_at?: string | null
           id?: string
           price?: number | null
           price_charged?: number | null
@@ -314,7 +320,7 @@ export type Database = {
       }
     }
     Functions: {
-      auto_complete_past_appointments: { Args: never; Returns: Json }
+      auto_complete_past_appointments: { Args: never; Returns: undefined }
       barbershop_is_payment_blocked: {
         Args: { p_barbershop_id: string }
         Returns: boolean
@@ -372,11 +378,11 @@ export type Database = {
         Returns: Json
       }
       finish_appointment_by_owner: {
-        Args: { p_appointment_id: string }
+        Args: { p_appointment_id: string; p_attended: boolean }
         Returns: Json
       }
       finish_barber_appointment: {
-        Args: { p_appointment_id: string }
+        Args: { p_appointment_id: string; p_attended: boolean }
         Returns: Json
       }
       get_auth_user_id_by_email: { Args: { p_email: string }; Returns: string }
@@ -406,7 +412,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
-      get_barber_dashboard: { Args: { p_day: string }; Returns: Json }
+      get_barber_dashboard: { Args: { p_day?: string }; Returns: Json }
       get_financial_report: {
         Args: {
           p_barbershop_id: string
@@ -425,6 +431,14 @@ export type Database = {
           starts_at: string
           status: string
         }[]
+      }
+      get_owner_financial_report: {
+        Args: {
+          p_barbershop_id?: string
+          p_end_date: string
+          p_start_date: string
+        }
+        Returns: Json
       }
       get_superadmin_barbershops: {
         Args: never
