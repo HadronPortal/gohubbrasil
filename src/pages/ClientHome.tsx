@@ -139,7 +139,7 @@ function AppointmentCard({
             AGENDAR NOVAMENTE
           </Button>
           <p className="text-[8px] text-[#8a9ab5] uppercase tracking-widest mt-2 text-center">
-            {(appt.status.toLowerCase() === 'no_show' || (appt as any).client_attended === false) ? 'Não compareceu' : 'Agendamento finalizado'}
+            {(appt.status.toLowerCase() === 'no_show' || (appt as any).client_attended === false) ? 'Não compareceu' : (appt.status.toLowerCase().includes('cancel') ? 'Cancelado' : 'Agendamento finalizado')}
           </p>
         </div>
       ) : (
