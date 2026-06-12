@@ -1,8 +1,12 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { 
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter 
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,59 +22,85 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!authLoading && user && profile) {
-      // Logic requested by user:
-      // 1. Must be Google login
-      // 2. Must not be superadmin
-      // 3. Phone must be missing/empty
-      
-      const isGoogleLogin = 
-        user?.app_metadata?.provider === 'google' || 
-        user?.identities?.some((i: any) => i.provider === 'google');
+      const isGoogleLogin =
+        user?.app_metadata?.provider === "google" ||
+        user?.identities?.some((identity: any) => identity.provider === "google");
 
-      const phoneMissing = !profile?.phone || String(profile.phone).trim() === '';
-      const isSuperAdmin = profile?.role?.toLowerCase() === 'superadmin';
+      const phoneMissing = !profile?.phone || String(profile.phone).trim() === "";
+      const isSuperAdmin = profile?.role?.toLowerCase() === "superadmin";
 
-      const shouldAskPhone = isGoogleLogin && !isSuperAdmin && phoneMissing;
-
-      setIsOpen(shouldAskPhone);
+      setIsOpen(isGoogleLogin && !isSuperAdmin && phoneMissing);
     }
   }, [authLoading, user, profile]);
 
   const handleSavePhone = async () => {
-    if (!phone || phone.length < 10) {
-      toast.error("Informe um WhatsApp/Telefone válido (DDD + número)");
+    const cleanPhone = String(phone || "").replace(/\D/g, "");
+
+    if (!cleanPhone || cleanPhone.length < 10) {
+      toast.error("Informe um WhatsApp/Telefone valido (DDD + numero)");
       return;
     }
 
     setIsLoading(true);
     try {
-      if (!user) throw new Error("Não autenticado");
+      if (!user) {
+        throw new Error("Usuario nao autenticado");
+      }
 
-      const { error } = await supabase
+      const { error: rpcError } = await supabase.rpc(
+        "save_my_phone" as any,
+        { p_phone: cleanPhone } as any
+      );
+
+      if (rpcError) {
+        const { error } = await supabase
+          .from("users")
+          .upsert(
+            {
+              id: user.id,
+              role: profile?.role || "client",
+              barbershop_id: profile?.barbershop_id || null,
+              name:
+                profile?.name ||
+                user.user_metadata?.full_name ||
+                user.user_metadata?.name ||
+                user.email ||
+                "Cliente",
+              phone: cleanPhone,
+              avatar_url:
+                profile?.avatar_url ||
+                user.user_metadata?.avatar_url ||
+                user.user_metadata?.picture ||
+                null,
+            } as any,
+            { onConflict: "id" }
+          );
+
+        if (error) {
+          throw error;
+        }
+      }
+
+      const { data: savedProfile, error: verifyError } = await supabase
         .from("users")
-        .update({ phone })
-        .eq("id", user.id);
+        .select("phone")
+        .eq("id", user.id)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (verifyError) {
+        throw verifyError;
+      }
+
+      if (!savedProfile?.phone || String(savedProfile.phone).trim() === "") {
+        throw new Error("Telefone nao foi gravado no perfil");
+      }
 
       toast.success("Telefone atualizado com sucesso!");
-      
-      // Refresh profile in context so the state is updated
       await refreshProfile();
       setIsOpen(false);
-
-      // Redirect to correct panel
-      const role = profile?.role?.toLowerCase();
-      let target = "/";
-      if (role === "superadmin") target = "/super-admin";
-      else if (role === "owner" || role === "admin") target = "/admin";
-      else if (role === "barber") target = "/barber-dashboard";
-      else if (profile?.barbershop_id) target = "/client-home";
-      
-      window.location.href = `${window.location.origin}${target}`;
     } catch (error: any) {
-      toast.error("Erro ao salvar telefone");
-      console.error(error);
+      toast.error(error.message || "Erro ao salvar telefone");
+      console.error("Erro ao salvar telefone:", error);
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +118,7 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
           </DialogHeader>
           <div className="py-4 space-y-4">
             <p className="text-sm text-[#8a9ab5]">
-              Para continuar, precisamos confirmar seu número de contato.
+              Para continuar, precisamos confirmar seu numero de contato.
             </p>
             <div className="space-y-1.5">
               <Label className="text-[10px] uppercase text-[#8a9ab5] tracking-widest font-bold flex items-center gap-2">
@@ -97,7 +127,7 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
               <Input
                 type="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                onChange={(event) => setPhone(event.target.value.replace(/\D/g, ""))}
                 placeholder="(00) 00000-0000"
                 className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8] h-12 focus-visible:ring-[#f0c040] rounded-none"
               />

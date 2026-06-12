@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GoHub</string>
+    <string name="title_activity_main">GoHub</string>
+    <string name="package_name">com.gohubbrasil.app</string>
+    <string name="custom_url_scheme">com.gohubbrasil.app</string>
+    <string name="default_notification_channel_id">gohub_alerts_v2</string>
+</resources>

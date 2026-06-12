@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -134,7 +135,7 @@ export default function Login() {
         ? "com.gohubbrasil.app://auth/callback" 
         : `${window.location.origin}/auth/callback`;
 
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo,
@@ -145,10 +146,12 @@ export default function Login() {
       if (error) throw error;
 
       if (isApp) {
-        // For Capacitor, we might need to handle the browser open manually 
-        // if skipBrowserRedirect is used, but Supabase usually handles it 
-        // if redirectTo is a custom scheme.
-        // However, if skipBrowserRedirect: true was used, we'd get a URL back.
+        if (!data?.url) {
+          throw new Error("Nao foi possivel iniciar o login com Google");
+        }
+
+        await Browser.open({ url: data.url, windowName: "_self" });
+        setIsLoading(false);
       }
     } catch (error: any) {
       toast.error(error.message);

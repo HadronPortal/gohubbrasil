@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
   Scissors, Store, User, Mail, Phone, Lock, 
-  ArrowLeft, Upload, Edit2, Trash2, X, Check, CreditCard, Plus, LogOut
+  ArrowLeft, Upload, Edit2, Trash2, X, Check, CreditCard, Plus, LogOut, MapPin
 } from "lucide-react";
 import { LogoutButton } from "@/components/LogoutButton";
 import { toast } from "sonner";
@@ -55,6 +55,9 @@ interface Barbershop {
   phone: string | null;
   logo_url: string | null;
   description: string | null;
+  business_type: string | null;
+  latitude: number | null;
+  longitude: number | null;
   payment_status: string | null;
   subscription_status: string | null;
   monthly_price: number | null;
@@ -72,6 +75,14 @@ const STATUS_TRANSLATIONS: Record<string, string> = {
   past_due: "Vencida",
   blocked: "Bloqueada",
   cancelled: "Cancelada"
+};
+
+const BUSINESS_TYPE_LABELS: Record<string, string> = {
+  barbershop: "Barbearia",
+  beauty: "Beleza / estetica",
+  auto_aesthetic: "Estetica automotiva",
+  clinic: "Clinica / consultorio",
+  wellness: "Bem-estar"
 };
 
 const parseCurrency = (value: string): number => {
@@ -277,6 +288,9 @@ export default function SuperAdmin() {
           phone: formData.get("barbershop_phone") as string,
           logoUrl,
           description: formData.get("description") as string,
+          businessType: formData.get("business_type") as string,
+          latitude: formData.get("latitude") as string,
+          longitude: formData.get("longitude") as string,
           subscriptionStatus: subscriptionStatus,
           monthlyPrice: monthlyPriceValue,
           paidUntil: paidUntilValue,
@@ -349,6 +363,9 @@ export default function SuperAdmin() {
           address: formData.get("address") as string,
           phone: formData.get("phone") as string,
           description: formData.get("description") as string,
+          business_type: formData.get("business_type") as string,
+          latitude: formData.get("latitude") ? Number(formData.get("latitude")) : null,
+          longitude: formData.get("longitude") ? Number(formData.get("longitude")) : null,
           subscription_status: subscriptionStatus,
           monthly_price: monthlyPriceValue,
           paid_until: paidUntilValue,
@@ -478,12 +495,35 @@ export default function SuperAdmin() {
 
                     <div className="space-y-4">
                       <div className="space-y-1">
+                        <Label htmlFor="business_type" className="text-[10px] uppercase text-gray-500 tracking-widest">Categoria no GoHub</Label>
+                        <Select name="business_type" defaultValue="barbershop">
+                          <SelectTrigger className="bg-[#0A0A0A] border-[#1F1F1F] h-10">
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-[#141414] border-[#1F1F1F] text-white">
+                            {Object.entries(BUSINESS_TYPE_LABELS).map(([value, label]) => (
+                              <SelectItem key={value} value={value}>{label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1">
                         <Label htmlFor="barbershop_name" className="text-[10px] uppercase text-gray-500 tracking-widest">Nome da Barbearia</Label>
                         <Input id="barbershop_name" name="barbershop_name" required className="bg-[#0A0A0A] border-[#1F1F1F] h-10" />
                       </div>
                       <div className="space-y-1">
                         <Label htmlFor="barbershop_address" className="text-[10px] uppercase text-gray-500 tracking-widest">Endereço</Label>
                         <Input id="barbershop_address" name="barbershop_address" required className="bg-[#0A0A0A] border-[#1F1F1F] h-10" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <Label htmlFor="latitude" className="text-[10px] uppercase text-gray-500 tracking-widest">Latitude</Label>
+                          <Input id="latitude" name="latitude" type="number" step="any" placeholder="-21.123456" className="bg-[#0A0A0A] border-[#1F1F1F] h-10" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="longitude" className="text-[10px] uppercase text-gray-500 tracking-widest">Longitude</Label>
+                          <Input id="longitude" name="longitude" type="number" step="any" placeholder="-47.123456" className="bg-[#0A0A0A] border-[#1F1F1F] h-10" />
+                        </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
@@ -620,6 +660,10 @@ export default function SuperAdmin() {
                           <User className="w-3.5 h-3.5" />
                           <span className="truncate">{shop.owner?.name || "Sem dono"}</span>
                         </div>
+                        <div className="flex items-center gap-1.5 text-[10px] text-gray-500 font-medium uppercase tracking-wider mt-1">
+                          <MapPin className="w-3.5 h-3.5" />
+                          <span className="truncate">{BUSINESS_TYPE_LABELS[shop.business_type || "barbershop"] || "Servico local"}</span>
+                        </div>
                       </div>
                     </div>
 
@@ -751,6 +795,19 @@ export default function SuperAdmin() {
             </div>
 
             <div className="space-y-4">
+              <div className="space-y-1">
+                <Label className="text-[10px] uppercase text-gray-500">Categoria no GoHub</Label>
+                <Select name="business_type" defaultValue={editingBarbershop?.business_type || "barbershop"}>
+                  <SelectTrigger className="bg-[#0A0A0A] border-[#1F1F1F] h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#141414] border-[#1F1F1F] text-white">
+                    {Object.entries(BUSINESS_TYPE_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <Label className="text-[10px] uppercase text-gray-500">Nome</Label>
@@ -798,6 +855,16 @@ export default function SuperAdmin() {
               <div className="space-y-1">
                 <Label className="text-[10px] uppercase text-gray-500">Endereço</Label>
                 <Input name="address" defaultValue={editingBarbershop?.address || ""} className="bg-[#0A0A0A] border-[#1F1F1F]" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase text-gray-500">Latitude</Label>
+                  <Input name="latitude" type="number" step="any" defaultValue={editingBarbershop?.latitude ?? ""} className="bg-[#0A0A0A] border-[#1F1F1F]" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] uppercase text-gray-500">Longitude</Label>
+                  <Input name="longitude" type="number" step="any" defaultValue={editingBarbershop?.longitude ?? ""} className="bg-[#0A0A0A] border-[#1F1F1F]" />
+                </div>
               </div>
               <div className="space-y-1">
                 <Label className="text-[10px] uppercase text-gray-500">Descrição</Label>

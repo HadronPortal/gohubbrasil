@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "137475846487",
+    "project_id": "gohub-brasil",
+    "storage_bucket": "gohub-brasil.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:137475846487:android:ca6fcb4d02f08d47b68e12",
+        "android_client_info": {
+          "package_name": "com.gohubbrasil.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAi1TGHDCm9jsgP7FL3iVQbOrv1L8rNwfs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { App as CapacitorApp } from '@capacitor/app';
+import { Browser } from "@capacitor/browser";
 import { supabase } from "@/integrations/supabase/client";
 import Login from "./pages/Login";
 import SelectBarbershop from "./pages/SelectBarbershop";
@@ -17,6 +18,7 @@ import ResetPassword from "./pages/ResetPassword";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 import { PhoneGate } from "./components/PhoneGate";
+import { PushNotificationRegistrar } from "./components/PushNotificationRegistrar";
 
 const router = createBrowserRouter([
   {
@@ -115,11 +117,13 @@ function App() {
           console.log('App opened with URL:', data.url);
           
           if (data.url.includes('auth/callback')) {
-            // Extract the tokens from the URL
+            await Browser.close().catch(() => undefined);
+
             const url = new URL(data.url);
-            const params = new URLSearchParams(url.hash.substring(1)); // OAuth tokens are usually in the fragment
-            const accessToken = params.get('access_token');
-            const refreshToken = params.get('refresh_token');
+            const hashParams = new URLSearchParams(url.hash.substring(1));
+            const accessToken = hashParams.get('access_token');
+            const refreshToken = hashParams.get('refresh_token');
+            const code = url.searchParams.get('code');
 
             if (accessToken && refreshToken) {
               const { error } = await supabase.auth.setSession({
@@ -129,14 +133,18 @@ function App() {
 
               if (error) {
                 console.error('Error setting session:', error);
-              } else {
-                // The AuthContext and AuthCallback page will handle the rest
-                // We might need to manually trigger a navigation if we're not on the callback page
-                if (!window.location.pathname.includes('/auth/callback')) {
-                  window.location.href = '/auth/callback' + url.hash;
-                }
+                return;
+              }
+            } else if (code) {
+              const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+              if (error) {
+                console.error('Error exchanging auth code:', error);
+                return;
               }
             }
+
+            window.location.href = '/auth/callback' + url.search;
           }
         });
       } catch (e) {
@@ -159,6 +167,7 @@ function App() {
 
   return (
     <AuthProvider>
+      <PushNotificationRegistrar />
       <PhoneGate>
         <RouterProvider router={router} />
       </PhoneGate>

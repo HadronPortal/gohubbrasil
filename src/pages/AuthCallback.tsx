@@ -13,7 +13,17 @@ export default function AuthCallback() {
         // First try to get session (might already be set by setSession in App.tsx)
         let { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-        // If no session, try to parse from URL (native or web hash)
+        // If no session, try to parse from URL (native or web hash/code)
+        if (!session) {
+          const code = new URLSearchParams(window.location.search).get("code");
+
+          if (code) {
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+            session = data.session;
+            if (error) throw error;
+          }
+        }
+
         if (!session) {
           const hash = window.location.hash;
           if (hash) {
