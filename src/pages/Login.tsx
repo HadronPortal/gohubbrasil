@@ -180,8 +180,8 @@ export default function Login() {
   ];
 
   return (
-    <div className="min-h-screen overflow-y-auto bg-[#eef4ff] font-sans text-[#101a3d]">
-      <div className="mx-auto min-h-screen w-full max-w-[430px] bg-white shadow-2xl sm:my-4 sm:min-h-[calc(100vh-2rem)] sm:overflow-hidden sm:rounded-[28px]">
+    <div className="h-screen overflow-hidden bg-[#eef4ff] font-sans text-[#101a3d]">
+      <div className="mx-auto h-screen w-full max-w-[430px] overflow-hidden bg-white shadow-2xl sm:my-4 sm:h-[calc(100vh-2rem)] sm:rounded-[28px]">
         <section className="relative overflow-hidden bg-gradient-to-br from-[#24008f] via-[#0444da] to-[#05a8ff] px-5 pb-5 pt-8 text-white">
           <div className="absolute -left-16 top-8 h-36 w-36 rounded-full bg-white/10" />
           <div className="absolute -right-20 top-10 h-48 w-48 rounded-full bg-[#1bb6ff]/35" />
