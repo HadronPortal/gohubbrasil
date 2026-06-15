@@ -100,23 +100,6 @@ export default function DentalPatients() {
               patients={filtered}
               onEdit={(p) => { setEditing(p); setOpen(true); }}
             />
-
-            <div className="mt-8 max-w-md mx-auto text-center bg-white border border-slate-200 rounded-md p-5">
-              <p className="text-slate-800 font-medium mb-1">Migração simplificada</p>
-              <p className="text-slate-600 text-sm">
-                Já usa um sistema e gostaria de migrar seus dados?{" "}
-                <a href="#" className="text-blue-600 hover:underline">
-                  Clique aqui e saiba mais!
-                </a>
-              </p>
-            </div>
-
-            <p className="mt-6 text-center text-sm text-slate-500">
-              Dúvidas?{" "}
-              <a href="#" className="text-blue-600 hover:underline">
-                Saiba tudo sobre Ficha do paciente
-              </a>
-            </p>
           </div>
         </main>
       </div>
