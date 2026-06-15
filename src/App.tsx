@@ -21,6 +21,7 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 import { PhoneGate } from "./components/PhoneGate";
 import { PushNotificationRegistrar } from "./components/PushNotificationRegistrar";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 const router = createBrowserRouter([
   {
@@ -176,13 +177,15 @@ function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <PushNotificationRegistrar />
-      <PhoneGate>
-        <RouterProvider router={router} />
-      </PhoneGate>
-      <Toaster position="top-center" richColors />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <PushNotificationRegistrar />
+        <PhoneGate>
+          <RouterProvider router={router} />
+        </PhoneGate>
+        <Toaster position="top-center" richColors />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
