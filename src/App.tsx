@@ -15,6 +15,7 @@ import BarberDashboard from "./pages/BarberDashboard";
 import AuthCallback from "./pages/AuthCallback";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import DentalDashboard from "./pages/DentalDashboard";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 import { PhoneGate } from "./components/PhoneGate";
@@ -68,6 +69,10 @@ const router = createBrowserRouter([
   {
     path: "/reset-password",
     element: <ResetPassword />,
+  },
+  {
+    path: "/dental",
+    element: <DentalDashboard />,
   },
 ]);
 
