@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, Download, Plus } from "lucide-react";
 import { DentalSidebar } from "@/components/dental/DentalSidebar";
 import { DentalTopbar } from "@/components/dental/DentalTopbar";
@@ -7,20 +7,49 @@ import {
   type DentalPatient,
 } from "@/components/dental/DentalPatientsTable";
 import { DentalPatientModal } from "@/components/dental/DentalPatientModal";
-
-const initialPatients: DentalPatient[] = [
-  {
-    id: "1",
-    name: "Paciente teste",
-    phone: "+55 16 99314 9388",
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
 
 export default function DentalPatients() {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<DentalPatient | null>(null);
-  const [patients, setPatients] = useState<DentalPatient[]>(initialPatients);
+  const [patients, setPatients] = useState<DentalPatient[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await (supabase as any)
+        .from("dental_patients")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (!error && data) {
+        setPatients(
+          data.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            cpf: p.cpf ?? undefined,
+            phone: p.phone || "—",
+            email: p.email ?? undefined,
+            phone_secondary: p.phone_secondary ?? undefined,
+            patient_number: p.patient_number ?? undefined,
+            record_number: p.record_number ?? undefined,
+            profession: p.profession ?? undefined,
+            social_network: p.social_network ?? undefined,
+            plan_name: p.plan_name ?? undefined,
+            insurance_card_number: p.insurance_card_number ?? undefined,
+            insurance_holder: p.insurance_holder ?? undefined,
+            insurance_responsible_cpf: p.insurance_responsible_cpf ?? undefined,
+            zip_code: p.zip_code ?? undefined,
+            street: p.street ?? undefined,
+            address_number: p.address_number ?? undefined,
+            address_complement: p.address_complement ?? undefined,
+            neighborhood: p.neighborhood ?? undefined,
+            city: p.city ?? undefined,
+            state: p.state ?? undefined,
+          })),
+        );
+      }
+    })();
+  }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
