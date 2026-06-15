@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
+import dentalLogo from "@/assets/dental-logo.png.asset.json";
 
 const items = [
   { label: "Inteligência", icon: Brain, to: "/dental/inteligencia" },
@@ -41,7 +42,7 @@ export function DentalSidebar() {
       className={`${collapsed ? "w-16" : "w-60"} relative transition-all duration-200 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0`}
     >
       <div className={`h-14 flex items-center border-b border-slate-200 ${collapsed ? "justify-center px-0" : "px-5"}`}>
-        {!collapsed && <span className="font-bold text-slate-800 text-lg">GoHub Dental</span>}
+        {!collapsed && <img src={dentalLogo.url} alt="GoHub Dental" className="h-10 w-auto object-contain" />}
       </div>
       <button
         onClick={() => setCollapsed((v) => !v)}
