@@ -216,6 +216,87 @@ export type Database = {
         }
         Relationships: []
       }
+      dental_patients: {
+        Row: {
+          address_complement: string | null
+          address_number: string | null
+          city: string | null
+          cpf: string | null
+          created_at: string
+          email: string | null
+          id: string
+          insurance_card_number: string | null
+          insurance_holder: string | null
+          insurance_responsible_cpf: string | null
+          name: string
+          neighborhood: string | null
+          owner_id: string
+          patient_number: string | null
+          phone: string | null
+          phone_secondary: string | null
+          plan_name: string | null
+          profession: string | null
+          record_number: string | null
+          social_network: string | null
+          state: string | null
+          street: string | null
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          address_complement?: string | null
+          address_number?: string | null
+          city?: string | null
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          insurance_card_number?: string | null
+          insurance_holder?: string | null
+          insurance_responsible_cpf?: string | null
+          name: string
+          neighborhood?: string | null
+          owner_id: string
+          patient_number?: string | null
+          phone?: string | null
+          phone_secondary?: string | null
+          plan_name?: string | null
+          profession?: string | null
+          record_number?: string | null
+          social_network?: string | null
+          state?: string | null
+          street?: string | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          address_complement?: string | null
+          address_number?: string | null
+          city?: string | null
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          insurance_card_number?: string | null
+          insurance_holder?: string | null
+          insurance_responsible_cpf?: string | null
+          name?: string
+          neighborhood?: string | null
+          owner_id?: string
+          patient_number?: string | null
+          phone?: string | null
+          phone_secondary?: string | null
+          plan_name?: string | null
+          profession?: string | null
+          record_number?: string | null
+          social_network?: string | null
+          state?: string | null
+          street?: string | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       services: {
         Row: {
           barbershop_id: string
