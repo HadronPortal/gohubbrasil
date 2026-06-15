@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import type { DentalPatient } from "./DentalPatientsTable";
 
 interface Props {
@@ -56,10 +57,44 @@ export function DentalPatientModal({ open, onOpenChange, onSave, patient }: Prop
   const [respPhone, setRespPhone] = useState("");
   const [obs, setObs] = useState("");
 
+  // Tabs
+  const [tab, setTab] = useState<"info" | "plan" | "addr">("info");
+
+  // Informações adicionais
+  const [email, setEmail] = useState("");
+  const [phone2, setPhone2] = useState("");
+  const [patientNumber, setPatientNumber] = useState("");
+  const [recordNumber, setRecordNumber] = useState("");
+  const [profession, setProfession] = useState("");
+  const [social, setSocial] = useState("");
+
+  // Plano
+  const [planName, setPlanName] = useState("Particular");
+  const [insCard, setInsCard] = useState("");
+  const [insHolder, setInsHolder] = useState("");
+  const [insRespCpf, setInsRespCpf] = useState("");
+
+  // Endereço
+  const [zip, setZip] = useState("");
+  const [street, setStreet] = useState("");
+  const [addrNumber, setAddrNumber] = useState("");
+  const [addrComplement, setAddrComplement] = useState("");
+  const [neighborhood, setNeighborhood] = useState("");
+  const [city, setCity] = useState("");
+  const [stateUf, setStateUf] = useState("");
+
+  const [saving, setSaving] = useState(false);
+
   function reset() {
     setName(""); setSex("M"); setForeign(false); setBirth(""); setCpf("");
     setRg(""); setPhone(""); setOrigin(""); setTags("");
     setRespName(""); setRespBirth(""); setRespCpf(""); setRespPhone(""); setObs("");
+    setTab("info");
+    setEmail(""); setPhone2(""); setPatientNumber(""); setRecordNumber("");
+    setProfession(""); setSocial("");
+    setPlanName("Particular"); setInsCard(""); setInsHolder(""); setInsRespCpf("");
+    setZip(""); setStreet(""); setAddrNumber(""); setAddrComplement("");
+    setNeighborhood(""); setCity(""); setStateUf("");
   }
 
   useEffect(() => {
@@ -67,26 +102,118 @@ export function DentalPatientModal({ open, onOpenChange, onSave, patient }: Prop
       setName(patient.name || "");
       setCpf(patient.cpf || "");
       setPhone((patient.phone && patient.phone !== "—" ? patient.phone : "") || "");
+      setEmail(patient.email || "");
+      setPhone2(patient.phone_secondary || "");
+      setPatientNumber(patient.patient_number || "");
+      setRecordNumber(patient.record_number || "");
+      setProfession(patient.profession || "");
+      setSocial(patient.social_network || "");
+      setPlanName(patient.plan_name || "Particular");
+      setInsCard(patient.insurance_card_number || "");
+      setInsHolder(patient.insurance_holder || "");
+      setInsRespCpf(patient.insurance_responsible_cpf || "");
+      setZip(patient.zip_code || "");
+      setStreet(patient.street || "");
+      setAddrNumber(patient.address_number || "");
+      setAddrComplement(patient.address_complement || "");
+      setNeighborhood(patient.neighborhood || "");
+      setCity(patient.city || "");
+      setStateUf(patient.state || "");
     }
     if (open && !patient) reset();
   }, [open, patient]);
 
-  function handleSave() {
+  async function handleSave() {
     if (!name.trim()) {
       toast.error("Informe o nome do paciente.");
       return;
     }
-    onSave({
-      id: patient?.id ?? crypto.randomUUID(),
-      name: name.trim(),
-      cpf: cpf || undefined,
-      phone: phone || "—",
-      chart: patient?.chart,
-      age: patient?.age,
-    });
-    toast.success(patient ? "Paciente atualizado com sucesso." : "Paciente cadastrado com sucesso.");
-    reset();
-    onOpenChange(false);
+    setSaving(true);
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      const uid = auth.user?.id;
+      if (!uid) {
+        toast.error("Você precisa estar logado.");
+        setSaving(false);
+        return;
+      }
+      const payload: any = {
+        owner_id: uid,
+        name: name.trim(),
+        cpf: cpf || null,
+        phone: phone || null,
+        email: email || null,
+        phone_secondary: phone2 || null,
+        patient_number: patientNumber || null,
+        record_number: recordNumber || null,
+        profession: profession || null,
+        social_network: social || null,
+        plan_name: planName || "Particular",
+        insurance_card_number: insCard || null,
+        insurance_holder: insHolder || null,
+        insurance_responsible_cpf: insRespCpf || null,
+        zip_code: zip || null,
+        street: street || null,
+        address_number: addrNumber || null,
+        address_complement: addrComplement || null,
+        neighborhood: neighborhood || null,
+        city: city || null,
+        state: stateUf || null,
+      };
+
+      let saved: any;
+      if (patient?.id) {
+        const { data, error } = await (supabase as any)
+          .from("dental_patients")
+          .update(payload)
+          .eq("id", patient.id)
+          .select()
+          .single();
+        if (error) throw error;
+        saved = data;
+      } else {
+        const { data, error } = await (supabase as any)
+          .from("dental_patients")
+          .insert(payload)
+          .select()
+          .single();
+        if (error) throw error;
+        saved = data;
+      }
+
+      onSave({
+        id: saved.id,
+        name: saved.name,
+        cpf: saved.cpf || undefined,
+        phone: saved.phone || "—",
+        chart: patient?.chart,
+        age: patient?.age,
+        email: saved.email || undefined,
+        phone_secondary: saved.phone_secondary || undefined,
+        patient_number: saved.patient_number || undefined,
+        record_number: saved.record_number || undefined,
+        profession: saved.profession || undefined,
+        social_network: saved.social_network || undefined,
+        plan_name: saved.plan_name || undefined,
+        insurance_card_number: saved.insurance_card_number || undefined,
+        insurance_holder: saved.insurance_holder || undefined,
+        insurance_responsible_cpf: saved.insurance_responsible_cpf || undefined,
+        zip_code: saved.zip_code || undefined,
+        street: saved.street || undefined,
+        address_number: saved.address_number || undefined,
+        address_complement: saved.address_complement || undefined,
+        neighborhood: saved.neighborhood || undefined,
+        city: saved.city || undefined,
+        state: saved.state || undefined,
+      });
+      toast.success(patient ? "Paciente atualizado com sucesso." : "Paciente cadastrado com sucesso.");
+      reset();
+      onOpenChange(false);
+    } catch (e: any) {
+      toast.error(e?.message || "Erro ao salvar paciente.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -227,20 +354,132 @@ export function DentalPatientModal({ open, onOpenChange, onSave, patient }: Prop
               />
             </div>
           </div>
+
+          {/* Tabs: Informações adicionais / Plano / Endereço */}
+          <div className="pt-2 border-t border-slate-200">
+            <div className="flex items-center gap-6 border-b border-slate-200 mt-2">
+              {[
+                { id: "info", label: "INFORMAÇÕES ADICIONAIS" },
+                { id: "plan", label: "PLANO" },
+                { id: "addr", label: "ENDEREÇO" },
+              ].map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTab(t.id as any)}
+                  className={`relative px-1 py-3 text-xs font-semibold tracking-wide transition-colors ${
+                    tab === t.id ? "text-blue-600" : "text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  {t.label}
+                  {tab === t.id && (
+                    <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-blue-600 rounded-t" />
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <div className="pt-5">
+              {tab === "info" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <FieldLabel>E-mail</FieldLabel>
+                    <Input className={inputCls} type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  </div>
+                  <div>
+                    <FieldLabel>Telefone</FieldLabel>
+                    <Input className={inputCls} value={phone2} onChange={(e) => setPhone2(e.target.value)} />
+                  </div>
+                  <div>
+                    <FieldLabel>Número do paciente</FieldLabel>
+                    <Input className={inputCls} value={patientNumber} onChange={(e) => setPatientNumber(e.target.value)} />
+                  </div>
+                  <div>
+                    <FieldLabel>Número de prontuário</FieldLabel>
+                    <Input className={inputCls} value={recordNumber} onChange={(e) => setRecordNumber(e.target.value)} />
+                  </div>
+                  <div>
+                    <FieldLabel>Profissão</FieldLabel>
+                    <Input className={inputCls} value={profession} onChange={(e) => setProfession(e.target.value)} />
+                  </div>
+                  <div>
+                    <FieldLabel>Rede Social</FieldLabel>
+                    <Input className={inputCls} value={social} onChange={(e) => setSocial(e.target.value)} />
+                  </div>
+                </div>
+              )}
+
+              {tab === "plan" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <FieldLabel>Plano</FieldLabel>
+                    <Input className={inputCls} value={planName} onChange={(e) => setPlanName(e.target.value)} placeholder="Particular" />
+                  </div>
+                  <div>
+                    <FieldLabel>Número da carteirinha</FieldLabel>
+                    <Input className={inputCls} value={insCard} onChange={(e) => setInsCard(e.target.value)} />
+                  </div>
+                  <div>
+                    <FieldLabel>Titular do plano</FieldLabel>
+                    <Input className={inputCls} value={insHolder} onChange={(e) => setInsHolder(e.target.value)} />
+                  </div>
+                  <div>
+                    <FieldLabel>CPF do responsável</FieldLabel>
+                    <Input className={inputCls} value={insRespCpf} onChange={(e) => setInsRespCpf(e.target.value)} />
+                  </div>
+                </div>
+              )}
+
+              {tab === "addr" && (
+                <div className="grid grid-cols-6 gap-4">
+                  <div className="col-span-2">
+                    <FieldLabel>CEP</FieldLabel>
+                    <Input className={inputCls} value={zip} onChange={(e) => setZip(e.target.value)} placeholder="00000-000" />
+                  </div>
+                  <div className="col-span-3">
+                    <FieldLabel>Rua</FieldLabel>
+                    <Input className={inputCls} value={street} onChange={(e) => setStreet(e.target.value)} />
+                  </div>
+                  <div className="col-span-1">
+                    <FieldLabel>Número</FieldLabel>
+                    <Input className={inputCls} value={addrNumber} onChange={(e) => setAddrNumber(e.target.value)} />
+                  </div>
+                  <div className="col-span-3">
+                    <FieldLabel>Complemento</FieldLabel>
+                    <Input className={inputCls} value={addrComplement} onChange={(e) => setAddrComplement(e.target.value)} />
+                  </div>
+                  <div className="col-span-3">
+                    <FieldLabel>Bairro</FieldLabel>
+                    <Input className={inputCls} value={neighborhood} onChange={(e) => setNeighborhood(e.target.value)} />
+                  </div>
+                  <div className="col-span-4">
+                    <FieldLabel>Cidade</FieldLabel>
+                    <Input className={inputCls} value={city} onChange={(e) => setCity(e.target.value)} />
+                  </div>
+                  <div className="col-span-2">
+                    <FieldLabel>Estado</FieldLabel>
+                    <Input className={inputCls} value={stateUf} onChange={(e) => setStateUf(e.target.value)} placeholder="UF" maxLength={2} />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         <DialogFooter className="border-t border-slate-200 pt-4">
           <button
             onClick={() => { reset(); onOpenChange(false); }}
+            disabled={saving}
             className="px-5 h-10 rounded text-sm font-medium text-slate-600 hover:bg-slate-100"
           >
             FECHAR
           </button>
           <button
             onClick={handleSave}
+            disabled={saving}
             className="px-6 h-10 rounded text-sm font-medium bg-green-500 hover:bg-green-600 text-white"
           >
-            SALVAR
+            {saving ? "SALVANDO..." : "SALVAR"}
           </button>
         </DialogFooter>
       </DialogContent>

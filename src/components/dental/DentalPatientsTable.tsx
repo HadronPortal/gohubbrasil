@@ -7,6 +7,23 @@ export type DentalPatient = {
   age?: string;
   cpf?: string;
   phone: string;
+  email?: string;
+  phone_secondary?: string;
+  patient_number?: string;
+  record_number?: string;
+  profession?: string;
+  social_network?: string;
+  plan_name?: string;
+  insurance_card_number?: string;
+  insurance_holder?: string;
+  insurance_responsible_cpf?: string;
+  zip_code?: string;
+  street?: string;
+  address_number?: string;
+  address_complement?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
 };
 
 interface Props {
