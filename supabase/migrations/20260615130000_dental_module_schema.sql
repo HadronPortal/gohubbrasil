@@ -44,6 +44,14 @@ CREATE TABLE IF NOT EXISTS public.dental_clinic_members (
   CONSTRAINT dental_clinic_members_unique UNIQUE (clinic_id, user_id)
 );
 
+CREATE TABLE IF NOT EXISTS public.dental_user_roles (
+  user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  role text NOT NULL DEFAULT 'user',
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT dental_user_roles_role_check CHECK (role IN ('user', 'superadmin'))
+);
+
 CREATE OR REPLACE FUNCTION public.is_dental_superadmin()
 RETURNS boolean
 LANGUAGE sql
@@ -53,9 +61,18 @@ SET search_path = public
 AS $$
   SELECT EXISTS (
     SELECT 1
-    FROM public.users u
+    FROM public.dental_user_roles r
+    WHERE r.user_id = auth.uid()
+      AND r.role = 'superadmin'
+  )
+  OR EXISTS (
+    SELECT 1
+    FROM auth.users u
     WHERE u.id = auth.uid()
-      AND u.role::text = 'superadmin'
+      AND (
+        u.raw_user_meta_data->>'role' = 'superadmin'
+        OR u.raw_app_meta_data->>'role' = 'superadmin'
+      )
   );
 $$;
 
@@ -247,6 +264,11 @@ CREATE TRIGGER trg_dental_clinic_members_updated_at
 BEFORE UPDATE ON public.dental_clinic_members
 FOR EACH ROW EXECUTE FUNCTION public.dental_set_updated_at();
 
+DROP TRIGGER IF EXISTS trg_dental_user_roles_updated_at ON public.dental_user_roles;
+CREATE TRIGGER trg_dental_user_roles_updated_at
+BEFORE UPDATE ON public.dental_user_roles
+FOR EACH ROW EXECUTE FUNCTION public.dental_set_updated_at();
+
 DROP TRIGGER IF EXISTS trg_dental_professionals_updated_at ON public.dental_professionals;
 CREATE TRIGGER trg_dental_professionals_updated_at
 BEFORE UPDATE ON public.dental_professionals
@@ -279,6 +301,7 @@ FOR EACH ROW EXECUTE FUNCTION public.dental_set_updated_at();
 
 ALTER TABLE public.dental_clinics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.dental_clinic_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.dental_user_roles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.dental_professionals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.dental_patients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.dental_patient_tags ENABLE ROW LEVEL SECURITY;
