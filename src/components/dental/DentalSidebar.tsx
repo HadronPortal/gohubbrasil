@@ -12,8 +12,10 @@ import {
   Settings,
   HelpCircle,
   Phone,
+  Menu,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useState } from "react";
 
 const items = [
   { label: "Inteligência", icon: Brain, to: "/dental/inteligencia" },
@@ -32,10 +34,20 @@ const items = [
 ];
 
 export function DentalSidebar() {
+  const [collapsed, setCollapsed] = useState(false);
   return (
-    <aside className="w-60 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0">
-      <div className="h-14 flex items-center px-5 border-b border-slate-200">
-        <span className="font-bold text-slate-800 text-lg">GoHub Dental</span>
+    <aside
+      className={`${collapsed ? "w-16" : "w-60"} transition-all duration-200 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0`}
+    >
+      <div className={`h-14 flex items-center border-b border-slate-200 ${collapsed ? "justify-center px-0" : "justify-between px-5"}`}>
+        {!collapsed && <span className="font-bold text-slate-800 text-lg">GoHub Dental</span>}
+        <button
+          onClick={() => setCollapsed((v) => !v)}
+          aria-label={collapsed ? "Expandir menu" : "Retrair menu"}
+          className="p-2 rounded hover:bg-slate-100 text-slate-600"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
       </div>
       <nav className="flex-1 overflow-y-auto py-3">
         {items.map((item) => (
@@ -43,16 +55,17 @@ export function DentalSidebar() {
             key={item.label}
             to={item.to}
             end={item.to === "/dental"}
+            title={collapsed ? item.label : undefined}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-5 py-2.5 text-sm transition-colors ${
+              `flex items-center gap-3 ${collapsed ? "justify-center px-0" : "px-5"} py-2.5 text-sm transition-colors ${
                 isActive
                   ? "bg-blue-50 text-blue-700 border-r-2 border-blue-600 font-medium"
                   : "text-slate-600 hover:bg-slate-50"
               }`
             }
           >
-            <item.icon className="h-4 w-4" />
-            <span>{item.label}</span>
+            <item.icon className="h-4 w-4 flex-shrink-0" />
+            {!collapsed && <span>{item.label}</span>}
           </NavLink>
         ))}
       </nav>
