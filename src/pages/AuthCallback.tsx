@@ -98,7 +98,11 @@ export default function AuthCallback() {
         } else if (role === "barber") {
           navigate("/barber-dashboard", { replace: true });
         } else {
-          navigate("/", { replace: true });
+          if (barbershopId) {
+            navigate("/client-home", { replace: true });
+          } else {
+            navigate("/", { replace: true });
+          }
         }
       } catch (error: any) {
         console.error("Auth callback error:", error);
