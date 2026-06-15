@@ -12,7 +12,8 @@ import {
   Settings,
   HelpCircle,
   Phone,
-  Menu,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
@@ -37,18 +38,18 @@ export function DentalSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   return (
     <aside
-      className={`${collapsed ? "w-16" : "w-60"} transition-all duration-200 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0`}
+      className={`${collapsed ? "w-16" : "w-60"} relative transition-all duration-200 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0`}
     >
-      <div className={`h-14 flex items-center border-b border-slate-200 ${collapsed ? "justify-center px-0" : "justify-between px-5"}`}>
+      <div className={`h-14 flex items-center border-b border-slate-200 ${collapsed ? "justify-center px-0" : "px-5"}`}>
         {!collapsed && <span className="font-bold text-slate-800 text-lg">GoHub Dental</span>}
-        <button
-          onClick={() => setCollapsed((v) => !v)}
-          aria-label={collapsed ? "Expandir menu" : "Retrair menu"}
-          className="p-2 rounded hover:bg-slate-100 text-slate-600"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
       </div>
+      <button
+        onClick={() => setCollapsed((v) => !v)}
+        aria-label={collapsed ? "Expandir menu" : "Retrair menu"}
+        className="absolute -right-3 top-16 z-10 h-6 w-6 rounded-full bg-white border border-slate-300 shadow-sm flex items-center justify-center text-slate-600 hover:bg-slate-50 hover:text-blue-600"
+      >
+        {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+      </button>
       <nav className="flex-1 overflow-y-auto py-3">
         {items.map((item) => (
           <NavLink
