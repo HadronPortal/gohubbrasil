@@ -19,6 +19,7 @@ const initialPatients: DentalPatient[] = [
 export default function DentalPatients() {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<DentalPatient | null>(null);
   const [patients, setPatients] = useState<DentalPatient[]>(initialPatients);
 
   const filtered = useMemo(() => {
@@ -47,7 +48,7 @@ export default function DentalPatients() {
                   EXPORTAR
                 </button>
                 <button
-                  onClick={() => setOpen(true)}
+                  onClick={() => { setEditing(null); setOpen(true); }}
                   className="inline-flex items-center gap-2 h-10 px-4 rounded text-sm font-medium bg-green-500 hover:bg-green-600 text-white"
                 >
                   <Plus className="h-4 w-4" />
@@ -66,7 +67,10 @@ export default function DentalPatients() {
               />
             </div>
 
-            <DentalPatientsTable patients={filtered} />
+            <DentalPatientsTable
+              patients={filtered}
+              onEdit={(p) => { setEditing(p); setOpen(true); }}
+            />
 
             <div className="mt-8 max-w-md mx-auto text-center bg-white border border-slate-200 rounded-md p-5">
               <p className="text-slate-800 font-medium mb-1">Migração simplificada</p>
@@ -90,8 +94,15 @@ export default function DentalPatients() {
 
       <DentalPatientModal
         open={open}
-        onOpenChange={setOpen}
-        onSave={(p) => setPatients((prev) => [p, ...prev])}
+        onOpenChange={(v) => { setOpen(v); if (!v) setEditing(null); }}
+        patient={editing}
+        onSave={(p) =>
+          setPatients((prev) =>
+            editing
+              ? prev.map((x) => (x.id === p.id ? p : x))
+              : [p, ...prev],
+          )
+        }
       />
     </div>
   );

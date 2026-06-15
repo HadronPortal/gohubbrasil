@@ -11,9 +11,10 @@ export type DentalPatient = {
 
 interface Props {
   patients: DentalPatient[];
+  onEdit?: (p: DentalPatient) => void;
 }
 
-export function DentalPatientsTable({ patients }: Props) {
+export function DentalPatientsTable({ patients, onEdit }: Props) {
   return (
     <div className="bg-white rounded-md border border-slate-200 overflow-hidden">
       <table className="w-full text-sm">
@@ -52,6 +53,7 @@ export function DentalPatientsTable({ patients }: Props) {
                     <MessageCircle className="h-4 w-4" />
                   </button>
                   <button
+                    onClick={() => onEdit?.(p)}
                     className="h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center"
                     aria-label="Editar"
                     title="Editar"

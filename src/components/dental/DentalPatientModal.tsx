@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, Tag } from "lucide-react";
 import {
   Dialog,
@@ -24,6 +24,7 @@ interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onSave: (p: DentalPatient) => void;
+  patient?: DentalPatient | null;
 }
 
 const inputCls =
@@ -38,7 +39,7 @@ function FieldLabel({ children, required }: { children: React.ReactNode; require
   );
 }
 
-export function DentalPatientModal({ open, onOpenChange, onSave }: Props) {
+export function DentalPatientModal({ open, onOpenChange, onSave, patient }: Props) {
   const [name, setName] = useState("");
   const [sex, setSex] = useState("M");
   const [foreign, setForeign] = useState(false);
@@ -61,18 +62,29 @@ export function DentalPatientModal({ open, onOpenChange, onSave }: Props) {
     setRespName(""); setRespBirth(""); setRespCpf(""); setRespPhone(""); setObs("");
   }
 
+  useEffect(() => {
+    if (open && patient) {
+      setName(patient.name || "");
+      setCpf(patient.cpf || "");
+      setPhone((patient.phone && patient.phone !== "—" ? patient.phone : "") || "");
+    }
+    if (open && !patient) reset();
+  }, [open, patient]);
+
   function handleSave() {
     if (!name.trim()) {
       toast.error("Informe o nome do paciente.");
       return;
     }
     onSave({
-      id: crypto.randomUUID(),
+      id: patient?.id ?? crypto.randomUUID(),
       name: name.trim(),
       cpf: cpf || undefined,
       phone: phone || "—",
+      chart: patient?.chart,
+      age: patient?.age,
     });
-    toast.success("Paciente cadastrado com sucesso.");
+    toast.success(patient ? "Paciente atualizado com sucesso." : "Paciente cadastrado com sucesso.");
     reset();
     onOpenChange(false);
   }
@@ -81,7 +93,9 @@ export function DentalPatientModal({ open, onOpenChange, onSave }: Props) {
     <Dialog open={open} onOpenChange={(v) => { if (!v) reset(); onOpenChange(v); }}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white">
         <DialogHeader>
-          <DialogTitle className="text-blue-700 text-lg">Dados do paciente</DialogTitle>
+          <DialogTitle className="text-blue-700 text-lg">
+            {patient ? "Editar paciente" : "Dados do paciente"}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-5 py-2">
