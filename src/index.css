@@ -101,14 +101,24 @@ iframe[src*="lovable"] {
   overflow: hidden !important;
 }
 
-/* Fix for browser autofill background color */
+/* Fix for browser autofill background color (theme-aware) */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 1000px #1c2333 inset !important;
-  -webkit-text-fill-color: #c8d4e8 !important;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #0f172a !important;
+  caret-color: #0f172a;
   transition: background-color 5000s ease-in-out 0s;
+}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px hsl(222 35% 12%) inset !important;
+  -webkit-text-fill-color: hsl(217 33% 85%) !important;
+  caret-color: hsl(217 33% 85%);
 }
 
 /* Remove spin buttons from number inputs */
