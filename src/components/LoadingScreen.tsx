@@ -1,32 +1,13 @@
-import { Scissors } from "lucide-react";
-
-export const LoadingScreen = () => {
-  return (
-    <div className="min-h-screen bg-[#1c2333] flex flex-col items-center justify-center gap-6 text-[#c8d4e8]">
-      <div className="relative">
-        {/* Usando a imagem local da tesoura com animação */}
-        <div className="animate-bounce">
-          <img 
-            src="/tesouras.png" 
-            alt="Carregando..." 
-            className="w-16 h-16 object-contain"
-            style={{ 
-              filter: "invert(81%) sepia(35%) saturate(847%) hue-rotate(352deg) brightness(101%) contrast(89%)",
-              animation: "scissors-cut 1.5s ease-in-out infinite"
-            }}
-          />
-        </div>
-      </div>
-      <div className="font-oswald tracking-[0.3em] text-sm font-bold text-[#f0c040] animate-pulse uppercase">
-        Carregando...
-      </div>
-      
-      <style>{`
-        @keyframes scissors-cut {
-          0%, 100% { transform: rotate(-10deg) scale(1); }
-          50% { transform: rotate(10deg) scale(1.1); }
-        }
-      `}</style>
+export const LoadingScreen = () => (
+  <div className="gohub-client flex min-h-screen flex-col items-center justify-center bg-white px-8" role="status" aria-label="Carregando">
+    <div className="gohub-loader relative flex h-32 w-64 items-center justify-center overflow-hidden">
+      <img src="/Logo-GoHub.png" alt="GoHub" className="w-[420px] max-w-none object-contain" />
+      <span className="gohub-loader-shine" aria-hidden="true" />
     </div>
-  );
-};
+    <div className="mt-5 flex gap-1.5" aria-hidden="true">
+      <span className="gohub-loader-dot" />
+      <span className="gohub-loader-dot [animation-delay:160ms]" />
+      <span className="gohub-loader-dot [animation-delay:320ms]" />
+    </div>
+  </div>
+);

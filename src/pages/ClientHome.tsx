@@ -245,26 +245,11 @@ function formatAddressLabel(a: Partial<SavedLocation>): string {
 
 async function reverseGeocode(lat: number, lon: number): Promise<SavedLocation | null> {
   try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&addressdetails=1&accept-language=pt-BR`,
-      { headers: { "Accept": "application/json" } }
-    );
-    if (!res.ok) return null;
-    const j = await res.json();
-    const a = j.address || {};
-    const loc: SavedLocation = {
-      label: "",
-      street: a.road || a.pedestrian || a.footway || a.cycleway || "",
-      number: a.house_number || "",
-      neighborhood: a.suburb || a.neighbourhood || a.quarter || a.village || "",
-      city: a.city || a.town || a.municipality || a.county || "",
-      state: a.state || "",
-      postcode: a.postcode || "",
-      latitude: lat,
-      longitude: lon,
-    };
-    loc.label = formatAddressLabel(loc);
-    return loc;
+    const { data, error } = await supabase.functions.invoke("google-geocode", {
+      body: { mode: "reverse", latitude: lat, longitude: lon },
+    });
+    if (error || !data?.success) return null;
+    return data.location as SavedLocation;
   } catch {
     return null;
   }
@@ -272,28 +257,11 @@ async function reverseGeocode(lat: number, lon: number): Promise<SavedLocation |
 
 async function forwardGeocode(q: string): Promise<SavedLocation | null> {
   try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&countrycodes=br&accept-language=pt-BR&q=${encodeURIComponent(q)}`,
-      { headers: { "Accept": "application/json" } }
-    );
-    if (!res.ok) return null;
-    const arr = await res.json();
-    if (!Array.isArray(arr) || arr.length === 0) return null;
-    const j = arr[0];
-    const a = j.address || {};
-    const loc: SavedLocation = {
-      label: "",
-      street: a.road || "",
-      number: a.house_number || "",
-      neighborhood: a.suburb || a.neighbourhood || a.quarter || "",
-      city: a.city || a.town || a.municipality || a.county || "",
-      state: a.state || "",
-      postcode: a.postcode || "",
-      latitude: parseFloat(j.lat),
-      longitude: parseFloat(j.lon),
-    };
-    loc.label = formatAddressLabel(loc) || q;
-    return loc;
+    const { data, error } = await supabase.functions.invoke("google-geocode", {
+      body: { mode: "search", query: q },
+    });
+    if (error || !data?.success) return null;
+    return data.location as SavedLocation;
   } catch {
     return null;
   }

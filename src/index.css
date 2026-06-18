@@ -151,3 +151,29 @@ input[type=number] {
   text-transform: none;
   letter-spacing: 0;
 }
+
+@keyframes gohub-shine {
+  0% { transform: translateX(-170%) skewX(-16deg); }
+  55%, 100% { transform: translateX(280%) skewX(-16deg); }
+}
+
+@keyframes gohub-dot {
+  0%, 100% { transform: translateY(0); opacity: .35; }
+  50% { transform: translateY(-4px); opacity: 1; }
+}
+
+.gohub-loader-shine {
+  position: absolute;
+  inset: -20% auto -20% 0;
+  width: 28%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.86), transparent);
+  animation: gohub-shine 2s ease-in-out infinite;
+}
+
+.gohub-loader-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #3157D5;
+  animation: gohub-dot 1s ease-in-out infinite;
+}

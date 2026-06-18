@@ -1,209 +1,77 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, User, LogOut } from "lucide-react";
-import { LogoutButton } from "@/components/LogoutButton";
+import { Check, Clock3, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { AdminGear } from "@/components/AdminGear";
-import { UserAvatar } from "@/components/UserAvatar";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { ClientFlowLayout } from "@/components/client/ClientFlowLayout";
 
-
-// Custom Icons
-const CustomScissors = ({ className }: { className?: string }) => (
-  <img 
-    src="/tesouras.png" 
-    alt="Tesoura" 
-    className={`${className} scale-125`}
-    style={{ filter: "invert(81%) sepia(35%) saturate(847%) hue-rotate(352deg) brightness(101%) contrast(89%)" }}
-  />
-);
-
-const Razor = ({ className }: { className?: string }) => (
-  <img 
-    src="/navalha.png" 
-    alt="Navalha" 
-    className={`${className} scale-125`}
-    style={{ filter: "invert(81%) sepia(35%) saturate(847%) hue-rotate(352deg) brightness(101%) contrast(89%)" }}
-  />
-);
-
-const Comb = ({ className }: { className?: string }) => (
-  <img 
-    src="/pente-de-cabelo.png" 
-    alt="Pente" 
-    className={`${className} scale-125`}
-    style={{ filter: "invert(81%) sepia(35%) saturate(847%) hue-rotate(352deg) brightness(101%) contrast(89%)" }}
-  />
-);
-
-const ScissorsAndRazor = ({ className }: { className?: string }) => (
-  <div className={`flex items-center justify-center gap-1 ${className}`}>
-    <img 
-      src="/tesouras.png" 
-      alt="Tesoura" 
-      className="w-5 h-5 scale-110"
-      style={{ filter: "invert(81%) sepia(35%) saturate(847%) hue-rotate(352deg) brightness(101%) contrast(89%)" }}
-    />
-    <img 
-      src="/navalha.png" 
-      alt="Navalha" 
-      className="w-5 h-5 scale-110"
-      style={{ filter: "invert(81%) sepia(35%) saturate(847%) hue-rotate(352deg) brightness(101%) contrast(89%)" }}
-    />
-  </div>
-);
-
-interface Service {
-  id: string;
-  name: string;
-  price: number;
-  duration_minutes: number;
-}
+type Service = { id: string; name: string; description?: string | null; price: number; duration_minutes: number };
 
 export default function Services() {
-  const [searchParams] = useSearchParams();
-  const barberId = searchParams.get("barberId");
-  const barbershopId = searchParams.get("barbershopId");
-  const { user, profile } = useAuth();
-  
-  const [services, setServices] = useState<Service[]>([]);
-  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [params] = useSearchParams();
+  const barberId = params.get("barberId");
+  const barbershopId = params.get("barbershopId");
+  const requestedService = params.get("serviceId");
   const navigate = useNavigate();
+  const { profile } = useAuth();
+  const [services, setServices] = useState<Service[]>([]);
+  const [shopName, setShopName] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(requestedService);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (profile) {
-      if (profile.role !== 'client') {
-        const target = profile.isSuperAdmin ? "/super-admin" : "/admin";
-        navigate(target, { replace: true });
-        return;
-      }
-    }
-
-    if (!barberId || !barbershopId) {
-      navigate("/", { replace: true });
+    if (profile && profile.role !== "client") {
+      navigate(profile.isSuperAdmin ? "/super-admin" : "/admin", { replace: true });
       return;
     }
-    fetchData();
-  }, [barberId, barbershopId, profile]);
+    if (!barberId || !barbershopId) return void navigate("/client-home", { replace: true });
+    let active = true;
+    (async () => {
+      const [{ data: serviceData, error }, { data: shop }] = await Promise.all([
+        supabase.from("services").select("id,name,description,price,duration_minutes").eq("barbershop_id", barbershopId),
+        supabase.from("barbershops").select("name").eq("id", barbershopId).single(),
+      ]);
+      if (!active) return;
+      if (error) toast.error("Não foi possível carregar os serviços.");
+      setServices(((serviceData || []) as Service[]).map((item) => ({ ...item, price: Number(item.price) || 0 })));
+      setShopName(shop?.name || "Estabelecimento GoHub");
+      setLoading(false);
+    })();
+    return () => { active = false; };
+  }, [barberId, barbershopId, navigate, profile]);
 
-  const fetchData = async () => {
-    const { data: serviceData } = await supabase
-      .from("services")
-      .select("*")
-      .eq("barbershop_id", barbershopId);
-    
-    console.log("CLIENT SERVICES DEBUG", { barbershopId, services: serviceData });
-
-    if (serviceData) setServices(serviceData as Service[]);
-    
-    setIsLoading(false);
+  const continueFlow = () => {
+    if (!selectedId) return void toast.error("Escolha um serviço para continuar.");
+    navigate(`/booking/${barbershopId}?serviceId=${selectedId}&barberId=${barberId}`);
   };
 
-  const handleContinue = () => {
-    if (!selectedServiceId) {
-      toast.error("Por favor, selecione um serviço primeiro");
-      return;
-    }
-    navigate(`/booking/${barbershopId}?serviceId=${selectedServiceId}&barberId=${barberId}`);
-  };
-
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
+  if (loading) return <LoadingScreen />;
 
   return (
-    <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24 overflow-hidden">
-      <div className="w-full max-w-[390px] p-6 space-y-10">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-[#8a9ab5] hover:text-[#f0c040]">
-              <ChevronLeft className="w-6 h-6" />
-            </Button>
-            <AdminGear />
-          </div>
-          <div className="flex items-center gap-3">
-            <UserAvatar 
-              name={profile?.name} 
-              email={user?.email} 
-              avatarUrl={profile?.avatar_url} 
-              size="md" 
-              className="bg-[#141b2a] border border-[#2a3347]" 
-            />
-
-            <LogoutButton showText />
-          </div>
-        </div>
-
-        {/* Title */}
-        <div>
-          <h3 className="text-xs font-bold tracking-[0.25em] text-[#f0c040] font-oswald uppercase">
-            ESCOLHA O SERVIÇO
-          </h3>
-        </div>
-
-        {/* Services List */}
-        <div className="space-y-6 pt-4">
-          {services.map((s) => {
-            const isSelected = selectedServiceId === s.id;
-            
-            // Determine icon based on service name
-            const nameLower = s.name.toLowerCase();
-            const Icon = (nameLower.includes("corte") && nameLower.includes("barba"))
-              ? ScissorsAndRazor
-              : nameLower.includes("barba") 
-                ? Razor 
-                : (nameLower.includes("corte") ? CustomScissors : Comb);
-
-            return (
-              <div 
-                key={s.id}
-                onClick={() => setSelectedServiceId(s.id)}
-                className={`flex items-center gap-4 p-4 rounded-[4px] cursor-pointer transition-all border ${
-                  isSelected ? "bg-[#161e2e] border-[#f0c040]" : "bg-[#141b2a] border-[#2a3347]"
-                }`}
-              >
-                <div className={`w-12 h-12 flex items-center justify-center rounded-full ${
-                  isSelected ? "text-[#f0c040]" : "text-[#8a9ab5]"
-                }`}>
-                  <Icon className="w-6 h-6" />
-                </div>
-                <div className="flex-1">
-                  <h3 className={`text-sm font-bold tracking-wider font-oswald uppercase ${
-                    isSelected ? "text-[#f0c040]" : "text-[#c8d4e8]"
-                  }`}>
-                    {s.name}
-                  </h3>
-                  <p className="text-[10px] text-[#8a9ab5] uppercase tracking-wider">
-                    {s.duration_minutes} min.
-                  </p>
-                </div>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                  isSelected ? "border-[#f0c040]" : "border-[#2a3347]"
-                }`}>
-                  {isSelected && (
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#f0c040]" />
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+    <ClientFlowLayout
+      title="Escolha o serviço"
+      subtitle={shopName}
+      footer={<button type="button" onClick={continueFlow} disabled={!selectedId} className="h-12 w-full rounded-[8px] bg-[#3157D5] text-sm font-bold text-white transition disabled:opacity-40">Continuar</button>}
+    >
+      <div className="mb-5 rounded-[8px] bg-[#EAF0FF] p-4"><p className="text-xs font-bold text-[#3157D5]">Cuidado do seu jeito</p><p className="mt-1 text-sm text-slate-600">Escolha uma opção e veja os horários disponíveis.</p></div>
+      <div className="space-y-3">
+        {services.map((service) => {
+          const selected = selectedId === service.id;
+          return (
+            <button key={service.id} type="button" onClick={() => setSelectedId(service.id)} className={`flex w-full items-center gap-3 rounded-[8px] border bg-white p-4 text-left transition active:scale-[0.99] ${selected ? "border-[#3157D5] ring-2 ring-[#3157D5]/15" : "border-slate-200"}`}>
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-[#EAF0FF]"><Sparkles className="h-5 w-5 text-[#3157D5]" /></span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-extrabold">{service.name}</span>
+                {service.description && <span className="mt-1 line-clamp-1 block text-xs text-slate-500">{service.description}</span>}
+                <span className="mt-2 flex items-center gap-1 text-xs text-slate-500"><Clock3 className="h-3.5 w-3.5" />{service.duration_minutes || 30} min</span>
+              </span>
+              <span className="text-right"><span className="block text-sm font-extrabold">R$ {service.price.toFixed(2).replace(".", ",")}</span>{selected && <span className="mt-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#3157D5] text-white"><Check className="h-4 w-4" /></span>}</span>
+            </button>
+          );
+        })}
       </div>
-
-      {/* Footer Button */}
-      <div className="fixed bottom-0 w-full max-w-[390px] p-6 bg-[#1c2333]/90 backdrop-blur-sm">
-        <Button
-          onClick={handleContinue}
-          className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-7 text-lg rounded-[4px] border-none shadow-none transition-all font-oswald uppercase tracking-[3px]"
-        >
-          CONTINUAR
-        </Button>
-      </div>
-    </div>
+    </ClientFlowLayout>
   );
 }

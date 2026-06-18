@@ -1,17 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ChevronLeft, User, LogOut } from "lucide-react";
-import { LogoutButton } from "@/components/LogoutButton";
+import { CalendarDays, Check, Clock3 } from "lucide-react";
 import { format, addDays, startOfDay, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
-import { AdminGear } from "@/components/AdminGear";
-import { UserAvatar } from "@/components/UserAvatar";
 import { LoadingScreen } from "@/components/LoadingScreen";
-import { money } from "@/utils/format";
+import { ClientFlowLayout } from "@/components/client/ClientFlowLayout";
 
 
 export default function Booking() {
@@ -29,6 +25,7 @@ export default function Booking() {
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [service, setService] = useState<any>(null);
+  const [isLoadingService, setIsLoadingService] = useState(true);
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(startOfDay(new Date()), i));
 
@@ -52,19 +49,24 @@ export default function Booking() {
   }, [serviceId]);
 
   useEffect(() => {
-    if (selectedBarberId && selectedDate && serviceId) {
+    if (selectedBarberId && selectedDate && serviceId && service) {
       fetchAvailableSlots();
     }
-  }, [selectedBarberId, selectedDate, serviceId]);
+  }, [selectedBarberId, selectedDate, serviceId, service]);
 
   const fetchServiceDetails = async () => {
-    if (!serviceId) return;
-    const { data } = await supabase
+    if (!serviceId) {
+      setIsLoadingService(false);
+      return;
+    }
+    const { data, error } = await supabase
       .from("services")
       .select("*")
       .eq("id", serviceId)
       .single();
     if (data) setService(data);
+    if (error) toast.error("Não foi possível carregar o serviço.");
+    setIsLoadingService(false);
   };
 
   const fetchAvailableSlots = async () => {
@@ -157,7 +159,7 @@ export default function Booking() {
       }
 
       toast.success("Agendamento realizado com sucesso!");
-      navigate("/", { replace: true });
+      navigate("/client-home", { replace: true });
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -165,120 +167,45 @@ export default function Booking() {
     }
   };
 
-  const firstName = profile?.name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || "USUÁRIO";
-  const currentMonth = format(selectedDate, "MMMM", { locale: ptBR });
+  if (isLoadingService) return <LoadingScreen />;
+
+  const currentMonth = format(selectedDate, "MMMM 'de' yyyy", { locale: ptBR });
 
   return (
-    <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24">
-      <div className="w-full max-w-[390px] p-6 space-y-10">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-[#8a9ab5] hover:text-[#f0c040]">
-              <ChevronLeft className="w-6 h-6" />
-            </Button>
-            <AdminGear />
-          </div>
-          <div className="flex items-center gap-3">
-            <UserAvatar 
-              name={profile?.name} 
-              email={user?.email} 
-              avatarUrl={profile?.avatar_url} 
-              size="md" 
-              className="bg-[#141b2a] border border-[#2a3347]" 
-            />
+    <ClientFlowLayout
+      title="Escolha data e horário"
+      subtitle={service?.name || "Agendamento GoHub"}
+      footer={<button type="button" onClick={handleBooking} disabled={isSubmitting || !selectedSlot} className="h-12 w-full rounded-[8px] bg-[#3157D5] text-sm font-bold text-white transition disabled:opacity-40">{isSubmitting ? "Confirmando..." : "Confirmar agendamento"}</button>}
+    >
+      <div className="mb-6 rounded-[8px] border border-slate-200 bg-white p-4">
+        <div className="flex items-center justify-between gap-3"><div><p className="text-xs text-slate-500">Serviço escolhido</p><p className="mt-1 text-sm font-extrabold">{service?.name}</p></div><p className="text-sm font-extrabold text-[#3157D5]">R$ {Number(service?.price || 0).toFixed(2).replace(".", ",")}</p></div>
+      </div>
 
-            <LogoutButton showText />
-          </div>
+      <section>
+        <div className="mb-3 flex items-center gap-2"><CalendarDays className="h-5 w-5 text-[#3157D5]" /><h2 className="text-base font-extrabold capitalize">{currentMonth}</h2></div>
+        <div className="no-scrollbar flex gap-2 overflow-x-auto pb-2">
+          {days.map((day) => {
+            const selected = isSameDay(day, selectedDate);
+            return <button key={day.toISOString()} type="button" onClick={() => { setSelectedDate(day); setSelectedSlot(null); }} className={`flex h-[74px] w-[54px] shrink-0 flex-col items-center justify-center rounded-[8px] border transition ${selected ? "border-[#3157D5] bg-[#3157D5] text-white shadow" : "border-slate-200 bg-white"}`}><span className={`text-[10px] font-bold uppercase ${selected ? "text-white/75" : "text-slate-400"}`}>{format(day, "EEE", { locale: ptBR })}</span><span className="mt-1 text-lg font-extrabold">{format(day, "d")}</span></button>;
+          })}
         </div>
+      </section>
 
-
-        {/* Appointment Header */}
-        <div>
-          <h3 className="text-xs font-bold tracking-[0.25em] text-[#f0c040] font-oswald uppercase mb-6">
-            MARCAR UM HORÁRIO
-          </h3>
-          
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-[10px] font-bold tracking-widest text-[#8a9ab5] uppercase">{currentMonth}</span>
-          </div>
-
-          {/* Calendar Horizontal */}
-          <div className="flex justify-between gap-1">
-            {days.map((day) => {
-              const isSelected = isSameDay(day, selectedDate);
-              const dayName = format(day, "EEEEEE", { locale: ptBR }).toUpperCase();
-              return (
-                <button
-                  key={day.toISOString()}
-                  onClick={() => setSelectedDate(day)}
-                  className={`flex flex-col items-center py-3 px-1 rounded-[4px] min-w-[44px] transition-all border ${
-                    isSelected 
-                    ? "bg-[#f0c040] border-[#f0c040] text-[#1c2333]" 
-                    : "bg-[#141b2a] border-[#2a3347] text-[#c8d4e8]"
-                  }`}
-                >
-                  <span className={`text-[10px] font-bold tracking-wider mb-1 ${isSelected ? "text-[#1c2333]" : "text-[#8a9ab5]"}`}>
-                    {dayName}
-                  </span>
-                  <span className={`text-sm font-oswald font-bold ${isSelected ? "text-[#1c2333]" : "text-[#c8d4e8]"}`}>
-                    {format(day, "d")}
-                  </span>
-                </button>
-              );
+      <section className="mt-7">
+        <div className="mb-3 flex items-center gap-2"><Clock3 className="h-5 w-5 text-[#3157D5]" /><h2 className="text-base font-extrabold">Horários disponíveis</h2></div>
+        {isLoadingSlots ? (
+          <div className="rounded-[8px] bg-white py-10 text-center text-sm text-slate-500">Buscando os melhores horários...</div>
+        ) : availableSlots.length === 0 ? (
+          <div className="rounded-[8px] border border-dashed border-slate-300 bg-white py-10 text-center text-sm text-slate-500">Nenhum horário disponível nesta data.</div>
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {availableSlots.map((slot) => {
+              const selected = selectedSlot?.starts_at === slot.starts_at;
+              return <button key={slot.starts_at} type="button" onClick={() => setSelectedSlot(slot)} className={`relative h-12 rounded-[8px] border text-sm font-bold transition ${selected ? "border-[#3157D5] bg-[#EAF0FF] text-[#3157D5] ring-2 ring-[#3157D5]/10" : "border-slate-200 bg-white text-slate-700"}`}>{slot.time_label}{selected && <Check className="absolute right-1.5 top-1.5 h-3.5 w-3.5" />}</button>;
             })}
           </div>
-        </div>
-
-        {/* Time Grid */}
-        <div className="space-y-4">
-          <h3 className="text-[11px] font-bold tracking-[0.2em] text-[#f0c040] font-oswald uppercase">
-            HORÁRIOS DISPONÍVEIS
-          </h3>
-          
-          {isLoadingSlots ? (
-            <div className="text-center py-6 text-xs text-[#8a9ab5] uppercase tracking-widest">
-              Carregando horários...
-            </div>
-          ) : availableSlots.length === 0 ? (
-            <div className="text-center py-10 border border-dashed border-[#2a3347] rounded-[4px] text-sm text-[#8a9ab5]">
-              Nenhum horário disponível para esta data.
-            </div>
-          ) : (
-            <div className="grid grid-cols-3 gap-2">
-              {availableSlots.map((slot) => {
-                const isSelected = selectedSlot?.starts_at === slot.starts_at;
-                
-                return (
-                  <button
-                    key={slot.starts_at}
-                    onClick={() => setSelectedSlot(slot)}
-                    className={`py-3 rounded-[4px] text-xs font-oswald tracking-widest border transition-all ${
-                      isSelected
-                        ? "bg-[#f0c040] border-[#f0c040] text-[#1c2333]"
-                        : "bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] hover:border-[#f0c040]/50"
-                    }`}
-                  >
-                    {slot.time_label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-      </div>
-
-      {/* Footer Button */}
-      <div className="fixed bottom-0 w-full max-w-[390px] p-6 bg-[#1c2333]/90 backdrop-blur-sm">
-        <Button
-          onClick={handleBooking}
-          disabled={isSubmitting || !selectedSlot}
-          className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-7 text-lg rounded-[4px] border-none shadow-none transition-all font-oswald uppercase tracking-[3px]"
-        >
-          {isSubmitting ? <div className="flex items-center gap-2 justify-center w-full"><img src="/tesouras.png" className="w-5 h-5" alt="" style={{ filter: 'brightness(0)' }} /> PROCESSANDO...</div> : "CONTINUAR"}
-        </Button>
-      </div>
-    </div>
+        )}
+      </section>
+    </ClientFlowLayout>
   );
 }
