@@ -11,6 +11,7 @@ import Booking from "./pages/Booking";
 import Admin from "./pages/Admin";
 import SuperAdmin from "./pages/SuperAdmin";
 import ClientHome from "./pages/ClientHome";
+import ClientCategory from "./pages/ClientCategory";
 import BarberDashboard from "./pages/BarberDashboard";
 import AuthCallback from "./pages/AuthCallback";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
   {
     path: "/client-home",
     element: <ClientHome />,
+  },
+  {
+    path: "/client-category/:categorySlug",
+    element: <ClientCategory />,
   },
   {
     path: "/barber-dashboard",
