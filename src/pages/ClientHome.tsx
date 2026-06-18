@@ -73,7 +73,7 @@ type Category = {
 
 const CATEGORIES: Category[] = [
   { id: "barbearias", label: "Barbearias", image: iconBarbearias },
-  { id: "cabeleireiros", label: "Cabelos", image: iconCabelos },
+  { id: "cabelos", label: "Cabelos", image: iconCabelos },
   { id: "unhas", label: "Unhas", image: iconUnhas },
   { id: "estetica", label: "Estética", image: iconEstetica },
   { id: "massoterapia", label: "Massagem", image: iconMassagem },

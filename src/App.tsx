@@ -12,6 +12,7 @@ import Admin from "./pages/Admin";
 import SuperAdmin from "./pages/SuperAdmin";
 import ClientHome from "./pages/ClientHome";
 import ClientCategory from "./pages/ClientCategory";
+import ClientBusiness from "./pages/ClientBusiness";
 import BarberDashboard from "./pages/BarberDashboard";
 import AuthCallback from "./pages/AuthCallback";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -59,6 +60,10 @@ const router = createBrowserRouter([
     element: <ClientCategory />,
   },
   {
+    path: "/client-business/:shopId",
+    element: <ClientBusiness />,
+  },
+  {
     path: "/barber-dashboard",
     element: <BarberDashboard />,
   },
@@ -87,6 +92,8 @@ function App() {
         backHandler = await CapacitorApp.addListener('backButton', ({ canGoBack }) => {
           const protectedRoutes = [
             '/client-home',
+            '/client-category',
+            '/client-business',
             '/admin',
             '/barber-dashboard',
             '/super-admin',

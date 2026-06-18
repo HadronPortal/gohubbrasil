@@ -15,6 +15,10 @@ export type ClientCategory = {
   image: string;
   subcategories: string[];
   keywords: string[];
+  eyebrow: string;
+  headline: string;
+  accent: string;
+  soft: string;
 };
 
 export const CLIENT_CATEGORIES: ClientCategory[] = [
@@ -24,6 +28,10 @@ export const CLIENT_CATEGORIES: ClientCategory[] = [
     image: iconBarbearias,
     subcategories: ["Corte", "Barba", "Corte e barba", "Infantil", "Pigmentação"],
     keywords: ["barbearia", "barber", "barba", "corte masculino"],
+    eyebrow: "Estilo em dia",
+    headline: "Seu próximo corte começa aqui",
+    accent: "#3157D5",
+    soft: "#EAF0FF",
   },
   {
     id: "cabelos",
@@ -31,6 +39,10 @@ export const CLIENT_CATEGORIES: ClientCategory[] = [
     image: iconCabelos,
     subcategories: ["Corte feminino", "Escova", "Coloração", "Hidratação", "Penteados"],
     keywords: ["cabelo", "cabeleireiro", "salão", "escova", "coloração"],
+    eyebrow: "Cuidado completo",
+    headline: "Cabelos incríveis, perto de você",
+    accent: "#7C3AED",
+    soft: "#F1EAFE",
   },
   {
     id: "unhas",
@@ -38,6 +50,10 @@ export const CLIENT_CATEGORIES: ClientCategory[] = [
     image: iconUnhas,
     subcategories: ["Manicure", "Pedicure", "Alongamento", "Esmaltação em gel", "Nail art"],
     keywords: ["unha", "manicure", "pedicure", "nail"],
+    eyebrow: "Detalhes que encantam",
+    headline: "Encontre sua manicure favorita",
+    accent: "#E54888",
+    soft: "#FDEAF2",
   },
   {
     id: "estetica",
@@ -45,6 +61,10 @@ export const CLIENT_CATEGORIES: ClientCategory[] = [
     image: iconEstetica,
     subcategories: ["Limpeza de pele", "Facial", "Corporal", "Drenagem", "Harmonização"],
     keywords: ["estética", "facial", "pele", "harmonização"],
+    eyebrow: "Seu momento",
+    headline: "Beleza e autocuidado do seu jeito",
+    accent: "#D54B72",
+    soft: "#FCECF1",
   },
   {
     id: "massoterapia",
@@ -52,6 +72,10 @@ export const CLIENT_CATEGORIES: ClientCategory[] = [
     image: iconMassagem,
     subcategories: ["Relaxante", "Terapêutica", "Desportiva", "Drenagem", "Pedras quentes"],
     keywords: ["massagem", "massoterapia", "spa"],
+    eyebrow: "Respire fundo",
+    headline: "Bem-estar para corpo e mente",
+    accent: "#148A72",
+    soft: "#E7F7F2",
   },
   {
     id: "sobrancelhas",
@@ -59,6 +83,10 @@ export const CLIENT_CATEGORIES: ClientCategory[] = [
     image: iconSobrancelhas,
     subcategories: ["Design", "Henna", "Micropigmentação", "Lash lifting", "Extensão de cílios"],
     keywords: ["sobrancelha", "design", "henna"],
+    eyebrow: "Olhar marcante",
+    headline: "Especialistas em sobrancelhas e cílios",
+    accent: "#B86A2F",
+    soft: "#FAF0E7",
   },
   {
     id: "maquiagem",
@@ -66,6 +94,10 @@ export const CLIENT_CATEGORIES: ClientCategory[] = [
     image: iconMaquiagem,
     subcategories: ["Social", "Noiva", "Festa", "Editorial", "Dia a dia"],
     keywords: ["maquiagem", "make"],
+    eyebrow: "Para cada ocasião",
+    headline: "Maquiadores que realçam você",
+    accent: "#A63B8F",
+    soft: "#F8EAF5",
   },
   {
     id: "depilacao",
@@ -73,6 +105,10 @@ export const CLIENT_CATEGORIES: ClientCategory[] = [
     image: iconDepilacao,
     subcategories: ["Cera", "Laser", "Facial", "Corporal", "Íntima"],
     keywords: ["depilação", "depilacao", "cera", "laser"],
+    eyebrow: "Pele bem cuidada",
+    headline: "Depilação com conforto e confiança",
+    accent: "#008E9B",
+    soft: "#E5F6F7",
   },
   {
     id: "podologia",
@@ -80,6 +116,10 @@ export const CLIENT_CATEGORIES: ClientCategory[] = [
     image: iconPodologia,
     subcategories: ["Atendimento clínico", "Unha encravada", "Calosidades", "Reflexologia", "Spa dos pés"],
     keywords: ["podologia", "pés", "pe"],
+    eyebrow: "Leveza a cada passo",
+    headline: "Cuidado especializado para seus pés",
+    accent: "#E27B35",
+    soft: "#FFF0E5",
   },
   {
     id: "todos",
@@ -87,6 +127,10 @@ export const CLIENT_CATEGORIES: ClientCategory[] = [
     image: iconVerMais,
     subcategories: [],
     keywords: [],
+    eyebrow: "Tudo em um só lugar",
+    headline: "Descubra serviços para cuidar de você",
+    accent: "#3157D5",
+    soft: "#EAF0FF",
   },
 ];
 

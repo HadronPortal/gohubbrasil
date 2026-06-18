@@ -134,3 +134,20 @@ input[type=number] {
 /* Hide scrollbar utility for horizontal selectors */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.gohub-client {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.gohub-client h1,
+.gohub-client h2,
+.gohub-client h3,
+.gohub-client h4,
+.gohub-client h5,
+.gohub-client h6 {
+  font-family: 'Open Sans', sans-serif;
+  text-transform: none;
+  letter-spacing: 0;
+}
