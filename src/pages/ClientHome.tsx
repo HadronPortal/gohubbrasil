@@ -217,6 +217,104 @@ function ShopMiniCard({ shop, badge, onClick }: { shop: Barbershop; badge?: stri
   );
 }
 
+/* ---------- Location helpers ---------- */
+export type SavedLocation = {
+  label: string;        // What shows in the header. NEVER coords.
+  street?: string;
+  number?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+  postcode?: string;
+  latitude?: number;
+  longitude?: number;
+};
+
+function formatAddressLabel(a: Partial<SavedLocation>): string {
+  const street = (a.street || "").trim();
+  const num = (a.number || "").trim();
+  const bairro = (a.neighborhood || "").trim();
+  const cidade = (a.city || "").trim();
+  if (street && num) return `${street}, ${num}`;
+  if (street && bairro) return `${street}, ${bairro}`;
+  if (street) return street;
+  if (bairro && cidade) return `${bairro}, ${cidade}`;
+  if (cidade) return cidade;
+  return "Localização definida";
+}
+
+async function reverseGeocode(lat: number, lon: number): Promise<SavedLocation | null> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&addressdetails=1&accept-language=pt-BR`,
+      { headers: { "Accept": "application/json" } }
+    );
+    if (!res.ok) return null;
+    const j = await res.json();
+    const a = j.address || {};
+    const loc: SavedLocation = {
+      label: "",
+      street: a.road || a.pedestrian || a.footway || a.cycleway || "",
+      number: a.house_number || "",
+      neighborhood: a.suburb || a.neighbourhood || a.quarter || a.village || "",
+      city: a.city || a.town || a.municipality || a.county || "",
+      state: a.state || "",
+      postcode: a.postcode || "",
+      latitude: lat,
+      longitude: lon,
+    };
+    loc.label = formatAddressLabel(loc);
+    return loc;
+  } catch {
+    return null;
+  }
+}
+
+async function forwardGeocode(q: string): Promise<SavedLocation | null> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&countrycodes=br&accept-language=pt-BR&q=${encodeURIComponent(q)}`,
+      { headers: { "Accept": "application/json" } }
+    );
+    if (!res.ok) return null;
+    const arr = await res.json();
+    if (!Array.isArray(arr) || arr.length === 0) return null;
+    const j = arr[0];
+    const a = j.address || {};
+    const loc: SavedLocation = {
+      label: "",
+      street: a.road || "",
+      number: a.house_number || "",
+      neighborhood: a.suburb || a.neighbourhood || a.quarter || "",
+      city: a.city || a.town || a.municipality || a.county || "",
+      state: a.state || "",
+      postcode: a.postcode || "",
+      latitude: parseFloat(j.lat),
+      longitude: parseFloat(j.lon),
+    };
+    loc.label = formatAddressLabel(loc) || q;
+    return loc;
+  } catch {
+    return null;
+  }
+}
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+function formatDistance(km: number): string {
+  if (km < 1) return `${Math.round(km * 1000)} m`;
+  return `${km.toFixed(km < 10 ? 1 : 0).replace(".", ",")} km`;
+}
+
 /* ---------- Location modal ---------- */
 function LocationModal({
   open,
@@ -226,12 +324,14 @@ function LocationModal({
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  onPick: (label: string) => void;
-  current: string | null;
+  onPick: (loc: SavedLocation) => void;
+  current: SavedLocation | null;
 }) {
   const [query, setQuery] = useState("");
   const [requesting, setRequesting] = useState(false);
-  const saved: string[] = useMemo(() => {
+  const [searching, setSearching] = useState(false);
+  const [permissionDenied, setPermissionDenied] = useState(false);
+  const saved: SavedLocation[] = useMemo(() => {
     try {
       return JSON.parse(localStorage.getItem("gohub_saved_addresses") || "[]");
     } catch {
@@ -245,26 +345,40 @@ function LocationModal({
       return;
     }
     setRequesting(true);
+    setPermissionDenied(false);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const label = `Localização atual (${pos.coords.latitude.toFixed(3)}, ${pos.coords.longitude.toFixed(3)})`;
-        onPick(label);
+      async (pos) => {
+        const loc = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+        setRequesting(false);
+        if (!loc) {
+          toast.error("Não conseguimos identificar seu endereço. Tente buscar manualmente.");
+          return;
+        }
+        onPick(loc);
+      },
+      (err) => {
+        setPermissionDenied(err.code === err.PERMISSION_DENIED);
+        toast.error(
+          err.code === err.PERMISSION_DENIED
+            ? "Permissão negada. Busque seu endereço manualmente abaixo."
+            : "Não foi possível obter sua localização. Use a busca."
+        );
         setRequesting(false);
       },
-      () => {
-        toast.error("Não foi possível obter sua localização. Use a busca.");
-        setRequesting(false);
-      },
-      { timeout: 8000 }
+      { timeout: 10000, enableHighAccuracy: true }
     );
   };
 
-  const submitSearch = () => {
+  const submitSearch = async () => {
     const v = query.trim();
     if (!v) return;
-    const next = [v, ...saved.filter((s) => s !== v)].slice(0, 5);
-    localStorage.setItem("gohub_saved_addresses", JSON.stringify(next));
-    onPick(v);
+    setSearching(true);
+    const geo = await forwardGeocode(v);
+    setSearching(false);
+    const loc: SavedLocation =
+      geo || { label: v };
+    if (!geo) toast.info("Endereço salvo sem coordenadas (não localizado no mapa).");
+    onPick(loc);
     setQuery("");
   };
 
@@ -274,7 +388,7 @@ function LocationModal({
         <DialogHeader>
           <DialogTitle className="text-[#172033]">Sua localização</DialogTitle>
           <DialogDescription className="text-slate-500">
-            {current ? `Atual: ${current}` : "Defina sua localização para ver estabelecimentos próximos."}
+            {current ? `Atual: ${current.label}` : "Defina sua localização para ver estabelecimentos próximos."}
           </DialogDescription>
         </DialogHeader>
         <button
@@ -286,8 +400,14 @@ function LocationModal({
             <Navigation className="w-4 h-4 text-indigo-600" />
           </div>
           <div>
-            <p className="text-sm font-medium text-[#172033]">Usar localização atual</p>
-            <p className="text-xs text-slate-500">{requesting ? "Buscando..." : "Permitir GPS"}</p>
+            <p className="text-sm font-medium text-[#172033]">Usar minha localização atual</p>
+            <p className="text-xs text-slate-500">
+              {requesting
+                ? "Buscando sua localização..."
+                : permissionDenied
+                ? "Permissão negada — busque abaixo"
+                : "Solicitar permissão de GPS"}
+            </p>
           </div>
         </button>
         <div className="space-y-2">
@@ -300,8 +420,8 @@ function LocationModal({
               onKeyDown={(e) => e.key === "Enter" && submitSearch()}
               className="bg-white border-slate-200 text-[#172033]"
             />
-            <Button onClick={submitSearch} className="bg-[#4338CA] hover:bg-[#3730A3] text-white">
-              Usar
+            <Button onClick={submitSearch} disabled={searching} className="bg-[#4338CA] hover:bg-[#3730A3] text-white">
+              {searching ? "..." : "Usar"}
             </Button>
           </div>
         </div>
@@ -309,14 +429,14 @@ function LocationModal({
           <div className="space-y-2">
             <p className="text-xs font-medium text-slate-600">Endereços salvos</p>
             <div className="space-y-1.5 max-h-48 overflow-auto">
-              {saved.map((s) => (
+              {saved.map((s, i) => (
                 <button
-                  key={s}
+                  key={`${s.label}-${i}`}
                   onClick={() => onPick(s)}
                   className="select-none w-full flex items-center gap-3 p-2 rounded-[6px] hover:bg-slate-50 transition text-left"
                 >
                   <MapPin className="w-4 h-4 text-slate-400" />
-                  <span className="text-sm text-[#172033] truncate">{s}</span>
+                  <span className="text-sm text-[#172033] truncate">{s.label}</span>
                 </button>
               ))}
             </div>
