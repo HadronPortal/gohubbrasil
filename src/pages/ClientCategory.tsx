@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { ClientBottomNav } from "@/components/client/ClientBottomNav";
 import { CLIENT_CATEGORIES, getCategoryBySlug } from "@/lib/clientCategories";
+import { getServiceVisual } from "@/lib/serviceVisuals";
 
 type Shop = {
   id: string;
