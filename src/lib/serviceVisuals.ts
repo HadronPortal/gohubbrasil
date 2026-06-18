@@ -28,6 +28,21 @@ import sobrancelhasHenna from "@/assets/services/sobrancelhas-henna.png";
 import sobrancelhasMicropig from "@/assets/services/sobrancelhas-micropigmentacao.png";
 import ciliosLashLifting from "@/assets/services/cilios-lash-lifting.png";
 import ciliosExtensao from "@/assets/services/cilios-extensao.png";
+import maquiagemSocial from "@/assets/services/maquiagem-social.png";
+import maquiagemNoiva from "@/assets/services/maquiagem-noiva.png";
+import maquiagemFesta from "@/assets/services/maquiagem-festa.png";
+import maquiagemEditorial from "@/assets/services/maquiagem-editorial.png";
+import maquiagemDiaDia from "@/assets/services/maquiagem-dia-dia.png";
+import depilacaoCera from "@/assets/services/depilacao-cera.png";
+import depilacaoLaser from "@/assets/services/depilacao-laser.png";
+import depilacaoFacial from "@/assets/services/depilacao-facial.png";
+import depilacaoCorporal from "@/assets/services/depilacao-corporal.png";
+import depilacaoIntima from "@/assets/services/depilacao-intima.png";
+import podologiaClinica from "@/assets/services/podologia-clinica.png";
+import podologiaUnhaEncravada from "@/assets/services/podologia-unha-encravada.png";
+import podologiaCalosidades from "@/assets/services/podologia-calosidades.png";
+import podologiaReflexologia from "@/assets/services/podologia-reflexologia.png";
+import podologiaSpa from "@/assets/services/podologia-spa.png";
 
 import catBarbearias from "@/assets/categories/barbearias.png";
 import catCabelos from "@/assets/categories/cabelos.png";
@@ -116,6 +131,35 @@ const SERVICE_VISUALS: Record<string, string> = {
   "esportiva": massagemDesportiva,
   "pedras quentes": massagemPedras,
   "massagem com pedras quentes": massagemPedras,
+  // Maquiagem
+  "social": maquiagemSocial,
+  "maquiagem social": maquiagemSocial,
+  "noiva": maquiagemNoiva,
+  "maquiagem noiva": maquiagemNoiva,
+  "festa": maquiagemFesta,
+  "maquiagem festa": maquiagemFesta,
+  "editorial": maquiagemEditorial,
+  "maquiagem editorial": maquiagemEditorial,
+  "dia a dia": maquiagemDiaDia,
+  "maquiagem dia a dia": maquiagemDiaDia,
+  // Depilação
+  "cera": depilacaoCera,
+  "depilacao com cera": depilacaoCera,
+  "laser": depilacaoLaser,
+  "depilacao a laser": depilacaoLaser,
+  "depilacao facial": depilacaoFacial,
+  "depilacao corporal": depilacaoCorporal,
+  "intima": depilacaoIntima,
+  "depilacao intima": depilacaoIntima,
+  // Podologia
+  "atendimento clinico": podologiaClinica,
+  "clinico": podologiaClinica,
+  "unha encravada": podologiaUnhaEncravada,
+  "calosidades": podologiaCalosidades,
+  "calos": podologiaCalosidades,
+  "reflexologia": podologiaReflexologia,
+  "spa dos pes": podologiaSpa,
+  "spa": podologiaSpa,
 };
 
 // Category-scoped overrides for names that exist in more than one category.
@@ -123,6 +167,10 @@ const SERVICE_VISUALS_BY_CATEGORY: Record<string, Record<string, string>> = {
   massoterapia: {
     drenagem: massagemDrenagem,
     "drenagem linfatica": massagemDrenagem,
+  },
+  depilacao: {
+    facial: depilacaoFacial,
+    corporal: depilacaoCorporal,
   },
 };
 
@@ -135,6 +183,19 @@ const RULES: Rule[] = [
   { image: ciliosExtensao, all: [["extensao"], ["cilio"]] },            // extensão de cílios
   { image: ciliosLashLifting, all: [["lash"], ["lift"]] },              // lash lifting
   { image: sobrancelhasMicropig, all: [["micropigmenta"]] },            // micropigmentação
+  { image: podologiaUnhaEncravada, all: [["unha"], ["encrava"]] },      // unha encravada (antes de unha)
+  { image: podologiaClinica, all: [["atendimento"], ["clinic"]] },      // atendimento clínico
+  { image: podologiaSpa, all: [["spa"], ["pe"]] },                       // spa dos pés
+  { image: depilacaoIntima, all: [["depila"], ["intim"]] },             // depilação íntima
+  { image: depilacaoFacial, all: [["depila"], ["facial"]] },            // depilação facial (antes de facial)
+  { image: depilacaoCorporal, all: [["depila"], ["corporal"]] },        // depilação corporal (antes de corporal)
+  { image: depilacaoLaser, all: [["depila"], ["laser"]] },
+  { image: depilacaoCera, all: [["depila"], ["cera"]] },
+  { image: maquiagemSocial, all: [["maquiagem"], ["social"]] },
+  { image: maquiagemNoiva, all: [["maquiagem"], ["noiva"]] },
+  { image: maquiagemFesta, all: [["maquiagem"], ["festa"]] },
+  { image: maquiagemEditorial, all: [["maquiagem"], ["editorial"]] },
+  { image: maquiagemDiaDia, all: [["maquiagem"], ["dia"]] },
   // --- Barbearia (specific before generic) ---
   { image: barbeariaInfantil, all: [["infantil", "kids", "crianca"]] },
   { image: barbeariaPigmentacao, all: [["pigmenta"]] },
@@ -177,6 +238,18 @@ const RULES: Rule[] = [
   { image: massagemDesportiva, all: [["desportiv", "esportiv"]] },
   { image: massagemTerapeutica, all: [["terapeut"]] },
   { image: massagemRelaxante, all: [["relaxante"]] },
+  // --- Maquiagem (generic fallbacks por palavra-chave única) ---
+  { image: maquiagemNoiva, all: [["noiva"]] },
+  { image: maquiagemEditorial, all: [["editorial"]] },
+  { image: maquiagemFesta, all: [["festa"]] },
+  // --- Depilação (generic fallback) ---
+  { image: depilacaoLaser, all: [["laser"]] },
+  { image: depilacaoCera, all: [["cera"]] },
+  // --- Podologia (generic fallbacks) ---
+  { image: podologiaReflexologia, all: [["reflexolog"]] },
+  { image: podologiaCalosidades, all: [["calo"]] },
+  { image: podologiaUnhaEncravada, all: [["encrava"]] },
+  { image: podologiaClinica, all: [["podolog", "clinic"]] },
 ];
 
 export function getServiceVisual(name: string, categoryId?: string): ServiceVisual {
