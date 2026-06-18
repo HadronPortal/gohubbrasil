@@ -41,6 +41,17 @@ import {
   Clock,
 } from "lucide-react";
 
+import iconBarbearias from "@/assets/categories/barbearias.png";
+import iconCabelos from "@/assets/categories/cabelos.png";
+import iconUnhas from "@/assets/categories/unhas.png";
+import iconEstetica from "@/assets/categories/estetica.png";
+import iconMassagem from "@/assets/categories/massagem.png";
+import iconSobrancelhas from "@/assets/categories/sobrancelhas.png";
+import iconMaquiagem from "@/assets/categories/maquiagem.png";
+import iconDepilacao from "@/assets/categories/depilacao.png";
+import iconPodologia from "@/assets/categories/podologia.png";
+import iconVerMais from "@/assets/categories/ver-mais.png";
+
 /* ============================================================
  * GoHub — Home do Cliente (layout estilo iFood, cores GoHub)
  * ============================================================ */
@@ -57,22 +68,20 @@ const COLORS = {
 type Category = {
   id: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  bg: string;
-  fg: string;
+  image: string;
 };
 
 const CATEGORIES: Category[] = [
-  { id: "barbearias", label: "Barbearias", icon: Scissors, bg: "bg-indigo-50", fg: "text-indigo-600" },
-  { id: "cabeleireiros", label: "Cabelos", icon: Brush, bg: "bg-sky-50", fg: "text-sky-600" },
-  { id: "unhas", label: "Unhas", icon: Sparkles, bg: "bg-rose-50", fg: "text-rose-500" },
-  { id: "estetica", label: "Estética", icon: Heart, bg: "bg-pink-50", fg: "text-pink-500" },
-  { id: "massoterapia", label: "Massagem", icon: Hand, bg: "bg-emerald-50", fg: "text-emerald-600" },
-  { id: "sobrancelhas", label: "Sobrancelhas", icon: Eye, bg: "bg-amber-50", fg: "text-amber-600" },
-  { id: "maquiagem", label: "Maquiagem", icon: Palette, bg: "bg-fuchsia-50", fg: "text-fuchsia-600" },
-  { id: "depilacao", label: "Depilação", icon: Flower2, bg: "bg-teal-50", fg: "text-teal-600" },
-  { id: "podologia", label: "Podologia", icon: Footprints, bg: "bg-orange-50", fg: "text-orange-500" },
-  { id: "todos", label: "Ver mais", icon: LayoutGrid, bg: "bg-violet-50", fg: "text-violet-600" },
+  { id: "barbearias", label: "Barbearias", image: iconBarbearias },
+  { id: "cabeleireiros", label: "Cabelos", image: iconCabelos },
+  { id: "unhas", label: "Unhas", image: iconUnhas },
+  { id: "estetica", label: "Estética", image: iconEstetica },
+  { id: "massoterapia", label: "Massagem", image: iconMassagem },
+  { id: "sobrancelhas", label: "Sobrancelhas", image: iconSobrancelhas },
+  { id: "maquiagem", label: "Maquiagem", image: iconMaquiagem },
+  { id: "depilacao", label: "Depilação", image: iconDepilacao },
+  { id: "podologia", label: "Podologia", image: iconPodologia },
+  { id: "todos", label: "Ver mais", image: iconVerMais },
 ];
 
 interface Barbershop {
@@ -81,6 +90,8 @@ interface Barbershop {
   address: string | null;
   logo_url: string | null;
   description: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 interface Appointment {
@@ -206,6 +217,104 @@ function ShopMiniCard({ shop, badge, onClick }: { shop: Barbershop; badge?: stri
   );
 }
 
+/* ---------- Location helpers ---------- */
+export type SavedLocation = {
+  label: string;        // What shows in the header. NEVER coords.
+  street?: string;
+  number?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+  postcode?: string;
+  latitude?: number;
+  longitude?: number;
+};
+
+function formatAddressLabel(a: Partial<SavedLocation>): string {
+  const street = (a.street || "").trim();
+  const num = (a.number || "").trim();
+  const bairro = (a.neighborhood || "").trim();
+  const cidade = (a.city || "").trim();
+  if (street && num) return `${street}, ${num}`;
+  if (street && bairro) return `${street}, ${bairro}`;
+  if (street) return street;
+  if (bairro && cidade) return `${bairro}, ${cidade}`;
+  if (cidade) return cidade;
+  return "Localização definida";
+}
+
+async function reverseGeocode(lat: number, lon: number): Promise<SavedLocation | null> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&addressdetails=1&accept-language=pt-BR`,
+      { headers: { "Accept": "application/json" } }
+    );
+    if (!res.ok) return null;
+    const j = await res.json();
+    const a = j.address || {};
+    const loc: SavedLocation = {
+      label: "",
+      street: a.road || a.pedestrian || a.footway || a.cycleway || "",
+      number: a.house_number || "",
+      neighborhood: a.suburb || a.neighbourhood || a.quarter || a.village || "",
+      city: a.city || a.town || a.municipality || a.county || "",
+      state: a.state || "",
+      postcode: a.postcode || "",
+      latitude: lat,
+      longitude: lon,
+    };
+    loc.label = formatAddressLabel(loc);
+    return loc;
+  } catch {
+    return null;
+  }
+}
+
+async function forwardGeocode(q: string): Promise<SavedLocation | null> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=1&countrycodes=br&accept-language=pt-BR&q=${encodeURIComponent(q)}`,
+      { headers: { "Accept": "application/json" } }
+    );
+    if (!res.ok) return null;
+    const arr = await res.json();
+    if (!Array.isArray(arr) || arr.length === 0) return null;
+    const j = arr[0];
+    const a = j.address || {};
+    const loc: SavedLocation = {
+      label: "",
+      street: a.road || "",
+      number: a.house_number || "",
+      neighborhood: a.suburb || a.neighbourhood || a.quarter || "",
+      city: a.city || a.town || a.municipality || a.county || "",
+      state: a.state || "",
+      postcode: a.postcode || "",
+      latitude: parseFloat(j.lat),
+      longitude: parseFloat(j.lon),
+    };
+    loc.label = formatAddressLabel(loc) || q;
+    return loc;
+  } catch {
+    return null;
+  }
+}
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+function formatDistance(km: number): string {
+  if (km < 1) return `${Math.round(km * 1000)} m`;
+  return `${km.toFixed(km < 10 ? 1 : 0).replace(".", ",")} km`;
+}
+
 /* ---------- Location modal ---------- */
 function LocationModal({
   open,
@@ -215,12 +324,14 @@ function LocationModal({
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  onPick: (label: string) => void;
-  current: string | null;
+  onPick: (loc: SavedLocation) => void;
+  current: SavedLocation | null;
 }) {
   const [query, setQuery] = useState("");
   const [requesting, setRequesting] = useState(false);
-  const saved: string[] = useMemo(() => {
+  const [searching, setSearching] = useState(false);
+  const [permissionDenied, setPermissionDenied] = useState(false);
+  const saved: SavedLocation[] = useMemo(() => {
     try {
       return JSON.parse(localStorage.getItem("gohub_saved_addresses") || "[]");
     } catch {
@@ -234,26 +345,40 @@ function LocationModal({
       return;
     }
     setRequesting(true);
+    setPermissionDenied(false);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const label = `Localização atual (${pos.coords.latitude.toFixed(3)}, ${pos.coords.longitude.toFixed(3)})`;
-        onPick(label);
+      async (pos) => {
+        const loc = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+        setRequesting(false);
+        if (!loc) {
+          toast.error("Não conseguimos identificar seu endereço. Tente buscar manualmente.");
+          return;
+        }
+        onPick(loc);
+      },
+      (err) => {
+        setPermissionDenied(err.code === err.PERMISSION_DENIED);
+        toast.error(
+          err.code === err.PERMISSION_DENIED
+            ? "Permissão negada. Busque seu endereço manualmente abaixo."
+            : "Não foi possível obter sua localização. Use a busca."
+        );
         setRequesting(false);
       },
-      () => {
-        toast.error("Não foi possível obter sua localização. Use a busca.");
-        setRequesting(false);
-      },
-      { timeout: 8000 }
+      { timeout: 10000, enableHighAccuracy: true }
     );
   };
 
-  const submitSearch = () => {
+  const submitSearch = async () => {
     const v = query.trim();
     if (!v) return;
-    const next = [v, ...saved.filter((s) => s !== v)].slice(0, 5);
-    localStorage.setItem("gohub_saved_addresses", JSON.stringify(next));
-    onPick(v);
+    setSearching(true);
+    const geo = await forwardGeocode(v);
+    setSearching(false);
+    const loc: SavedLocation =
+      geo || { label: v };
+    if (!geo) toast.info("Endereço salvo sem coordenadas (não localizado no mapa).");
+    onPick(loc);
     setQuery("");
   };
 
@@ -263,7 +388,7 @@ function LocationModal({
         <DialogHeader>
           <DialogTitle className="text-[#172033]">Sua localização</DialogTitle>
           <DialogDescription className="text-slate-500">
-            {current ? `Atual: ${current}` : "Defina sua localização para ver estabelecimentos próximos."}
+            {current ? `Atual: ${current.label}` : "Defina sua localização para ver estabelecimentos próximos."}
           </DialogDescription>
         </DialogHeader>
         <button
@@ -275,8 +400,14 @@ function LocationModal({
             <Navigation className="w-4 h-4 text-indigo-600" />
           </div>
           <div>
-            <p className="text-sm font-medium text-[#172033]">Usar localização atual</p>
-            <p className="text-xs text-slate-500">{requesting ? "Buscando..." : "Permitir GPS"}</p>
+            <p className="text-sm font-medium text-[#172033]">Usar minha localização atual</p>
+            <p className="text-xs text-slate-500">
+              {requesting
+                ? "Buscando sua localização..."
+                : permissionDenied
+                ? "Permissão negada — busque abaixo"
+                : "Solicitar permissão de GPS"}
+            </p>
           </div>
         </button>
         <div className="space-y-2">
@@ -289,8 +420,8 @@ function LocationModal({
               onKeyDown={(e) => e.key === "Enter" && submitSearch()}
               className="bg-white border-slate-200 text-[#172033]"
             />
-            <Button onClick={submitSearch} className="bg-[#4338CA] hover:bg-[#3730A3] text-white">
-              Usar
+            <Button onClick={submitSearch} disabled={searching} className="bg-[#4338CA] hover:bg-[#3730A3] text-white">
+              {searching ? "..." : "Usar"}
             </Button>
           </div>
         </div>
@@ -298,14 +429,14 @@ function LocationModal({
           <div className="space-y-2">
             <p className="text-xs font-medium text-slate-600">Endereços salvos</p>
             <div className="space-y-1.5 max-h-48 overflow-auto">
-              {saved.map((s) => (
+              {saved.map((s, i) => (
                 <button
-                  key={s}
+                  key={`${s.label}-${i}`}
                   onClick={() => onPick(s)}
                   className="select-none w-full flex items-center gap-3 p-2 rounded-[6px] hover:bg-slate-50 transition text-left"
                 >
                   <MapPin className="w-4 h-4 text-slate-400" />
-                  <span className="text-sm text-[#172033] truncate">{s}</span>
+                  <span className="text-sm text-[#172033] truncate">{s.label}</span>
                 </button>
               ))}
             </div>
@@ -368,9 +499,15 @@ export default function ClientHome() {
   const [activeCategory, setActiveCategory] = useState<string | null>(() =>
     localStorage.getItem("gohub_active_category")
   );
-  const [location, setLocation] = useState<string | null>(() =>
-    localStorage.getItem("gohub_location")
-  );
+  const [location, setLocation] = useState<SavedLocation | null>(() => {
+    try {
+      const raw = localStorage.getItem("gohub_location_v2");
+      if (raw) return JSON.parse(raw);
+      const legacy = localStorage.getItem("gohub_location");
+      if (legacy && !/-?\d+\.\d+/.test(legacy)) return { label: legacy };
+    } catch {}
+    return null;
+  });
   const [locationOpen, setLocationOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
@@ -428,11 +565,41 @@ export default function ClientHome() {
     document.getElementById("ultimas-lojas")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const handlePickLocation = (label: string) => {
-    setLocation(label);
-    localStorage.setItem("gohub_location", label);
+  const handlePickLocation = (loc: SavedLocation) => {
+    setLocation(loc);
+    localStorage.setItem("gohub_location_v2", JSON.stringify(loc));
+    try {
+      const prev: SavedLocation[] = JSON.parse(
+        localStorage.getItem("gohub_saved_addresses") || "[]"
+      );
+      const next = [loc, ...prev.filter((s) => s.label !== loc.label)].slice(0, 5);
+      localStorage.setItem("gohub_saved_addresses", JSON.stringify(next));
+    } catch {}
     setLocationOpen(false);
   };
+
+  // Estabelecimentos ordenados por distância quando há localização do cliente.
+  const shopsByDistance = useMemo(() => {
+    const lat = location?.latitude;
+    const lon = location?.longitude;
+    if (typeof lat !== "number" || typeof lon !== "number") {
+      return barbershops.map((s) => ({ shop: s, distanceKm: null as number | null }));
+    }
+    return barbershops
+      .map((s) => {
+        const slat = typeof s.latitude === "number" ? s.latitude : null;
+        const slon = typeof s.longitude === "number" ? s.longitude : null;
+        const d =
+          slat !== null && slon !== null ? haversineKm(lat, lon, slat, slon) : null;
+        return { shop: s, distanceKm: d };
+      })
+      .sort((a, b) => {
+        if (a.distanceKm === null && b.distanceKm === null) return 0;
+        if (a.distanceKm === null) return 1;
+        if (b.distanceKm === null) return -1;
+        return a.distanceKm - b.distanceKm;
+      });
+  }, [barbershops, location]);
 
   const handleOpenShop = async (shop: Barbershop) => {
     try {
@@ -483,7 +650,7 @@ export default function ClientHome() {
                 className="select-none mt-1 flex items-center gap-1 text-[#172033] font-bold text-base max-w-full"
               >
                 <span className="truncate max-w-[230px]">
-                  {location || "Selecionar localização"}
+                  {location?.label || "Selecionar localização"}
                 </span>
                 <ChevronDown className="w-4 h-4 shrink-0 text-[#172033]" />
               </button>
@@ -533,7 +700,6 @@ export default function ClientHome() {
         <section className="px-3 mt-2">
           <div className="grid grid-cols-5 gap-1 gap-y-3">
             {CATEGORIES.map((c) => {
-              const Icon = c.icon;
               const isActive = activeCategory === c.id;
               return (
                 <button
@@ -542,11 +708,18 @@ export default function ClientHome() {
                   className="select-none flex flex-col items-center gap-1.5 active:scale-95 transition"
                 >
                   <div
-                    className={`w-14 h-14 rounded-full ${c.bg} ${
-                      isActive ? "ring-2 ring-[#4338CA] ring-offset-2 ring-offset-[#F7F9FC]" : ""
-                    } flex items-center justify-center transition shadow-sm`}
+                    className={`w-16 h-16 rounded-[8px] bg-white flex items-center justify-center transition shadow-sm overflow-hidden ${
+                      isActive ? "ring-2 ring-[#4338CA] ring-offset-2 ring-offset-[#F7F9FC]" : "border border-slate-100"
+                    }`}
                   >
-                    <Icon className={`w-6 h-6 ${c.fg}`} />
+                    <img
+                      src={c.image}
+                      alt={c.label}
+                      width={64}
+                      height={64}
+                      loading="lazy"
+                      className="w-[88%] h-[88%] object-contain"
+                    />
                   </div>
                   <span className="text-[11px] text-center text-[#172033] font-medium leading-tight px-0.5 line-clamp-1">
                     {c.label}
@@ -633,11 +806,11 @@ export default function ClientHome() {
             </div>
           ) : (
             <div className="flex gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory">
-              {barbershops.map((s, i) => (
+              {shopsByDistance.map(({ shop: s, distanceKm }, i) => (
                 <div key={s.id} className="snap-start">
                   <ShopMiniCard
                     shop={s}
-                    badge={i === 0 ? "Ad" : undefined}
+                    badge={distanceKm !== null ? formatDistance(distanceKm) : i === 0 ? "Ad" : undefined}
                     onClick={() => handleOpenShop(s)}
                   />
                 </div>
@@ -664,7 +837,7 @@ export default function ClientHome() {
             </div>
           ) : (
             <div className="px-4 space-y-3">
-              {barbershops.slice(0, 4).map((s) => (
+              {shopsByDistance.slice(0, 6).map(({ shop: s, distanceKm }) => (
                 <button
                   key={s.id}
                   onClick={() => handleOpenShop(s)}
@@ -678,7 +851,14 @@ export default function ClientHome() {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-[#172033] truncate">{s.name}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-[#172033] truncate">{s.name}</p>
+                      {distanceKm !== null && (
+                        <span className="text-[11px] font-semibold text-[#4338CA] bg-indigo-50 px-1.5 py-0.5 rounded shrink-0">
+                          {formatDistance(distanceKm)}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-slate-500 truncate">
                       {s.description || s.address || "Estabelecimento parceiro"}
                     </p>
