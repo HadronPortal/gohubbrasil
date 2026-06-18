@@ -635,6 +635,7 @@ export default function ClientHome() {
   return (
     <div
       className="min-h-screen bg-[#F7F9FC] text-[#172033] pb-24"
+      
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <div className="max-w-md mx-auto">
