@@ -412,8 +412,10 @@ function LocationModal({
 }) {
   const [query, setQuery] = useState("");
   const [requesting, setRequesting] = useState(false);
+  const [resolving, setResolving] = useState(false);
   const [searching, setSearching] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
+  const [results, setResults] = useState<SavedLocation[]>([]);
   const saved: SavedLocation[] = useMemo(() => {
     try {
       return JSON.parse(localStorage.getItem("gohub_saved_addresses") || "[]");
@@ -431,22 +433,28 @@ function LocationModal({
     setPermissionDenied(false);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-        const loc = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
         setRequesting(false);
-        if (!loc) {
-          toast.error("Não conseguimos identificar seu endereço. Tente buscar manualmente.");
+        setResolving(true);
+        const res = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+        setResolving(false);
+        if (!res.ok) {
+          toast.error(describeGeocodeError(res.reason));
           return;
         }
-        onPick(loc);
+        onPick(res.location);
       },
       (err) => {
-        setPermissionDenied(err.code === err.PERMISSION_DENIED);
-        toast.error(
-          err.code === err.PERMISSION_DENIED
-            ? "Permissão negada. Busque seu endereço manualmente abaixo."
-            : "Não foi possível obter sua localização. Use a busca."
-        );
         setRequesting(false);
+        setPermissionDenied(err.code === err.PERMISSION_DENIED);
+        const msg =
+          err.code === err.PERMISSION_DENIED
+            ? "Permissão de localização negada. Busque manualmente abaixo."
+            : err.code === err.POSITION_UNAVAILABLE
+            ? "GPS indisponível. Tente novamente ou busque manualmente."
+            : err.code === err.TIMEOUT
+            ? "Tempo esgotado ao obter GPS. Tente novamente."
+            : "Não foi possível obter sua localização.";
+        toast.error(msg);
       },
       { timeout: 10000, enableHighAccuracy: true }
     );
@@ -456,13 +464,19 @@ function LocationModal({
     const v = query.trim();
     if (!v) return;
     setSearching(true);
-    const geo = await forwardGeocode(v);
+    setResults([]);
+    const res = await forwardGeocodeList(v);
     setSearching(false);
-    const loc: SavedLocation =
-      geo || { label: v };
-    if (!geo) toast.info("Endereço salvo sem coordenadas (não localizado no mapa).");
-    onPick(loc);
-    setQuery("");
+    if (!res.ok) {
+      toast.error(describeGeocodeError(res.reason));
+      return;
+    }
+    if (res.results.length === 1) {
+      onPick(res.results[0]);
+      setQuery("");
+      return;
+    }
+    setResults(res.results);
   };
 
   return (
@@ -476,7 +490,7 @@ function LocationModal({
         </DialogHeader>
         <button
           onClick={useCurrentLocation}
-          disabled={requesting}
+          disabled={requesting || resolving}
           className="select-none w-full flex items-center gap-3 p-3 rounded-[8px] border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50/50 transition text-left disabled:opacity-50"
         >
           <div className="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center">
@@ -487,6 +501,8 @@ function LocationModal({
             <p className="text-xs text-slate-500">
               {requesting
                 ? "Buscando sua localização..."
+                : resolving
+                ? "Identificando endereço..."
                 : permissionDenied
                 ? "Permissão negada — busque abaixo"
                 : "Solicitar permissão de GPS"}
@@ -494,19 +510,33 @@ function LocationModal({
           </div>
         </button>
         <div className="space-y-2">
-          <label className="text-xs font-medium text-slate-600">Pesquisar endereço</label>
+          <label className="text-xs font-medium text-slate-600">Pesquisar endereço, bairro ou CEP</label>
           <div className="flex gap-2">
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Rua, bairro ou cidade"
+              placeholder="Rua, número, bairro, cidade ou CEP"
               onKeyDown={(e) => e.key === "Enter" && submitSearch()}
               className="bg-white border-slate-200 text-[#172033]"
             />
-            <Button onClick={submitSearch} disabled={searching} className="bg-[#4338CA] hover:bg-[#3730A3] text-white">
-              {searching ? "..." : "Usar"}
+            <Button onClick={submitSearch} disabled={searching || !query.trim()} className="bg-[#4338CA] hover:bg-[#3730A3] text-white">
+              {searching ? "..." : "Buscar"}
             </Button>
           </div>
+          {results.length > 0 && (
+            <div className="space-y-1.5 max-h-56 overflow-auto border border-slate-100 rounded-[6px] p-1">
+              {results.map((r, i) => (
+                <button
+                  key={`${r.label}-${i}`}
+                  onClick={() => { onPick(r); setResults([]); setQuery(""); }}
+                  className="select-none w-full flex items-start gap-2 p-2 rounded-[6px] hover:bg-slate-50 transition text-left"
+                >
+                  <MapPin className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm text-[#172033]">{r.label}{r.city ? ` — ${r.city}${r.state ? `/${r.state}` : ""}` : ""}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         {saved.length > 0 && (
           <div className="space-y-2">
