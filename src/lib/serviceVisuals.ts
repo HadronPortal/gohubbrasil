@@ -1,6 +1,6 @@
-import barbeariaCorte from "@/assets/services/barbearia-corte.png";
-import barbeariaBarba from "@/assets/services/barbearia-barba.png";
-import barbeariaCorteBarba from "@/assets/services/barbearia-corte-barba.png";
+import barbeariaCorte from "@/assets/services/barbearia-corte-maquina.png";
+import barbeariaBarba from "@/assets/services/barbearia-barba-navalha.png";
+import barbeariaCorteBarba from "@/assets/services/barbearia-corte-e-barba.png";
 import barbeariaInfantil from "@/assets/services/barbearia-infantil.png";
 import barbeariaPigmentacao from "@/assets/services/barbearia-pigmentacao.png";
 import cabelosCorteFem from "@/assets/services/cabelos-corte-feminino.png";
@@ -18,6 +18,16 @@ import esteticaFacial from "@/assets/services/estetica-facial.png";
 import esteticaCorporal from "@/assets/services/estetica-corporal.png";
 import esteticaDrenagem from "@/assets/services/estetica-drenagem.png";
 import esteticaHarmonizacao from "@/assets/services/estetica-harmonizacao.png";
+import massagemRelaxante from "@/assets/services/massagem-relaxante.png";
+import massagemTerapeutica from "@/assets/services/massagem-terapeutica.png";
+import massagemDesportiva from "@/assets/services/massagem-desportiva.png";
+import massagemDrenagem from "@/assets/services/massagem-drenagem.png";
+import massagemPedras from "@/assets/services/massagem-pedras-quentes.png";
+import sobrancelhasDesign from "@/assets/services/sobrancelhas-design.png";
+import sobrancelhasHenna from "@/assets/services/sobrancelhas-henna.png";
+import sobrancelhasMicropig from "@/assets/services/sobrancelhas-micropigmentacao.png";
+import ciliosLashLifting from "@/assets/services/cilios-lash-lifting.png";
+import ciliosExtensao from "@/assets/services/cilios-extensao.png";
 
 import catBarbearias from "@/assets/categories/barbearias.png";
 import catCabelos from "@/assets/categories/cabelos.png";
@@ -89,14 +99,43 @@ const SERVICE_VISUALS: Record<string, string> = {
   "drenagem linfatica": esteticaDrenagem,
   "harmonizacao": esteticaHarmonizacao,
   "harmonizacao facial": esteticaHarmonizacao,
+  // Sobrancelhas e cílios
+  "design": sobrancelhasDesign,
+  "design de sobrancelhas": sobrancelhasDesign,
+  "henna": sobrancelhasHenna,
+  "micropigmentacao": sobrancelhasMicropig,
+  "lash lifting": ciliosLashLifting,
+  "extensao de cilios": ciliosExtensao,
+  // Massoterapia
+  "relaxante": massagemRelaxante,
+  "massagem relaxante": massagemRelaxante,
+  "terapeutica": massagemTerapeutica,
+  "massagem terapeutica": massagemTerapeutica,
+  "desportiva": massagemDesportiva,
+  "massagem desportiva": massagemDesportiva,
+  "esportiva": massagemDesportiva,
+  "pedras quentes": massagemPedras,
+  "massagem com pedras quentes": massagemPedras,
+};
+
+// Category-scoped overrides for names that exist in more than one category.
+const SERVICE_VISUALS_BY_CATEGORY: Record<string, Record<string, string>> = {
+  massoterapia: {
+    drenagem: massagemDrenagem,
+    "drenagem linfatica": massagemDrenagem,
+  },
 };
 
 // 2) Keyword rules — ORDER MATTERS: most specific FIRST.
 type Rule = { image: string; all: string[][] };
 const RULES: Rule[] = [
-  // --- Barbearia (specific before generic) ---
+  // --- Composite / specific cross-category matches MUST come first ---
   { image: barbeariaCorteBarba, all: [["corte"], ["barba"]] },          // corte + barba
-  { image: barbeariaInfantil, all: [["corte"], ["infantil", "kids", "crianca"]] },
+  { image: barbeariaInfantil, all: [["corte"], ["infantil", "kids", "crianca"]] }, // corte infantil
+  { image: ciliosExtensao, all: [["extensao"], ["cilio"]] },            // extensão de cílios
+  { image: ciliosLashLifting, all: [["lash"], ["lift"]] },              // lash lifting
+  { image: sobrancelhasMicropig, all: [["micropigmenta"]] },            // micropigmentação
+  // --- Barbearia (specific before generic) ---
   { image: barbeariaInfantil, all: [["infantil", "kids", "crianca"]] },
   { image: barbeariaPigmentacao, all: [["pigmenta"]] },
   { image: barbeariaBarba, all: [["barba"]] },
@@ -128,11 +167,26 @@ const RULES: Rule[] = [
   { image: esteticaDrenagem, all: [["drenagem"]] },
   { image: esteticaCorporal, all: [["corporal"]] },
   { image: esteticaFacial, all: [["facial"]] },
+  // --- Sobrancelhas e cílios ---
+  { image: sobrancelhasDesign, all: [["design"]] },
+  { image: sobrancelhasHenna, all: [["henna"]] },
+  { image: ciliosExtensao, all: [["cilio"]] },
+  { image: sobrancelhasDesign, all: [["sobranc"]] },
+  // --- Massoterapia (after composite rules) ---
+  { image: massagemPedras, all: [["pedras"]] },
+  { image: massagemDesportiva, all: [["desportiv", "esportiv"]] },
+  { image: massagemTerapeutica, all: [["terapeut"]] },
+  { image: massagemRelaxante, all: [["relaxante"]] },
 ];
 
 export function getServiceVisual(name: string, categoryId?: string): ServiceVisual {
   const n = normalizeName(name);
   if (n) {
+    // 0) category-scoped exact match (disambiguates names shared across categories)
+    if (categoryId) {
+      const scoped = SERVICE_VISUALS_BY_CATEGORY[categoryId]?.[n];
+      if (scoped) return { image: scoped, matched: true };
+    }
     // 1) exact map
     const exact = SERVICE_VISUALS[n];
     if (exact) return { image: exact, matched: true };
