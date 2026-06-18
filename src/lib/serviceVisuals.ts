@@ -45,44 +45,6 @@ const CATEGORY_FALLBACK: Record<string, string> = {
   todos: catVerMais,
 };
 
-// Each rule: list of required keyword groups (all groups must match). Inside a group, any token matches.
-type Rule = { image: string; all: string[][] };
-
-const RULES: Rule[] = [
-  // Barbearia
-  { image: barbeariaCorteBarba, all: [["corte"], ["barba"]] },
-  { image: barbeariaInfantil, all: [["infantil", "kids", "crianca"]] },
-  { image: barbeariaPigmentacao, all: [["pigmenta"]] },
-  { image: barbeariaBarba, all: [["barba"]] },
-  { image: barbeariaCorte, all: [["pezinho"]] },
-  { image: barbeariaCorte, all: [["corte", "masculino"]] },
-  { image: barbeariaCorte, all: [["corte"]] },
-  // Cabelos
-  { image: cabelosEscova, all: [["escova"]] },
-  { image: cabelosColoracao, all: [["colora", "tintura", "color"]] },
-  { image: cabelosHidratacao, all: [["hidrata"]] },
-  { image: cabelosPenteados, all: [["penteado"]] },
-  { image: cabelosPenteados, all: [["progressiva", "prancha"]] },
-  { image: cabelosColoracao, all: [["luzes", "mechas"]] },
-  { image: cabelosCorteFem, all: [["corte", "feminino"]] },
-  { image: cabelosCorteFem, all: [["cabelo"]] },
-  // Unhas
-  { image: unhasManicure, all: [["manicure"]] },
-  { image: unhasPedicure, all: [["pedicure"]] },
-  { image: unhasAlongamento, all: [["alongamento"]] },
-  { image: unhasGel, all: [["gel"]] },
-  { image: unhasNailArt, all: [["nail", "art"]] },
-  { image: unhasNailArt, all: [["decora"]] },
-  { image: unhasManicure, all: [["unha"]] },
-  // Estetica
-  { image: esteticaLimpeza, all: [["limpeza"]] },
-  { image: esteticaHarmonizacao, all: [["harmoniza"]] },
-  { image: esteticaHarmonizacao, all: [["botox", "preenchimento"]] },
-  { image: esteticaDrenagem, all: [["drenagem"]] },
-  { image: esteticaCorporal, all: [["corporal"]] },
-  { image: esteticaFacial, all: [["facial"]] },
-];
-
 export function normalizeName(input: string): string {
   return (input || "")
     .toLowerCase()
@@ -93,13 +55,96 @@ export function normalizeName(input: string): string {
     .trim();
 }
 
+// 1) Explicit, exact (post-normalization) name map. Highest precedence.
+const SERVICE_VISUALS: Record<string, string> = {
+  // Barbearia
+  "corte": barbeariaCorte,
+  "corte masculino": barbeariaCorte,
+  "pezinho": barbeariaCorte,
+  "barba": barbeariaBarba,
+  "corte e barba": barbeariaCorteBarba,
+  "corte + barba": barbeariaCorteBarba,
+  "infantil": barbeariaInfantil,
+  "corte infantil": barbeariaInfantil,
+  "pigmentacao": barbeariaPigmentacao,
+  // Cabelos
+  "corte feminino": cabelosCorteFem,
+  "escova": cabelosEscova,
+  "coloracao": cabelosColoracao,
+  "hidratacao": cabelosHidratacao,
+  "penteados": cabelosPenteados,
+  // Unhas
+  "manicure": unhasManicure,
+  "pedicure": unhasPedicure,
+  "alongamento": unhasAlongamento,
+  "esmaltacao em gel": unhasGel,
+  "esmaltacao gel": unhasGel,
+  "unhas em gel": unhasGel,
+  "nail art": unhasNailArt,
+  // Estetica
+  "limpeza de pele": esteticaLimpeza,
+  "facial": esteticaFacial,
+  "corporal": esteticaCorporal,
+  "drenagem": esteticaDrenagem,
+  "drenagem linfatica": esteticaDrenagem,
+  "harmonizacao": esteticaHarmonizacao,
+  "harmonizacao facial": esteticaHarmonizacao,
+};
+
+// 2) Keyword rules — ORDER MATTERS: most specific FIRST.
+type Rule = { image: string; all: string[][] };
+const RULES: Rule[] = [
+  // --- Barbearia (specific before generic) ---
+  { image: barbeariaCorteBarba, all: [["corte"], ["barba"]] },          // corte + barba
+  { image: barbeariaInfantil, all: [["corte"], ["infantil", "kids", "crianca"]] },
+  { image: barbeariaInfantil, all: [["infantil", "kids", "crianca"]] },
+  { image: barbeariaPigmentacao, all: [["pigmenta"]] },
+  { image: barbeariaBarba, all: [["barba"]] },
+  // --- Cabelos (specific before generic) ---
+  { image: cabelosCorteFem, all: [["corte"], ["feminino"]] },           // BEFORE generic "corte"
+  { image: cabelosColoracao, all: [["luzes", "mechas"]] },
+  { image: cabelosColoracao, all: [["colora", "tintura"]] },
+  { image: cabelosHidratacao, all: [["hidrata"]] },
+  { image: cabelosPenteados, all: [["penteado", "progressiva", "prancha"]] },
+  { image: cabelosEscova, all: [["escova"]] },
+  // generic corte masculino (after corte+barba/infantil/feminino)
+  { image: barbeariaCorte, all: [["pezinho"]] },
+  { image: barbeariaCorte, all: [["corte"]] },
+  { image: cabelosCorteFem, all: [["cabelo"]] },
+  // --- Unhas (specific before generic) ---
+  { image: unhasNailArt, all: [["nail"], ["art"]] },
+  { image: unhasNailArt, all: [["decora"]] },
+  { image: unhasGel, all: [["gel"]] },                                  // "esmaltação em gel"
+  { image: unhasAlongamento, all: [["alongamento"]] },
+  { image: unhasManicure, all: [["manicure"]] },
+  { image: unhasPedicure, all: [["pedicure"]] },
+  { image: unhasManicure, all: [["esmalta"]] },
+  { image: unhasManicure, all: [["unha"]] },
+  // --- Estetica (specific before generic) ---
+  { image: esteticaLimpeza, all: [["limpeza"], ["pele"]] },             // BEFORE generic "limpeza"
+  { image: esteticaLimpeza, all: [["limpeza"]] },
+  { image: esteticaHarmonizacao, all: [["harmoniza"]] },
+  { image: esteticaHarmonizacao, all: [["botox", "preenchimento"]] },
+  { image: esteticaDrenagem, all: [["drenagem"]] },
+  { image: esteticaCorporal, all: [["corporal"]] },
+  { image: esteticaFacial, all: [["facial"]] },
+];
+
 export function getServiceVisual(name: string, categoryId?: string): ServiceVisual {
   const n = normalizeName(name);
   if (n) {
+    // 1) exact map
+    const exact = SERVICE_VISUALS[n];
+    if (exact) return { image: exact, matched: true };
+    // 2) keyword rules, ordered specific -> generic
     for (const rule of RULES) {
       const ok = rule.all.every((group) => group.some((token) => n.includes(token)));
       if (ok) return { image: rule.image, matched: true };
     }
+  }
+  if (import.meta.env.DEV) {
+    // eslint-disable-next-line no-console
+    console.warn("[GoHub] Serviço usando fallback:", name);
   }
   const fallback = (categoryId && CATEGORY_FALLBACK[categoryId]) || catVerMais;
   return { image: fallback, matched: false };
