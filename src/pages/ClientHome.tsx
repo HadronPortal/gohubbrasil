@@ -499,9 +499,15 @@ export default function ClientHome() {
   const [activeCategory, setActiveCategory] = useState<string | null>(() =>
     localStorage.getItem("gohub_active_category")
   );
-  const [location, setLocation] = useState<string | null>(() =>
-    localStorage.getItem("gohub_location")
-  );
+  const [location, setLocation] = useState<SavedLocation | null>(() => {
+    try {
+      const raw = localStorage.getItem("gohub_location_v2");
+      if (raw) return JSON.parse(raw);
+      const legacy = localStorage.getItem("gohub_location");
+      if (legacy && !/-?\d+\.\d+/.test(legacy)) return { label: legacy };
+    } catch {}
+    return null;
+  });
   const [locationOpen, setLocationOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
@@ -559,11 +565,41 @@ export default function ClientHome() {
     document.getElementById("ultimas-lojas")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const handlePickLocation = (label: string) => {
-    setLocation(label);
-    localStorage.setItem("gohub_location", label);
+  const handlePickLocation = (loc: SavedLocation) => {
+    setLocation(loc);
+    localStorage.setItem("gohub_location_v2", JSON.stringify(loc));
+    try {
+      const prev: SavedLocation[] = JSON.parse(
+        localStorage.getItem("gohub_saved_addresses") || "[]"
+      );
+      const next = [loc, ...prev.filter((s) => s.label !== loc.label)].slice(0, 5);
+      localStorage.setItem("gohub_saved_addresses", JSON.stringify(next));
+    } catch {}
     setLocationOpen(false);
   };
+
+  // Estabelecimentos ordenados por distância quando há localização do cliente.
+  const shopsByDistance = useMemo(() => {
+    const lat = location?.latitude;
+    const lon = location?.longitude;
+    if (typeof lat !== "number" || typeof lon !== "number") {
+      return barbershops.map((s) => ({ shop: s, distanceKm: null as number | null }));
+    }
+    return barbershops
+      .map((s) => {
+        const slat = typeof s.latitude === "number" ? s.latitude : null;
+        const slon = typeof s.longitude === "number" ? s.longitude : null;
+        const d =
+          slat !== null && slon !== null ? haversineKm(lat, lon, slat, slon) : null;
+        return { shop: s, distanceKm: d };
+      })
+      .sort((a, b) => {
+        if (a.distanceKm === null && b.distanceKm === null) return 0;
+        if (a.distanceKm === null) return 1;
+        if (b.distanceKm === null) return -1;
+        return a.distanceKm - b.distanceKm;
+      });
+  }, [barbershops, location]);
 
   const handleOpenShop = async (shop: Barbershop) => {
     try {
@@ -614,7 +650,7 @@ export default function ClientHome() {
                 className="select-none mt-1 flex items-center gap-1 text-[#172033] font-bold text-base max-w-full"
               >
                 <span className="truncate max-w-[230px]">
-                  {location || "Selecionar localização"}
+                  {location?.label || "Selecionar localização"}
                 </span>
                 <ChevronDown className="w-4 h-4 shrink-0 text-[#172033]" />
               </button>
@@ -664,7 +700,6 @@ export default function ClientHome() {
         <section className="px-3 mt-2">
           <div className="grid grid-cols-5 gap-1 gap-y-3">
             {CATEGORIES.map((c) => {
-              const Icon = c.icon;
               const isActive = activeCategory === c.id;
               return (
                 <button
@@ -673,11 +708,18 @@ export default function ClientHome() {
                   className="select-none flex flex-col items-center gap-1.5 active:scale-95 transition"
                 >
                   <div
-                    className={`w-14 h-14 rounded-full ${c.bg} ${
-                      isActive ? "ring-2 ring-[#4338CA] ring-offset-2 ring-offset-[#F7F9FC]" : ""
-                    } flex items-center justify-center transition shadow-sm`}
+                    className={`w-16 h-16 rounded-[8px] bg-white flex items-center justify-center transition shadow-sm overflow-hidden ${
+                      isActive ? "ring-2 ring-[#4338CA] ring-offset-2 ring-offset-[#F7F9FC]" : "border border-slate-100"
+                    }`}
                   >
-                    <Icon className={`w-6 h-6 ${c.fg}`} />
+                    <img
+                      src={c.image}
+                      alt={c.label}
+                      width={64}
+                      height={64}
+                      loading="lazy"
+                      className="w-[88%] h-[88%] object-contain"
+                    />
                   </div>
                   <span className="text-[11px] text-center text-[#172033] font-medium leading-tight px-0.5 line-clamp-1">
                     {c.label}
@@ -764,11 +806,11 @@ export default function ClientHome() {
             </div>
           ) : (
             <div className="flex gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory">
-              {barbershops.map((s, i) => (
+              {shopsByDistance.map(({ shop: s, distanceKm }, i) => (
                 <div key={s.id} className="snap-start">
                   <ShopMiniCard
                     shop={s}
-                    badge={i === 0 ? "Ad" : undefined}
+                    badge={distanceKm !== null ? formatDistance(distanceKm) : i === 0 ? "Ad" : undefined}
                     onClick={() => handleOpenShop(s)}
                   />
                 </div>
@@ -795,7 +837,7 @@ export default function ClientHome() {
             </div>
           ) : (
             <div className="px-4 space-y-3">
-              {barbershops.slice(0, 4).map((s) => (
+              {shopsByDistance.slice(0, 6).map(({ shop: s, distanceKm }) => (
                 <button
                   key={s.id}
                   onClick={() => handleOpenShop(s)}
@@ -809,7 +851,14 @@ export default function ClientHome() {
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-[#172033] truncate">{s.name}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-[#172033] truncate">{s.name}</p>
+                      {distanceKm !== null && (
+                        <span className="text-[11px] font-semibold text-[#4338CA] bg-indigo-50 px-1.5 py-0.5 rounded shrink-0">
+                          {formatDistance(distanceKm)}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-slate-500 truncate">
                       {s.description || s.address || "Estabelecimento parceiro"}
                     </p>
