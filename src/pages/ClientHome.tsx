@@ -436,8 +436,8 @@ function LocationModal({
         setResolving(true);
         const res = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
         setResolving(false);
-        if (!res.ok) {
-          toast.error(describeGeocodeError(res.reason));
+        if (res.ok !== true) {
+          toast.error(describeGeocodeError((res as any).reason));
           return;
         }
         onPick(res.location);
@@ -466,8 +466,8 @@ function LocationModal({
     setResults([]);
     const res = await forwardGeocodeList(v);
     setSearching(false);
-    if (!res.ok) {
-      toast.error(describeGeocodeError(res.reason));
+    if (res.ok !== true) {
+      toast.error(describeGeocodeError((res as any).reason));
       return;
     }
     if (res.results.length === 1) {
