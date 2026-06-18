@@ -251,8 +251,9 @@ export default function ClientCategory() {
                 )}
               </div>
               <div className="no-scrollbar flex gap-3 overflow-x-auto px-4 pb-2">
-                {category.subcategories.map((item, index) => {
+                {category.subcategories.map((item) => {
                   const selected = subcategory === item;
+                  const visual = getServiceVisual(item, category.id);
                   return (
                     <button
                       key={item}
@@ -266,9 +267,16 @@ export default function ClientCategory() {
                         }`}
                         style={selected ? { borderColor: category.accent, color: category.accent } : undefined}
                       >
-                        <img src={category.image} alt="" className="h-12 w-12 object-contain" style={{ transform: `rotate(${(index - 2) * 2}deg)` }} />
+                        <img
+                          src={visual.image}
+                          alt=""
+                          loading="lazy"
+                          width={48}
+                          height={48}
+                          className="h-12 w-12 object-contain"
+                        />
                       </div>
-                      <span className="mt-2 block text-[11px] font-semibold leading-tight text-slate-700">{item}</span>
+                      <span className="mt-2 block text-[11px] font-semibold leading-tight text-slate-700 line-clamp-2">{item}</span>
                     </button>
                   );
                 })}
