@@ -640,19 +640,19 @@ export default function ClientHome() {
       <div className="max-w-md mx-auto">
         {/* ===== HEADER ===== */}
         <header className="px-4 pt-4 pb-3 bg-[#F7F9FC]">
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-3 min-w-0">
             <div className="min-w-0 flex-1">
-              <p className="text-sm text-slate-500">
+              <p className="text-[12px] leading-tight text-slate-500">
                 {greeting}, <span className="text-[#172033] font-medium">{firstName}</span>
               </p>
               <button
                 onClick={() => setLocationOpen(true)}
-                className="select-none mt-1 flex items-center gap-1 text-[#172033] font-bold text-base max-w-full"
+                className="select-none mt-0.5 flex items-center gap-1 text-[#172033] max-w-full min-w-0"
               >
-                <span className="truncate max-w-[230px]">
+                <span className="truncate text-[14px] font-semibold leading-tight">
                   {location?.label || "Selecionar localização"}
                 </span>
-                <ChevronDown className="w-4 h-4 shrink-0 text-[#172033]" />
+                <ChevronDown className="shrink-0 text-[#172033]" style={{ width: 16, height: 16 }} />
               </button>
             </div>
 
