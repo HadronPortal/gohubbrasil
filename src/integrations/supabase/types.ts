@@ -169,7 +169,9 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          latitude: number | null
           logo_url: string | null
+          longitude: number | null
           monthly_price: number | null
           name: string
           paid_until: string | null
@@ -186,7 +188,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          latitude?: number | null
           logo_url?: string | null
+          longitude?: number | null
           monthly_price?: number | null
           name: string
           paid_until?: string | null
@@ -203,7 +207,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          latitude?: number | null
           logo_url?: string | null
+          longitude?: number | null
           monthly_price?: number | null
           name?: string
           paid_until?: string | null
@@ -397,7 +403,9 @@ export type Database = {
           created_at: string | null
           description: string | null
           id: string
+          latitude: number | null
           logo_url: string | null
+          longitude: number | null
           monthly_price: number | null
           name: string
           paid_until: string | null
