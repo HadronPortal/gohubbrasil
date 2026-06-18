@@ -753,9 +753,11 @@ export default function ClientHome() {
         {/* ===== HEADER ===== */}
         <header className="px-4 pt-4 pb-3 bg-[#F7F9FC]">
           <div className="mb-3 flex items-center justify-between gap-3">
-            <div className="flex h-8 w-24 items-center overflow-hidden">
-              <img src="/Logo-GoHub-Dashboard.png" alt="GoHub" className="w-40 max-w-none object-contain" />
-            </div>
+            <img
+              src="/gohub-wordmark.png"
+              alt="GoHub"
+              className="w-[108px] h-auto max-h-[34px] object-contain object-left"
+            />
             <div className="flex items-center gap-2">
               <button
                 onClick={() => toast.info("Promoções em breve")}
