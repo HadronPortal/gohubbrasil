@@ -243,7 +243,6 @@ function formatAddressLabel(a: Partial<SavedLocation>): string {
   return "Localização definida";
 }
 
-async function reverseGeocode(lat: number, lon: number): Promise<SavedLocation | null> {
 const IS_DEV = import.meta.env.DEV;
 
 export type GeocodeResult =
