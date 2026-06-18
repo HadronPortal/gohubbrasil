@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { ClientBottomNav } from "@/components/client/ClientBottomNav";
 import { getCategoryBySlug } from "@/lib/clientCategories";
+import { getServiceVisual } from "@/lib/serviceVisuals";
 
 type Shop = {
   id: string;
@@ -143,6 +144,16 @@ export default function ClientBusiness() {
                         onClick={() => startBooking(service.id)}
                         className={`flex w-full items-center gap-3 p-4 text-left transition active:bg-slate-50 ${index ? "border-t border-slate-100" : ""}`}
                       >
+                        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[8px] bg-slate-50">
+                          <img
+                            src={getServiceVisual(service.name, category.id).image}
+                            alt=""
+                            loading="lazy"
+                            width={48}
+                            height={48}
+                            className="h-12 w-12 object-contain"
+                          />
+                        </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-bold">{service.name}</p>
                           {service.description && <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-500">{service.description}</p>}
