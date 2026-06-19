@@ -94,13 +94,28 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
     setIsLoading(true);
 
     try {
+      // Ensure global catalog entry exists for this category and link it.
+      let catalogServiceId: string | null = null;
+      if (barbershopId) {
+        const { data: catId, error: catErr } = await supabase.rpc("upsert_catalog_service", {
+          p_barbershop_id: barbershopId,
+          p_name: name,
+        });
+        if (catErr) {
+          console.error("Erro ao vincular ao catálogo:", catErr);
+        } else {
+          catalogServiceId = (catId as string) || null;
+        }
+      }
+
       if (editingService) {
         const { error } = await supabase
           .from("services")
           .update({
             name,
             duration_minutes: parseInt(duration),
-            price: parsePrice(price)
+            price: parsePrice(price),
+            ...(catalogServiceId ? { catalog_service_id: catalogServiceId } : {}),
           })
           .eq("id", editingService.id);
 
@@ -113,7 +128,8 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
             barbershop_id: barbershopId,
             name,
             duration_minutes: parseInt(duration),
-            price: parsePrice(price)
+            price: parsePrice(price),
+            ...(catalogServiceId ? { catalog_service_id: catalogServiceId } : {}),
           });
 
         if (error) throw error;
