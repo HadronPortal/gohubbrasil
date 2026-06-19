@@ -123,7 +123,7 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
       const enrichedBlocks = (data.blocks || []).map((block: any) => ({
         ...block,
         barber_name: block.barber_id 
-          ? data.barbers?.find((b: any) => b.barber_id === block.barber_id)?.name || "Barbeiro" 
+          ? data.barbers?.find((b: any) => b.barber_id === block.barber_id)?.name || "Profissional" 
           : "Todos"
       }));
       setTimeBlocks(enrichedBlocks);
@@ -236,14 +236,14 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 pb-10">
+    <div className="space-y-5 pb-10" style={{ fontFamily: "Poppins, sans-serif" }}>
       <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={onBack} className="text-[#8a9ab5] hover:text-[#f0c040]">
+        <Button variant="ghost" size="sm" onClick={onBack} className="text-[#64748B] hover:text-[#3157D5]">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          VOLTAR
+          Voltar
         </Button>
-        <h3 className="text-xs font-bold tracking-[0.25em] text-[#f0c040] font-oswald uppercase">
-          HORÁRIOS LIVRES
+        <h3 className="text-xs font-bold  text-[#3157D5]  ">
+          Horários livres
         </h3>
       </div>
 
@@ -255,7 +255,7 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
               <Button
                 variant="outline"
                 className={cn(
-                  "w-full justify-start text-left font-normal bg-[#141b2a] border-[#2a3347] h-12 text-[#c8d4e8]",
+                  "w-full justify-start text-left font-normal bg-white border-[#DDE3EE] h-12 text-[#172033]",
                   !selectedDate && "text-muted-foreground"
                 )}
               >
@@ -263,7 +263,7 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
                 {selectedDate ? format(selectedDate, "dd/MM/yyyy") : <span>Selecione a data</span>}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[310px] p-4 bg-[#141b2a] border-[#2a3347] shadow-2xl rounded-lg" align="start">
+            <PopoverContent className="w-[310px] p-4 bg-white border-[#DDE3EE] shadow-2xl rounded-lg" align="start">
               <Calendar
                 mode="single"
                 selected={selectedDate}
@@ -275,11 +275,11 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
           </Popover>
 
           <Select value={selectedBarberId} onValueChange={setSelectedBarberId}>
-            <SelectTrigger className="bg-[#141b2a] border-[#2a3347] h-12 text-[#c8d4e8]">
-              <SelectValue placeholder="Barbeiro" />
+            <SelectTrigger className="bg-white border-[#DDE3EE] h-12 text-[#172033]">
+              <SelectValue placeholder="Profissional" />
             </SelectTrigger>
-            <SelectContent className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8]">
-              <SelectItem value="all">Todos os Barbeiros</SelectItem>
+            <SelectContent className="bg-white border-[#DDE3EE] text-[#172033]">
+              <SelectItem value="all">Todos os profissionais</SelectItem>
               {barbers.map(b => (
                 <SelectItem key={b.barber_id} value={b.barber_id}>{b.name}</SelectItem>
               ))}
@@ -297,19 +297,19 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
               setBlockEndTime("");
               setIsBlockModalOpen(true);
             }}
-            className="bg-[#141b2a] border-[#2a3347] border-dashed text-[#8a9ab5] hover:text-[#f0c040] hover:border-[#f0c040]"
+            className="bg-white border-[#DDE3EE] border-dashed text-[#64748B] hover:text-[#3157D5] hover:border-[#3157D5]/40"
           >
             <Lock className="w-4 h-4 mr-2" />
-            BLOQUEAR
+            Bloquear
           </Button>
           {canManageSchedule && (
             <Button 
               variant="outline" 
               onClick={() => setIsConfigModalOpen(true)}
-              className="bg-[#141b2a] border-[#2a3347] border-dashed text-[#8a9ab5] hover:text-[#f0c040] hover:border-[#f0c040]"
+              className="bg-white border-[#DDE3EE] border-dashed text-[#64748B] hover:text-[#3157D5] hover:border-[#3157D5]/40"
             >
               <Settings className="w-4 h-4 mr-2" />
-              CONFIGURAR
+              Configurar
             </Button>
           )}
         </div>
@@ -317,33 +317,33 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
 
       {/* Available Slots List */}
       <div className="space-y-4">
-        <h4 className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-[2px]">
+        <h4 className="text-xs font-medium text-[#64748B]  tracking-[2px]">
           HORÁRIOS DISPONÍVEIS ({availableSlots.length})
         </h4>
         
         {isLoading ? (
-          <div className="text-center py-10 text-[#8a9ab5] text-xs uppercase tracking-widest">Carregando...</div>
+          <div className="text-center py-10 text-[#64748B] text-xs ">Carregando...</div>
         ) : availableSlots.length === 0 ? (
-          <div className="text-center py-10 border border-dashed border-[#2a3347] rounded-[4px] text-sm text-[#8a9ab5]">
+          <div className="text-center py-10 border border-dashed border-[#DDE3EE] rounded-[8px] text-sm text-[#64748B]">
             Nenhum horário disponível para esta data.
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-2">
             {availableSlots.map((slot, idx) => (
-              <div key={idx} className="bg-[#141b2a] border border-[#2a3347] p-3 rounded-[4px] flex justify-between items-center">
+              <div key={idx} className="bg-white border border-[#DDE3EE] p-3 rounded-[8px] flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className="bg-[#f0c040]/10 p-2 rounded">
-                    <Clock className="w-4 h-4 text-[#f0c040]" />
+                  <div className="bg-[#EAF0FF] p-2 rounded">
+                    <Clock className="w-4 h-4 text-[#3157D5]" />
                   </div>
                   <div>
-                    <span className="text-sm font-bold text-[#f0c040] font-oswald">{slot.time_label}</span>
-                    <p className="text-[9px] text-[#8a9ab5] uppercase tracking-widest">{slot.barber_name}</p>
+                    <span className="text-sm font-bold text-[#3157D5] ">{slot.time_label}</span>
+                    <p className="text-[9px] text-[#64748B] ">{slot.barber_name}</p>
                   </div>
                 </div>
                 <Button 
                   size="sm" 
                   variant="ghost" 
-                  className="text-[9px] font-bold uppercase tracking-widest text-[#f0c040] hover:bg-[#f0c040]/10"
+                  className="text-[9px] font-bold  text-[#3157D5] hover:bg-[#EAF0FF]"
                   onClick={() => {
                     setBlockBarberId(slot.barber_id);
                     setBlockStartTime(slot.time_label);
@@ -356,7 +356,7 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
                     setIsBlockModalOpen(true);
                   }}
                 >
-                  BLOQUEAR
+                  Bloquear
                 </Button>
               </div>
             ))}
@@ -366,22 +366,22 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
 
       {/* Blocked Slots Section */}
       {timeBlocks.length > 0 && (
-        <div className="space-y-4 pt-4 border-t border-[#2a3347]">
-          <h4 className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-[2px]">
+        <div className="space-y-4 pt-4 border-t border-[#DDE3EE]">
+          <h4 className="text-xs font-medium text-[#64748B]  tracking-[2px]">
             BLOQUEIOS DO DIA ({timeBlocks.length})
           </h4>
           <div className="space-y-2">
             {timeBlocks.map((block) => (
-              <div key={block.id} className="bg-[#1c2333] border border-red-900/30 p-3 rounded-[4px] flex justify-between items-center">
+              <div key={block.id} className="bg-white border border-[#FDECEC] p-3 rounded-[8px] flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                  <div className="bg-red-500/10 p-2 rounded">
-                    <Lock className="w-4 h-4 text-red-500" />
+                  <div className="bg-[#FDECEC] p-2 rounded">
+                    <Lock className="w-4 h-4 text-[#DC2626]" />
                   </div>
                   <div>
-                    <span className="text-[11px] font-bold text-red-500 uppercase tracking-widest">
+                    <span className="text-[11px] font-bold text-[#DC2626] ">
                       {new Date(block.starts_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })} - {new Date(block.ends_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}
                     </span>
-                    <p className="text-[9px] text-[#8a9ab5] uppercase tracking-widest">
+                    <p className="text-[9px] text-[#64748B] ">
                       {block.barber_name} {block.reason ? `• ${block.reason}` : ""}
                     </p>
                   </div>
@@ -390,7 +390,7 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
                   size="icon" 
                   variant="ghost" 
                   onClick={() => handleDeleteBlock(block.id)}
-                  className="text-[#8a9ab5] hover:text-red-500"
+                  className="text-[#64748B] hover:text-[#DC2626]"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -402,9 +402,9 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
 
       {/* Config Modal */}
       <Dialog open={isConfigModalOpen} onOpenChange={setIsConfigModalOpen}>
-        <DialogContent className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8] max-w-[350px]">
+        <DialogContent className="bg-white border-[#DDE3EE] text-[#172033] max-w-[350px]">
           <DialogHeader>
-            <DialogTitle className="font-oswald uppercase tracking-widest text-[#f0c040]">CONFIGURAR HORÁRIOS</DialogTitle>
+            <DialogTitle className="  text-[#3157D5]">Configurar HORÁRIOS</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <TimePicker 
@@ -418,12 +418,12 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
               onChange={setClosingTime} 
             />
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Intervalo (minutos)</label>
+              <label className="text-xs font-medium text-[#64748B] ">Intervalo (minutos)</label>
               <Select value={slotInterval} onValueChange={setSlotInterval}>
-                <SelectTrigger className="bg-[#141b2a] border-[#2a3347]">
+                <SelectTrigger className="bg-white border-[#DDE3EE]">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8]">
+                <SelectContent className="bg-white border-[#DDE3EE] text-[#172033]">
                   {[10, 15, 20, 30, 45, 60, 90, 120].map(val => (
                     <SelectItem key={val} value={val.toString()}>{val} min</SelectItem>
                   ))}
@@ -432,8 +432,8 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleSaveConfig} className="w-full bg-[#f0c040] text-[#1c2333] hover:bg-[#d4a935] font-bold uppercase font-oswald tracking-widest">
-              SALVAR CONFIGURAÇÕES
+            <Button onClick={handleSaveConfig} className="w-full bg-[#3157D5] text-[#1c2333] hover:bg-[#d4a935] font-bold   tracking-widest">
+              Salvar configurações
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -441,20 +441,20 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
 
       {/* Block Modal */}
       <Dialog open={isBlockModalOpen} onOpenChange={setIsBlockModalOpen}>
-        <DialogContent className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8] max-w-[350px] p-0 overflow-hidden rounded-[8px]">
+        <DialogContent className="bg-white border-[#DDE3EE] text-[#172033] max-w-[350px] p-0 overflow-hidden rounded-[8px]">
           <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="font-oswald uppercase tracking-widest text-[#f0c040] text-lg">BLOQUEAR HORÁRIO</DialogTitle>
+            <DialogTitle className="  text-[#3157D5] text-lg">Bloquear HORÁRIO</DialogTitle>
           </DialogHeader>
           
           <div className="p-6 space-y-5">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Barbeiro</label>
+              <label className="text-xs font-medium text-[#64748B] ">Profissional</label>
               <Select value={blockBarberId} onValueChange={setBlockBarberId}>
-                <SelectTrigger className="bg-[#141b2a] border-[#2a3347] h-11 text-xs">
-                  <SelectValue placeholder="Selecione o barbeiro" />
+                <SelectTrigger className="bg-white border-[#DDE3EE] h-11 text-xs">
+                  <SelectValue placeholder="Selecione o profissional" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8]">
-                  <SelectItem value="all">Todos os Barbeiros</SelectItem>
+                <SelectContent className="bg-white border-[#DDE3EE] text-[#172033]">
+                  <SelectItem value="all">Todos os profissionais</SelectItem>
                   {barbers.map(b => (
                     <SelectItem key={b.barber_id} value={b.barber_id}>{b.name}</SelectItem>
                   ))}
@@ -463,21 +463,21 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Data</label>
+              <label className="text-xs font-medium text-[#64748B] ">Data</label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal bg-[#141b2a] border-[#2a3347] h-11 text-xs text-[#c8d4e8]",
+                      "w-full justify-start text-left font-normal bg-white border-[#DDE3EE] h-11 text-xs text-[#172033]",
                       !blockDate && "text-muted-foreground"
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4 text-[#f0c040]" />
+                    <CalendarIcon className="mr-2 h-4 w-4 text-[#3157D5]" />
                     {blockDate ? format(blockDate, "dd/MM/yyyy") : <span>Selecione a data</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[310px] p-4 bg-[#141b2a] border-[#2a3347] shadow-2xl rounded-lg" align="start">
+                <PopoverContent className="w-[310px] p-4 bg-white border-[#DDE3EE] shadow-2xl rounded-lg" align="start">
                   <Calendar
                     mode="single"
                     selected={blockDate}
@@ -505,12 +505,12 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Motivo (Opcional)</label>
+              <label className="text-xs font-medium text-[#64748B] ">Motivo (Opcional)</label>
               <Input 
                 placeholder="Ex: Almoço, Manutenção" 
                 value={blockReason} 
                 onChange={e => setBlockReason(e.target.value)} 
-                className="bg-[#141b2a] border-[#2a3347] h-11 text-xs focus-visible:ring-[#f0c040]/30" 
+                className="bg-white border-[#DDE3EE] h-11 text-xs focus-visible:ring-[#3157D5]/15" 
               />
             </div>
 
@@ -518,15 +518,15 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
               <Button 
                 variant="outline" 
                 onClick={() => setIsBlockModalOpen(false)}
-                className="bg-transparent border-[#2a3347] text-[#8a9ab5] hover:bg-[#141b2a] font-bold uppercase font-oswald tracking-widest h-11"
+                className="bg-transparent border-[#DDE3EE] text-[#64748B] hover:bg-white font-bold   tracking-widest h-11"
               >
-                CANCELAR
+                Cancelar
               </Button>
               <Button 
                 onClick={handleCreateBlock} 
-                className="bg-[#f0c040] text-[#1c2333] hover:bg-[#d4a935] font-bold uppercase font-oswald tracking-widest h-11"
+                className="bg-[#3157D5] text-[#1c2333] hover:bg-[#d4a935] font-bold   tracking-widest h-11"
               >
-                BLOQUEAR
+                Bloquear
               </Button>
             </div>
           </div>
