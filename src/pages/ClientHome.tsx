@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ProfileModal } from "@/components/ProfileModal";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { PromoCarousel } from "@/components/client/PromoCarousel";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -110,82 +111,7 @@ function Skeleton({ className = "" }: { className?: string }) {
   return <div className={`animate-pulse bg-slate-200/70 rounded ${className}`} />;
 }
 
-/* ---------- Banner carousel (promo) ---------- */
-function PromoCarousel({ shops }: { shops: Barbershop[] }) {
-  const [idx, setIdx] = useState(0);
-  const slides = useMemo(() => {
-    const base = [
-      {
-        title: "GoHub Beleza",
-        subtitle: "Reserve em segundos, sem fila",
-        cta: "até 30% OFF",
-        from: "from-[#4338CA]",
-        to: "to-[#6366F1]",
-        icon: Sparkles,
-      },
-      {
-        title: "Cuide de você",
-        subtitle: "Profissionais perto de você",
-        cta: "Agende agora",
-        from: "from-[#0EA5E9]",
-        to: "to-[#38BDF8]",
-        icon: Heart,
-      },
-      {
-        title: "Indique e ganhe",
-        subtitle: "Convide um amigo no GoHub",
-        cta: "Ganhe R$ 20",
-        from: "from-[#FF6B6B]",
-        to: "to-[#FB7185]",
-        icon: Gem,
-      },
-    ];
-    return base;
-  }, [shops]);
-
-  useEffect(() => {
-    const t = setInterval(() => setIdx((i) => (i + 1) % slides.length), 4500);
-    return () => clearInterval(t);
-  }, [slides.length]);
-
-  const slide = slides[idx];
-  const Icon = slide.icon;
-
-  return (
-    <div className="px-4">
-      <div
-        className={`relative w-full h-44 rounded-[8px] overflow-hidden bg-gradient-to-br ${slide.from} ${slide.to} text-white shadow-sm`}
-      >
-        <div className="absolute inset-0 p-5 flex flex-col justify-between">
-          <div>
-            <p className="text-xs font-semibold opacity-90 uppercase tracking-wide">
-              {slide.title}
-            </p>
-            <h3 className="mt-1 text-2xl font-bold leading-tight max-w-[60%]">
-              {slide.subtitle}
-            </h3>
-          </div>
-          <span className="inline-flex w-fit items-center gap-1 bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-bold">
-            {slide.cta}
-          </span>
-        </div>
-        <Icon className="absolute -right-2 -bottom-2 w-32 h-32 text-white/15" />
-      </div>
-      <div className="flex justify-center gap-1.5 mt-2">
-        {slides.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setIdx(i)}
-            className={`select-none h-1.5 rounded-full transition-all ${
-              i === idx ? "w-6 bg-[#4338CA]" : "w-1.5 bg-slate-300"
-            }`}
-            aria-label={`Ir para slide ${i + 1}`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
+/* PromoCarousel moved to src/components/client/PromoCarousel.tsx */
 
 /* ---------- Shop card (Últimas lojas) ---------- */
 function ShopMiniCard({ shop, badge, onClick }: { shop: Barbershop; badge?: string; onClick: () => void }) {
@@ -850,7 +776,7 @@ export default function ClientHome() {
 
         {/* ===== BANNER PROMO ===== */}
         <section className="mt-5">
-          <PromoCarousel shops={barbershops} />
+          <PromoCarousel />
         </section>
 
         {/* ===== PRÓXIMO AGENDAMENTO ===== */}
