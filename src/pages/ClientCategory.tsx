@@ -128,7 +128,7 @@ export default function ClientCategory() {
     };
   }, [user]);
 
-  const stores = useMemo(() => {
+  const { stores, isSubcategoryFallback } = useMemo(() => {
     const grouped = new Map<string, Service[]>();
     services.forEach((service) => {
       const current = grouped.get(service.barbershop_id) || [];
@@ -140,7 +140,7 @@ export default function ClientCategory() {
     const lat = location?.latitude;
     const lon = location?.longitude;
 
-    const result = shops
+    const categoryStores = shops
       .map((shop) => {
         const shopServices = grouped.get(shop.id) || [];
         const content = [shop.name, shop.description, ...shopServices.map((item) => item.name)]
@@ -150,7 +150,9 @@ export default function ClientCategory() {
         const matchesCategory =
           category.id === "todos" ||
           (shop.category_slug || "barbearias") === category.id;
-        const matchesSubcategory = !subcategory || content.includes(subcategory.toLocaleLowerCase("pt-BR"));
+        const matchesSubcategory = !subcategory || shopServices.some((service) =>
+          service.name.toLocaleLowerCase("pt-BR").includes(subcategory.toLocaleLowerCase("pt-BR")),
+        );
         const matchesSearch = !normalizedQuery || content.includes(normalizedQuery);
         const minPrice = shopServices.length
           ? Math.min(...shopServices.map((item) => item.price).filter((price) => price > 0))
@@ -164,7 +166,15 @@ export default function ClientCategory() {
             : null;
         return { shop, services: shopServices, minPrice, distance, matchesCategory, matchesSubcategory, matchesSearch };
       })
-      .filter((item) => item.matchesCategory && item.matchesSubcategory && item.matchesSearch);
+      .filter((item) => item.matchesCategory && item.matchesSearch);
+
+    const subcategoryMatches = subcategory
+      ? categoryStores.filter((item) => item.matchesSubcategory)
+      : categoryStores;
+    const shouldFallback = Boolean(
+      subcategory && categoryStores.length > 0 && subcategoryMatches.length === 0,
+    );
+    const result = shouldFallback ? categoryStores : subcategoryMatches;
 
     if (import.meta.env.DEV) {
       const afterCategory = shops.filter((s) =>
@@ -177,15 +187,18 @@ export default function ClientCategory() {
         activeFilters: filters,
         searchQuery: query,
         afterCategory,
+        subcategoryMatches: subcategoryMatches.length,
+        isSubcategoryFallback: shouldFallback,
         finalCount: result.length,
       });
     }
 
-    return result.sort((a, b) => {
+    const sorted = result.sort((a, b) => {
       if (filters.includes("price")) return (a.minPrice ?? Infinity) - (b.minPrice ?? Infinity);
       if (filters.includes("distance")) return (a.distance ?? Infinity) - (b.distance ?? Infinity);
       return a.shop.name.localeCompare(b.shop.name, "pt-BR");
     });
+    return { stores: sorted, isSubcategoryFallback: shouldFallback };
   }, [category, filters, location, query, services, shops, subcategory]);
 
   const toggleFilter = (key: FilterKey) =>
@@ -362,6 +375,12 @@ export default function ClientCategory() {
               </div>
               <span className="text-xs text-slate-500">{stores.length} locais</span>
             </div>
+
+            {isSubcategoryFallback && (
+              <div className="mx-4 mb-3 rounded-[8px] border border-[#C7D6FF] bg-[#EAF0FF] px-3 py-2 text-xs text-[#3157D5]">
+                Nenhum estabelecimento cadastrou “{subcategory}” no catálogo ainda. Mostrando todos de {category.label.toLocaleLowerCase("pt-BR")}.
+              </div>
+            )}
 
             {loading ? (
               <div className="no-scrollbar flex gap-3 overflow-hidden px-4">
