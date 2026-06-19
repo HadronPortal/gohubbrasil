@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { useAuth } from "@/contexts/AuthContext";
 import { Mail, Lock, User as UserIcon, Phone } from "lucide-react";
+import { getPostLoginRoute } from "@/lib/postLoginRoute";
 import loginBg from "@/assets/login/gohub-beauty-background.webp";
 import gohubLogo from "@/assets/login/gohub-logo.png";
 
@@ -23,29 +24,9 @@ export default function Login() {
   const { user, profile, loading } = useAuth();
 
   useEffect(() => {
-    const redirectUser = async (profileData: any) => {
-      // Clear force flag on login
-      localStorage.removeItem('force_barber_panel');
-
-      const role = String(profileData.role || 'client').toLowerCase();
-      
-      if (role === "superadmin") {
-        navigate("/super-admin", { replace: true });
-      } else if (role === "owner" || role === "admin") {
-        navigate("/admin", { replace: true });
-      } else if (role === "barber") {
-        navigate("/barber-dashboard", { replace: true });
-      } else {
-        if (profileData.barbershop_id) {
-          navigate("/client-home", { replace: true });
-        } else {
-          navigate("/", { replace: true });
-        }
-      }
-    };
-
     if (!loading && user && profile) {
-      redirectUser(profile);
+      localStorage.removeItem('force_barber_panel');
+      navigate(getPostLoginRoute(profile), { replace: true });
     }
   }, [user, profile, loading, navigate]);
 
@@ -72,40 +53,26 @@ export default function Login() {
         toast.success("Conta criada com sucesso!");
         setIsSignUp(false);
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) throw error;
-        
-        // We don't need manual fetch here as AuthContext handles it via onAuthStateChange,
-        // but for faster redirection we can do a quick check.
-        // Best practice is to let the useEffect redirect based on profile from AuthContext.
-        // However, if we want immediate:
-        const { data: panelData } = await supabase.rpc('get_my_app_panels');
-        if (panelData) {
-          const role = String(panelData.role || 'client').toLowerCase();
-          
-          // Clear force flag on login to ensure owner priority
-          localStorage.removeItem('force_barber_panel');
 
-          if (role === "superadmin") {
-            navigate("/super-admin", { replace: true });
-          } else if (role === "owner" || role === "admin") {
-            navigate("/admin", { replace: true });
-          } else if (role === "barber") {
-            navigate("/barber-dashboard", { replace: true });
-          } else {
-            if (panelData.barbershop_id) {
-              navigate("/client-home", { replace: true });
-            } else {
-              navigate("/", { replace: true });
-            }
-          }
-        } else {
-          navigate("/", { replace: true });
-        }
+        const userId = data.user?.id;
+        if (!userId) throw new Error("Usuário não encontrado");
+
+        const { data: userProfile, error: profileError } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", userId)
+          .single();
+
+        if (profileError) throw profileError;
+
+        localStorage.removeItem("force_barber_panel");
+        navigate(getPostLoginRoute(userProfile), { replace: true });
       }
     } catch (error: any) {
       let friendlyMessage = "Ocorreu um erro. Por favor, tente novamente.";

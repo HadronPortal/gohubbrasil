@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { getPostLoginRoute } from "@/lib/postLoginRoute";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -82,28 +83,8 @@ export default function AuthCallback() {
           finalProfile = newProfile;
         }
 
-        // Get panel info for redirect logic (using the same RPC logic as Login.tsx)
-        const { data: panelData } = await supabase.rpc("get_my_app_panels");
-        
-        const role = String(panelData?.role || finalProfile?.role || "client").toLowerCase();
-        const barbershopId = panelData?.barbershop_id || finalProfile?.barbershop_id;
-
-        // Clear force flag on login
         localStorage.removeItem("force_barber_panel");
-
-        if (role === "superadmin") {
-          navigate("/super-admin", { replace: true });
-        } else if (role === "owner" || role === "admin") {
-          navigate("/admin", { replace: true });
-        } else if (role === "barber") {
-          navigate("/barber-dashboard", { replace: true });
-        } else {
-          if (barbershopId) {
-            navigate("/client-home", { replace: true });
-          } else {
-            navigate("/", { replace: true });
-          }
-        }
+        navigate(getPostLoginRoute(finalProfile), { replace: true });
       } catch (error: any) {
         console.error("Auth callback error:", error);
         toast.error(error.message || "Erro ao processar login");
