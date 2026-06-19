@@ -10,6 +10,7 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 import { useAuth } from "@/contexts/AuthContext";
 import { Mail, Lock, User as UserIcon, Phone } from "lucide-react";
 import loginBg from "@/assets/login/gohub-beauty-background.webp";
+import gohubLogo from "@/assets/login/gohub-logo.png";
 
 export default function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -179,7 +180,7 @@ export default function Login() {
           aria-hidden="true"
           className="h-full w-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-white/[0.68]" />
+        <div className="absolute inset-0 bg-white/[0.38]" />
       </div>
 
       {/* Scrollable content */}
@@ -188,7 +189,7 @@ export default function Login() {
           {/* Logo */}
           <div className="mb-6 flex justify-center">
             <img
-              src="/Logo-GoHub.png"
+              src={gohubLogo}
               alt="GoHub"
               className="h-16 w-auto object-contain"
             />
