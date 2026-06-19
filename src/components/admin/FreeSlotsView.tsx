@@ -432,7 +432,7 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleSaveConfig} className="w-full bg-[#3157D5] text-[#1c2333] hover:bg-[#d4a935] font-bold   tracking-widest">
+            <Button onClick={handleSaveConfig} className="w-full bg-[#3157D5] text-white hover:bg-[#274ac0] font-semibold rounded-[8px]">
               Salvar configurações
             </Button>
           </DialogFooter>
@@ -524,7 +524,7 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
               </Button>
               <Button 
                 onClick={handleCreateBlock} 
-                className="bg-[#3157D5] text-[#1c2333] hover:bg-[#d4a935] font-bold   tracking-widest h-11"
+                className="bg-[#3157D5] text-white hover:bg-[#274ac0] font-semibold rounded-[8px] h-11"
               >
                 Bloquear
               </Button>
