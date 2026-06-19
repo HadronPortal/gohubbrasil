@@ -254,14 +254,10 @@ const RULES: Rule[] = [
 
 export function getServiceVisual(name: string, categoryId?: string): ServiceVisual {
   const n = normalizeName(name);
-  // 0a) Direct icon_key lookup via the picker library (preferred path)
-  try {
-    // Lazy import to avoid circular references
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { getIconByKey } = require("@/lib/serviceIcons");
-    const direct = getIconByKey(name);
-    if (direct?.image) return { image: direct.image, matched: true };
-  } catch {}
+  // 0a) Direct icon_key lookup via the picker library (preferred path).
+  // We use a dynamic dictionary set by serviceIcons.ts to avoid circular imports.
+  const direct = (globalThis as any).__GOHUB_ICONS__?.[name];
+  if (direct) return { image: direct, matched: true };
   if (n) {
     // 0) category-scoped exact match (disambiguates names shared across categories)
     if (categoryId) {
