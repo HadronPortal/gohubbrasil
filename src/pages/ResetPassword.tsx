@@ -2,78 +2,190 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { ArrowLeft, CheckCircle2, Lock, Loader2 } from "lucide-react";
+import { AuthPageShell } from "@/components/auth/AuthPageShell";
+import { AuthCard } from "@/components/auth/AuthCard";
+import { AuthInput } from "@/components/auth/AuthInput";
+import { LoadingScreen } from "@/components/LoadingScreen";
+
+type State = "checking" | "ready" | "expired" | "success";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [fieldError, setFieldError] = useState<string | null>(null);
+  const [state, setState] = useState<State>("checking");
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if we have a session (the link from email should provide one)
-    const checkSession = async () => {
+    let cancelled = false;
+    (async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("Sessão inválida ou expirada. Solicite um novo link.");
-        navigate("/forgot-password");
-      }
+      if (cancelled) return;
+      setState(session ? "ready" : "expired");
+    })();
+    return () => {
+      cancelled = true;
     };
-    checkSession();
-  }, [navigate]);
+  }, []);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setFieldError(null);
 
+    if (password.length < 6) {
+      setFieldError("A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setFieldError("As senhas não coincidem.");
+      return;
+    }
+
+    setIsLoading(true);
     try {
       const { error } = await supabase.auth.updateUser({ password });
-
       if (error) throw error;
-
-      toast.success("Senha atualizada com sucesso!");
-      navigate("/login");
+      setState("success");
     } catch (error: any) {
-      toast.error(error.message || "Erro ao atualizar senha.");
+      setFieldError(error?.message || "Erro ao atualizar senha.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  if (state === "checking" || isLoading) {
+    return (
+      <div className="fixed inset-0 z-[100]">
+        <LoadingScreen />
+      </div>
+    );
+  }
+
+  if (state === "expired") {
+    return (
+      <AuthPageShell>
+        <AuthCard
+          title="Link expirado"
+          description="Este link de recuperação não é mais válido. Solicite um novo para continuar."
+        >
+          <div className="space-y-3">
+            <Button
+              type="button"
+              onClick={() => navigate("/forgot-password")}
+              className="h-[50px] w-full rounded-[8px] bg-[#3157D5] text-base font-semibold text-white hover:bg-[#274ac0] active:bg-[#1f3ea3]"
+            >
+              Solicitar novo link
+            </Button>
+            <button
+              type="button"
+              onClick={() => navigate("/login")}
+              className="flex w-full items-center justify-center gap-1.5 pt-1 text-sm font-medium text-[#64748B] hover:text-[#172033]"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Voltar para entrar
+            </button>
+          </div>
+        </AuthCard>
+      </AuthPageShell>
+    );
+  }
+
+  if (state === "success") {
+    return (
+      <AuthPageShell>
+        <AuthCard
+          title="Senha alterada"
+          description="Sua senha foi atualizada com sucesso. Agora você já pode entrar com a nova senha."
+        >
+          <div className="space-y-4">
+            <div className="flex flex-col items-center gap-3 rounded-[8px] border border-[#DDE3EE] bg-[#F6F7FB] p-4 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#16A34A]/10">
+                <CheckCircle2 className="h-5 w-5 text-[#16A34A]" />
+              </div>
+              <p className="text-sm text-[#172033]">Tudo certo!</p>
+            </div>
+            <Button
+              type="button"
+              onClick={() => navigate("/login")}
+              className="h-[50px] w-full rounded-[8px] bg-[#3157D5] text-base font-semibold text-white hover:bg-[#274ac0] active:bg-[#1f3ea3]"
+            >
+              Entrar
+            </Button>
+          </div>
+        </AuthCard>
+      </AuthPageShell>
+    );
+  }
+
   return (
-    <div className="min-h-screen relative flex flex-col items-center justify-center p-6 font-light overflow-hidden">
-      <div 
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat brightness-125 contrast-110"
-        style={{ backgroundImage: "url('/login-bg.png')" }}
-      />
-      <div className="absolute inset-0 z-10 bg-black/30" />
-
-      <div className="w-full max-w-[390px] space-y-8 relative z-20">
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold text-[#f0c040] font-oswald tracking-[2px] uppercase">Nova Senha</h1>
-          <p className="text-sm text-[#8a9ab5]">Escolha uma nova senha segura.</p>
-        </div>
-
-        <form onSubmit={handleUpdatePassword} className="space-y-4">
-          <Input
+    <AuthPageShell>
+      <AuthCard
+        title="Redefinir senha"
+        description="Escolha uma nova senha segura para sua conta."
+      >
+        <form onSubmit={handleUpdatePassword} className="space-y-3">
+          <AuthInput
+            icon={<Lock className="h-4 w-4" />}
             type="password"
-            placeholder="NOVA SENHA"
-            className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] h-12 rounded-[4px] placeholder:text-[#8a9ab5] font-light"
+            placeholder="Nova senha"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (fieldError) setFieldError(null);
+            }}
             required
             minLength={6}
+            autoComplete="new-password"
           />
+          <div className="space-y-1.5">
+            <AuthInput
+              icon={<Lock className="h-4 w-4" />}
+              type="password"
+              placeholder="Confirmar nova senha"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (fieldError) setFieldError(null);
+              }}
+              required
+              minLength={6}
+              autoComplete="new-password"
+              aria-invalid={!!fieldError}
+            />
+            {fieldError && (
+              <p className="px-1 text-xs font-medium text-[#DC2626]">
+                {fieldError}
+              </p>
+            )}
+          </div>
 
-          <Button 
-            type="submit" 
-            className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-6 text-lg rounded-[4px] transition-all font-oswald uppercase tracking-[3px]"
+          <Button
+            type="submit"
             disabled={isLoading}
+            className="h-[50px] w-full rounded-[8px] bg-[#3157D5] text-base font-semibold text-white shadow-sm transition-colors hover:bg-[#274ac0] active:bg-[#1f3ea3] disabled:opacity-70"
           >
-            {isLoading ? "ATUALIZANDO..." : "DEFINIR NOVA SENHA"}
+            {isLoading ? (
+              <span className="inline-flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Salvando...
+              </span>
+            ) : (
+              "Definir nova senha"
+            )}
           </Button>
+
+          <button
+            type="button"
+            onClick={() => navigate("/login")}
+            className="flex w-full items-center justify-center gap-1.5 pt-1 text-sm font-medium text-[#64748B] hover:text-[#172033]"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar para entrar
+          </button>
         </form>
-      </div>
-    </div>
+      </AuthCard>
+    </AuthPageShell>
   );
 }
