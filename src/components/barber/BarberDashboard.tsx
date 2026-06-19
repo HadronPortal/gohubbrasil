@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { MessageCircle, Calendar as CalendarIcon, DollarSign, Percent, TrendingUp } from "lucide-react";
+import { MessageCircle, Calendar as CalendarIcon, DollarSign, Percent, TrendingUp, Lock, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { money } from "@/utils/format";
-import { Lock } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
 import { getDateKeyBR, isTodayBR, isAfterTodayBR, isFinished, isCanceled } from "@/lib/utils";
 import FreeSlotsView from "../admin/FreeSlotsView";
@@ -138,94 +137,109 @@ export default function BarberDashboard({ profile }: { profile: any }) {
     window.open(`https://wa.me/55${cleanPhone}`);
   };
 
-  if (isLoading && !data) return <div className="text-[#8a9ab5] font-oswald text-xs tracking-widest uppercase p-6">CARREGANDO...</div>;
+  if (isLoading && !data) {
+    return (
+      <div className="text-sm text-[#64748B] px-2 py-6" style={{ fontFamily: "Poppins, sans-serif" }}>
+        Carregando...
+      </div>
+    );
+  }
 
   if (showFreeSlots) {
     return <FreeSlotsView barbershopId={profile.barbershop_id} onBack={() => setShowFreeSlots(false)} profile={profile} />;
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-5 animate-in fade-in duration-300" style={{ fontFamily: "Poppins, sans-serif" }}>
       {/* Horários Livres Card */}
-      <div 
+      <button
+        type="button"
         onClick={() => setShowFreeSlots(true)}
-        className="bg-[#141b2a] border border-[#f0c040]/30 p-4 rounded-[4px] cursor-pointer hover:border-[#f0c040] transition-all flex items-center justify-between group"
+        className="w-full flex items-center justify-between gap-3 rounded-[8px] border border-[#DDE3EE] bg-white p-4 text-left hover:border-[#3157D5]/40 transition-colors"
       >
-        <div className="flex items-center gap-3">
-          <div className="bg-[#f0c040]/10 p-2 rounded group-hover:bg-[#f0c040]/20 transition-colors">
-            <Lock className="w-5 h-5 text-[#f0c040]" />
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="rounded-[8px] bg-[#EAF0FF] p-2">
+            <Lock className="w-5 h-5 text-[#3157D5]" />
           </div>
-          <div>
-            <h4 className="text-sm font-bold text-[#f0c040] font-oswald tracking-widest uppercase">MEUS HORÁRIOS LIVRES</h4>
-            <p className="text-[10px] text-[#8a9ab5] uppercase tracking-widest">Ver e bloquear sua agenda</p>
+          <div className="min-w-0">
+            <h4 className="text-sm font-semibold text-[#0F1E3D] truncate">Meus horários livres</h4>
+            <p className="text-xs text-[#64748B] truncate">Ver e bloquear sua agenda</p>
           </div>
         </div>
-      </div>
+        <ChevronRight className="w-4 h-4 text-[#94A3B8] shrink-0" />
+      </button>
 
       {/* Summary Cards */}
-
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="bg-[#141b2a] border-[#2a3347]">
-          <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-1">
-            <CalendarIcon className="w-4 h-4 text-[#8a9ab5] mb-1" />
-            <span className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Agendamentos hoje</span>
-            <span className="text-2xl font-bold text-[#f0c040] font-oswald">{data?.summary.appointments_today || 0}</span>
+      <div className="grid grid-cols-2 gap-3">
+        <Card className="bg-white border border-[#DDE3EE] rounded-[8px] shadow-none">
+          <CardContent className="p-3 flex flex-col gap-1">
+            <div className="flex items-center gap-1.5 text-[#64748B]">
+              <CalendarIcon className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-medium">Agendamentos hoje</span>
+            </div>
+            <span className="text-xl font-semibold text-[#0F1E3D]">{data?.summary.appointments_today || 0}</span>
           </CardContent>
         </Card>
 
-        <Card className="bg-[#141b2a] border-[#2a3347]">
-          <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-1">
-            <TrendingUp className="w-4 h-4 text-[#8a9ab5] mb-1" />
-            <span className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Faturamento hoje</span>
-            <span className="text-2xl font-bold text-[#f0c040] font-oswald">
+        <Card className="bg-white border border-[#DDE3EE] rounded-[8px] shadow-none">
+          <CardContent className="p-3 flex flex-col gap-1">
+            <div className="flex items-center gap-1.5 text-[#64748B]">
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-medium">Faturamento hoje</span>
+            </div>
+            <span className="text-xl font-semibold text-[#0F1E3D] truncate">
               {money(data?.summary.gross_today)}
             </span>
           </CardContent>
         </Card>
 
-        <Card className="bg-[#141b2a] border-[#2a3347]">
-          <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-1">
-            <DollarSign className="w-4 h-4 text-[#8a9ab5] mb-1" />
-            <span className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Minha comissão hoje</span>
-            <span className="text-2xl font-bold text-green-500 font-oswald">
+        <Card className="bg-white border border-[#DDE3EE] rounded-[8px] shadow-none">
+          <CardContent className="p-3 flex flex-col gap-1">
+            <div className="flex items-center gap-1.5 text-[#64748B]">
+              <DollarSign className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-medium">Minha comissão</span>
+            </div>
+            <span className="text-xl font-semibold text-[#16A34A] truncate">
               {money(data?.summary.commission_today)}
             </span>
           </CardContent>
         </Card>
 
-        <Card className="bg-[#141b2a] border-[#2a3347]">
-          <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-1">
-            <Percent className="w-4 h-4 text-[#8a9ab5] mb-1" />
-            <span className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">Comissão</span>
-            <span className="text-2xl font-bold text-[#c8d4e8] font-oswald">{data?.summary.commission_pct || 0}%</span>
+        <Card className="bg-white border border-[#DDE3EE] rounded-[8px] shadow-none">
+          <CardContent className="p-3 flex flex-col gap-1">
+            <div className="flex items-center gap-1.5 text-[#64748B]">
+              <Percent className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-medium">Comissão</span>
+            </div>
+            <span className="text-xl font-semibold text-[#0F1E3D]">{data?.summary.commission_pct || 0}%</span>
           </CardContent>
         </Card>
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="active" className="w-full">
-        <TabsList className="w-full bg-[#141b2a] border border-[#2a3347] grid grid-cols-3 h-12 p-1">
-          <TabsTrigger 
-            value="active" 
-            className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]"
+        <TabsList className="w-full bg-white border border-[#DDE3EE] grid grid-cols-3 h-11 p-1 rounded-[8px]">
+          <TabsTrigger
+            value="active"
+            className="text-xs font-medium rounded-[6px] data-[state=active]:bg-[#3157D5] data-[state=active]:text-white text-[#64748B]"
           >
             Hoje
           </TabsTrigger>
-          <TabsTrigger 
-            value="upcoming" 
-            className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]"
+          <TabsTrigger
+            value="upcoming"
+            className="text-xs font-medium rounded-[6px] data-[state=active]:bg-[#3157D5] data-[state=active]:text-white text-[#64748B]"
           >
             Próximos
           </TabsTrigger>
-          <TabsTrigger 
-            value="history" 
-            className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]"
+          <TabsTrigger
+            value="history"
+            className="text-xs font-medium rounded-[6px] data-[state=active]:bg-[#3157D5] data-[state=active]:text-white text-[#64748B]"
           >
             Histórico
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="active" className="mt-6 space-y-4">
+        <TabsContent value="active" className="mt-4 space-y-3">
           <AppointmentList 
             appointments={todayAppointments} 
             onWhatsApp={openWhatsApp} 
@@ -234,7 +248,7 @@ export default function BarberDashboard({ profile }: { profile: any }) {
           />
         </TabsContent>
 
-        <TabsContent value="upcoming" className="mt-6 space-y-4">
+        <TabsContent value="upcoming" className="mt-4 space-y-3">
           <AppointmentList 
             appointments={nextAppointments} 
             onWhatsApp={openWhatsApp} 
@@ -244,7 +258,7 @@ export default function BarberDashboard({ profile }: { profile: any }) {
         </TabsContent>
 
 
-        <TabsContent value="history" className="mt-6 space-y-4">
+        <TabsContent value="history" className="mt-4 space-y-3">
           <AppointmentList 
             appointments={historyAppointments} 
             onWhatsApp={openWhatsApp} 
@@ -261,22 +275,22 @@ function AppointmentList({ appointments, onWhatsApp, emptyMessage, onRefresh }: 
   const getStatusInfo = (status: string, client_attended?: boolean) => {
     const s = status.toLowerCase();
     if (s === "no_show" || (s === "completed" && client_attended === false)) {
-      return { label: "NÃO COMPARECEU", color: "text-orange-500 border-orange-500/30 bg-orange-500/10" };
+      return { label: "Não compareceu", color: "text-[#B45309] border-[#FCD34D] bg-[#FEF3C7]" };
     }
     switch (s) {
       case "pending": 
-        return { label: "PENDENTE", color: "text-yellow-500 border-yellow-500/30 bg-yellow-500/10" };
+        return { label: "Pendente", color: "text-[#B45309] border-[#FCD34D] bg-[#FEF3C7]" };
       case "confirmed": 
-        return { label: "CONFIRMADO", color: "text-green-500 border-green-500/30 bg-green-500/10" };
+        return { label: "Confirmado", color: "text-[#15803D] border-[#86EFAC] bg-[#DCFCE7]" };
       case "cancelled": 
       case "canceled":
       case "cancelado":
-        return { label: "CANCELADO", color: "text-red-500 border-red-500/30 bg-red-500/10" };
+        return { label: "Cancelado", color: "text-[#B91C1C] border-[#FCA5A5] bg-[#FEE2E2]" };
       case "completed":
       case "finalizado":
-        return { label: "FINALIZADO", color: "text-blue-500 border-blue-500/30 bg-blue-500/10" };
+        return { label: "Finalizado", color: "text-[#1D4ED8] border-[#93C5FD] bg-[#DBEAFE]" };
       default: 
-        return { label: status.toUpperCase(), color: "text-gray-500 border-gray-500/30 bg-gray-500/10" };
+        return { label: status, color: "text-[#475569] border-[#CBD5E1] bg-[#F1F5F9]" };
     }
   };
 
@@ -318,14 +332,15 @@ function AppointmentList({ appointments, onWhatsApp, emptyMessage, onRefresh }: 
 
   if (appointments.length === 0) {
     return (
-      <div className="text-center py-12 border border-dashed border-[#2a3347] rounded-[4px]">
-        <p className="text-xs text-[#8a9ab5] uppercase tracking-widest">{emptyMessage}</p>
+      <div className="flex flex-col items-center justify-center gap-2 py-8 rounded-[8px] border border-dashed border-[#DDE3EE] bg-white">
+        <CalendarIcon className="w-6 h-6 text-[#94A3B8]" />
+        <p className="text-sm text-[#64748B]">{emptyMessage}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3" style={{ fontFamily: "Poppins, sans-serif" }}>
       {appointments.map((appt, i) => {
         const isFinished = ["completed", "finalizado", "cancelled", "canceled", "cancelado", "no_show"].includes(appt.status.toLowerCase());
         const price = appt.price ?? appt.price_charged ?? appt.service_price ?? 0;
@@ -333,41 +348,41 @@ function AppointmentList({ appointments, onWhatsApp, emptyMessage, onRefresh }: 
 
 
         return (
-          <div key={i} className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] space-y-4">
-            <div className="flex justify-between items-start">
-              <div className="flex items-center gap-3">
+          <div key={i} className="bg-white border border-[#DDE3EE] p-3 rounded-[8px] space-y-3">
+            <div className="flex justify-between items-start gap-2">
+              <div className="flex items-center gap-3 min-w-0">
                 <UserAvatar 
                   name={appt.client_name} 
                   avatarUrl={null} 
                   size="sm" 
-                  className="border-[#f0c040]/30" 
+                  className="border-[#DDE3EE]"
                 />
-                <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-[#c8d4e8] font-oswald uppercase tracking-wider">{appt.client_name}</h4>
-                  <p className="text-[10px] text-[#8a9ab5] uppercase tracking-widest">{appt.service_name}</p>
+                <div className="min-w-0">
+                  <h4 className="text-sm font-semibold text-[#0F1E3D] truncate">{appt.client_name}</h4>
+                  <p className="text-xs text-[#64748B] truncate">{appt.service_name}</p>
                 </div>
               </div>
 
-              <span className={`text-[9px] font-bold px-2 py-1 rounded-[2px] border uppercase tracking-widest ${getStatusInfo(appt.status, (appt as any).client_attended).color}`}>
+              <span className={`text-[10px] font-semibold px-2 py-1 rounded-[6px] border shrink-0 ${getStatusInfo(appt.status, (appt as any).client_attended).color}`}>
                 {getStatusInfo(appt.status, (appt as any).client_attended).label}
               </span>
             </div>
 
-            <div className="flex justify-between items-center pt-3 border-t border-[#2a3347]/50">
-              <div className="space-y-1">
-                <div className="text-lg font-bold text-[#f0c040] font-oswald">
+            <div className="flex justify-between items-center gap-2 pt-3 border-t border-[#EEF2F8]">
+              <div>
+                <div className="text-base font-semibold text-[#3157D5]">
                   {format(new Date(appt.starts_at), "HH:mm")}
                 </div>
-                <div className="text-[9px] text-[#8a9ab5] uppercase tracking-widest">
+                <div className="text-[11px] text-[#64748B]">
                   {format(new Date(appt.starts_at), "dd/MM/yyyy")}
                 </div>
               </div>
 
-              <div className="text-right space-y-1">
-                <div className="text-sm font-bold text-[#c8d4e8]">
+              <div className="text-right">
+                <div className="text-sm font-semibold text-[#0F1E3D]">
                   {money(price)}
                 </div>
-                <div className="text-[9px] text-green-500 font-bold uppercase tracking-widest">
+                <div className="text-[11px] text-[#16A34A] font-medium">
                   Comissão: {money(commission)}
                 </div>
               </div>
@@ -376,7 +391,7 @@ function AppointmentList({ appointments, onWhatsApp, emptyMessage, onRefresh }: 
             <div className="grid grid-cols-1 gap-2">
               {!isFinished && (
                 <Button 
-                  className="w-full h-10 bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2 text-[10px] uppercase font-bold tracking-widest"
+                  className="w-full h-10 bg-[#16A34A] hover:bg-[#15803D] text-white rounded-[8px] text-xs font-semibold"
                   onClick={() => {
                     setSelectedAppt(appt);
                     setIsFinishModalOpen(true);
@@ -389,7 +404,7 @@ function AppointmentList({ appointments, onWhatsApp, emptyMessage, onRefresh }: 
               {appt.client_phone && (
                 <Button 
                   variant="outline" 
-                  className="w-full h-10 border-[#25d366]/30 text-[#25d366] hover:bg-[#25d366]/10 flex items-center justify-center gap-2 text-[10px] uppercase font-bold tracking-widest"
+                  className="w-full h-10 border-[#25d366]/40 text-[#15803D] hover:bg-[#25d366]/10 rounded-[8px] text-xs font-medium flex items-center justify-center gap-2"
                   onClick={() => onWhatsApp(appt.client_phone)}
                 >
                   <MessageCircle className="w-4 h-4" />
@@ -402,35 +417,35 @@ function AppointmentList({ appointments, onWhatsApp, emptyMessage, onRefresh }: 
       })}
 
       <AlertDialog open={isFinishModalOpen} onOpenChange={setIsFinishModalOpen}>
-        <AlertDialogContent className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8]">
+        <AlertDialogContent className="bg-white border border-[#DDE3EE] text-[#0F1E3D] rounded-[8px]" style={{ fontFamily: "Poppins, sans-serif" }}>
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-oswald uppercase text-[#f0c040] tracking-widest">
-              O CLIENTE COMPARECEU?
+            <AlertDialogTitle className="text-base font-semibold text-[#0F1E3D]">
+              O cliente compareceu?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-[#8a9ab5] text-[10px] uppercase tracking-widest leading-relaxed">
+            <AlertDialogDescription className="text-sm text-[#64748B] leading-relaxed">
               Selecione se o cliente realizou o serviço ou se não compareceu ao horário agendado.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel className="bg-transparent border-[#2a3347] text-[#8a9ab5] hover:bg-[#1c2333] hover:text-white font-oswald uppercase text-xs tracking-widest rounded-none h-12 w-full sm:w-auto">
-              VOLTAR
+            <AlertDialogCancel className="bg-white border border-[#DDE3EE] text-[#172033] hover:bg-[#F6F7FB] rounded-[8px] h-11 text-sm font-medium w-full sm:w-auto">
+              Voltar
             </AlertDialogCancel>
             <div className="flex flex-col sm:flex-row gap-2 w-full">
               <Button
                 onClick={() => handleFinishAppointment(false)}
                 disabled={isFinishing}
                 variant="outline"
-                className="bg-transparent border-red-500/50 text-red-400 hover:bg-red-500/10 font-oswald uppercase text-xs tracking-widest rounded-none h-12 w-full"
+                className="bg-white border-[#FCA5A5] text-[#B91C1C] hover:bg-[#FEE2E2] rounded-[8px] h-11 text-sm font-medium w-full"
               >
-                NÃO COMPARECEU
+                Não compareceu
               </Button>
               <Button
                 onClick={() => handleFinishAppointment(true)}
                 disabled={isFinishing}
-                className="bg-green-600 hover:bg-green-700 text-white font-oswald uppercase text-xs tracking-widest rounded-none h-12 w-full"
+                className="bg-[#16A34A] hover:bg-[#15803D] text-white rounded-[8px] h-11 text-sm font-semibold w-full"
               >
-                {isFinishing ? "PROCESSANDO..." : "SIM, COMPARECEU"}
+                {isFinishing ? "Processando..." : "Sim, compareceu"}
               </Button>
             </div>
           </AlertDialogFooter>
