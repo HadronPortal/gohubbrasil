@@ -210,6 +210,8 @@ export default function SuperAdmin() {
   // Category catalog from DB (UUID is source of truth)
   type CategoryRow = { id: string; slug: string; name: string };
   const [categories, setCategories] = useState<CategoryRow[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [categoriesError, setCategoriesError] = useState<string | null>(null);
   const categoryIdToSlug = useMemo(() => {
     const m: Record<string, string> = {};
     categories.forEach((c) => (m[c.id] = c.slug));
@@ -224,16 +226,21 @@ export default function SuperAdmin() {
   }, [isSuperAdmin]);
 
   const fetchCategories = async () => {
+    setCategoriesLoading(true);
+    setCategoriesError(null);
     const { data, error } = await supabase
       .from("business_categories")
-      .select("id, slug, name")
-      .eq("active", true)
+      .select("id, name, slug")
       .order("name");
+    console.log("Categorias retornadas:", data);
     if (error) {
-      console.error("Error fetching categories:", error);
+      console.error("Erro ao carregar categorias:", error);
+      setCategoriesError(error.message || "Erro ao carregar categorias");
+      setCategoriesLoading(false);
       return;
     }
     setCategories((data || []) as CategoryRow[]);
+    setCategoriesLoading(false);
   };
 
   const fetchBarbershops = async () => {
