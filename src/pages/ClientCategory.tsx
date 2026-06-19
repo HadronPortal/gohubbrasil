@@ -132,7 +132,7 @@ export default function ClientCategory() {
     const lat = location?.latitude;
     const lon = location?.longitude;
 
-    const result = shops
+    const enriched = shops
       .map((shop) => {
         const shopServices = grouped.get(shop.id) || [];
         const content = [shop.name, shop.description, ...shopServices.map((item) => item.name)]
@@ -155,11 +155,22 @@ export default function ClientCategory() {
             : null;
         return { shop, services: shopServices, minPrice, distance, matchesCategory, matchesSubcategory, matchesSearch };
       })
-      .filter((item) => item.matchesCategory && item.matchesSubcategory && item.matchesSearch);
+      .filter((item) => item.matchesCategory && item.matchesSearch);
+
+    const subFiltered = subcategory
+      ? enriched.filter((item) => item.matchesSubcategory)
+      : enriched;
+    // Rule 4: if the selected subcategory has no matches, fall back to all of the category.
+    const result = subcategory && subFiltered.length === 0 ? enriched : subFiltered;
 
     return result.sort((a, b) => {
       if (filters.includes("price")) return (a.minPrice ?? Infinity) - (b.minPrice ?? Infinity);
-      if (filters.includes("distance")) return (a.distance ?? Infinity) - (b.distance ?? Infinity);
+      if (filters.includes("distance")) {
+        const da = a.distance ?? Number.POSITIVE_INFINITY;
+        const db = b.distance ?? Number.POSITIVE_INFINITY;
+        if (da !== db) return da - db;
+        return a.shop.name.localeCompare(b.shop.name, "pt-BR");
+      }
       return a.shop.name.localeCompare(b.shop.name, "pt-BR");
     });
   }, [category, filters, location, query, services, shops, subcategory]);
@@ -339,7 +350,12 @@ export default function ClientCategory() {
                   {category.id !== "todos" && (
                     <button
                       type="button"
-                      onClick={() => navigate("/client-category/todos")}
+                      onClick={() => {
+                        setQuery("");
+                        setSubcategory(null);
+                        setFilters([]);
+                        navigate("/client-category/todos");
+                      }}
                       className="mt-4 inline-flex h-10 items-center justify-center rounded-[8px] bg-[#3157D5] px-4 text-xs font-semibold text-white"
                     >
                       Ver todos os estabelecimentos
