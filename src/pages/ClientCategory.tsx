@@ -96,11 +96,13 @@ export default function ClientCategory() {
   }, [categorySlug]);
 
   useEffect(() => {
-    if (!user) return;
     let active = true;
     (async () => {
       setLoading(true);
       setLoadError(null);
+      if (import.meta.env.DEV) {
+        console.log("[ClientCategory] Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
+      }
       const [{ data: shopData, error: shopError }, { data: serviceData, error: serviceError }] =
         await Promise.all([
           supabase.rpc("get_available_barbershops"),
@@ -108,16 +110,17 @@ export default function ClientCategory() {
         ]);
       if (!active) return;
       if (shopError) {
-        console.error("Erro ao carregar estabelecimentos:", shopError);
+        console.error("[ClientCategory] Erro RPC get_available_barbershops:", shopError);
         setLoadError(shopError.message || "Erro ao carregar estabelecimentos");
         setLoading(false);
         return;
       }
       if (serviceError) {
-        console.error("Erro ao carregar serviços:", serviceError);
+        console.warn("[ClientCategory] Erro ao carregar serviços (ignorado):", serviceError);
       }
       if (import.meta.env.DEV) {
-        console.log("[ClientCategory] get_available_barbershops →", shopData);
+        console.log("[ClientCategory] RPC resposta completa →", shopData);
+        console.log("[ClientCategory] Total recebido da RPC:", (shopData || []).length);
       }
       setShops((shopData || []) as Shop[]);
       setServices((serviceData || []) as Service[]);
@@ -126,7 +129,7 @@ export default function ClientCategory() {
     return () => {
       active = false;
     };
-  }, [user]);
+  }, []);
 
   const { stores, isSubcategoryFallback } = useMemo(() => {
     const grouped = new Map<string, Service[]>();
@@ -140,6 +143,7 @@ export default function ClientCategory() {
     const lat = location?.latitude;
     const lon = location?.longitude;
 
+    const beforeCategory = shops.length;
     const categoryStores = shops
       .map((shop) => {
         const shopServices = grouped.get(shop.id) || [];
@@ -193,11 +197,26 @@ export default function ClientCategory() {
       });
     }
 
-    const sorted = result.sort((a, b) => {
-      if (filters.includes("price")) return (a.minPrice ?? Infinity) - (b.minPrice ?? Infinity);
-      if (filters.includes("distance")) return (a.distance ?? Infinity) - (b.distance ?? Infinity);
+    const sorted = [...result].sort((a, b) => {
+      if (filters.includes("price")) {
+        return (a.minPrice ?? Infinity) - (b.minPrice ?? Infinity);
+      }
+      // Distância sempre ordena (com ou sem filtro); registros sem coordenadas vão para o fim.
+      const da = a.distance ?? Infinity;
+      const db = b.distance ?? Infinity;
+      if (da !== db) return da - db;
       return a.shop.name.localeCompare(b.shop.name, "pt-BR");
     });
+    if (import.meta.env.DEV) {
+      console.log("[ClientCategory] Pipeline:", {
+        beforeCategory,
+        afterCategory: categoryStores.length,
+        afterSubcategory: subcategoryMatches.length,
+        subcategoryFallback: shouldFallback,
+        final: sorted.length,
+        location,
+      });
+    }
     return { stores: sorted, isSubcategoryFallback: shouldFallback };
   }, [category, filters, location, query, services, shops, subcategory]);
 
