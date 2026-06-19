@@ -165,123 +165,127 @@ export default function AdminDashboard({
     }
   };
 
-  if (isLoading) return <div className="text-[#8a9ab5] font-oswald text-xs tracking-widest uppercase">CARREGANDO...</div>;
+  if (isLoading)
+    return (
+      <div className="space-y-3" style={{ fontFamily: "Poppins, sans-serif" }}>
+        <div className="h-20 animate-pulse rounded-[8px] bg-white border border-[#DDE3EE]" />
+        <div className="grid grid-cols-2 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-20 animate-pulse rounded-[8px] bg-white border border-[#DDE3EE]" />
+          ))}
+        </div>
+        <div className="h-64 animate-pulse rounded-[8px] bg-white border border-[#DDE3EE]" />
+      </div>
+    );
 
   if (showFreeSlots && barbershopId) {
     return <FreeSlotsView barbershopId={barbershopId} onBack={() => setShowFreeSlots(false)} profile={profile} />;
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      {/* Horários Livres Card */}
-      <div 
+    <div className="space-y-5" style={{ fontFamily: "Poppins, sans-serif" }}>
+      {/* Horários Livres */}
+      <button
+        type="button"
         onClick={() => setShowFreeSlots(true)}
-        className="bg-[#141b2a] border border-[#f0c040]/30 p-4 rounded-[4px] cursor-pointer hover:border-[#f0c040] transition-all flex items-center justify-between group"
+        className="w-full flex items-center justify-between gap-3 rounded-[8px] border border-[#DDE3EE] bg-white p-4 text-left hover:border-[#3157D5]/40 hover:shadow-sm transition"
       >
         <div className="flex items-center gap-3">
-          <div className="bg-[#f0c040]/10 p-2 rounded group-hover:bg-[#f0c040]/20 transition-colors">
-            <Lock className="w-5 h-5 text-[#f0c040]" />
+          <div className="rounded-[8px] bg-[#EAF0FF] p-2.5">
+            <Lock className="w-5 h-5 text-[#3157D5]" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-[#f0c040] font-oswald tracking-widest uppercase">MEUS HORÁRIOS LIVRES</h4>
-            <p className="text-[10px] text-[#8a9ab5] uppercase tracking-widest">Ver e bloquear horários</p>
+            <h4 className="text-sm font-semibold text-[#172033]">Meus horários livres</h4>
+            <p className="text-xs text-[#64748B]">Ver e bloquear horários</p>
           </div>
         </div>
-      </div>
-
+      </button>
 
       {/* Summary Grid */}
-
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         {[
-          { label: "AGENDAMENTOS HOJE", value: stats.appointmentsToday, onClick: null },
-          { label: "PRÓXIMOS", value: stats.upcomingAppointments, onClick: null },
-          { label: "BARBEIROS ATIVOS", value: stats.activeBarbers, onClick: null },
-          { label: "FATURAMENTO HOJE", value: money(stats.revenueToday), onClick: null },
+          { label: "Agendamentos hoje", value: stats.appointmentsToday, accent: "#3157D5" },
+          { label: "Próximos", value: stats.upcomingAppointments, accent: "#0EA5E9" },
+          { label: "Profissionais ativos", value: stats.activeBarbers, accent: "#7C3AED" },
+          { label: "Faturamento hoje", value: money(stats.revenueToday), accent: "#15803D" },
         ].map((item, idx) => (
-          <div 
-            key={idx} 
-            onClick={item.onClick || undefined}
-            className={cn(
-              "bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] space-y-2",
-              item.onClick && "cursor-pointer hover:border-[#f0c040] transition-colors"
-            )}
+          <div
+            key={idx}
+            className="rounded-[8px] border border-[#DDE3EE] bg-white p-3"
           >
-            <span className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider block">
-              {item.label}
-            </span>
-            <span className="text-xl font-bold text-[#f0c040] font-oswald">
-              {item.value}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="h-7 w-1 rounded-full" style={{ backgroundColor: item.accent }} />
+              <span className="text-[11px] font-medium text-[#64748B] leading-tight">{item.label}</span>
+            </div>
+            <p className="mt-1.5 text-xl font-semibold text-[#172033]">{item.value}</p>
           </div>
         ))}
       </div>
 
-      {/* Appointments Sections */}
-      <div className="space-y-6">
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
-          <TabsList className="w-full bg-[#141b2a] border border-[#2a3347] grid grid-cols-3 h-12 p-1">
-            <TabsTrigger 
-              value="today" 
-              className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]"
-            >
-              HOJE
-            </TabsTrigger>
-            <TabsTrigger 
-              value="upcoming" 
-              className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]"
-            >
-              PRÓXIMOS
-            </TabsTrigger>
-            <TabsTrigger 
-              value="history" 
-              className="text-[10px] uppercase font-bold tracking-wider data-[state=active]:bg-[#f0c040] data-[state=active]:text-[#1c2333]"
-            >
-              HISTÓRICO
-            </TabsTrigger>
-          </TabsList>
+      {/* Appointments */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
+        <TabsList className="grid w-full h-11 grid-cols-3 rounded-[8px] border border-[#DDE3EE] bg-white p-1">
+          <TabsTrigger
+            value="today"
+            className="text-xs font-medium rounded-[6px] text-[#64748B] data-[state=active]:bg-[#3157D5] data-[state=active]:text-white data-[state=active]:shadow-none"
+          >
+            Hoje
+          </TabsTrigger>
+          <TabsTrigger
+            value="upcoming"
+            className="text-xs font-medium rounded-[6px] text-[#64748B] data-[state=active]:bg-[#3157D5] data-[state=active]:text-white data-[state=active]:shadow-none"
+          >
+            Próximos
+          </TabsTrigger>
+          <TabsTrigger
+            value="history"
+            className="text-xs font-medium rounded-[6px] text-[#64748B] data-[state=active]:bg-[#3157D5] data-[state=active]:text-white data-[state=active]:shadow-none"
+          >
+            Histórico
+          </TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="today" className="mt-6 space-y-4">
-            {appointments.today.length === 0 ? (
-              <p className="text-sm text-[#8a9ab5] text-center py-10 border border-dashed border-[#2a3347] rounded-[4px]">
-                NENHUM AGENDAMENTO PARA HOJE
-              </p>
-            ) : (
-              appointments.today.map((appt, idx) => (
-                <AppointmentCard key={`today-${idx}`} appt={appt} onCancelSuccess={fetchDashboardData} />
-              ))
-            )}
-          </TabsContent>
+        <TabsContent value="today" className="mt-4 space-y-3">
+          {appointments.today.length === 0 ? (
+            <EmptyHint text="Nenhum agendamento para hoje" />
+          ) : (
+            appointments.today.map((appt, idx) => (
+              <AppointmentCard key={`today-${idx}`} appt={appt} onCancelSuccess={fetchDashboardData} />
+            ))
+          )}
+        </TabsContent>
 
-          <TabsContent value="upcoming" className="mt-6 space-y-4">
-            {appointments.upcoming.length === 0 ? (
-              <p className="text-sm text-[#8a9ab5] text-center py-10 border border-dashed border-[#2a3347] rounded-[4px]">
-                NENHUM AGENDAMENTO PRÓXIMO
-              </p>
-            ) : (
-              appointments.upcoming.map((appt, idx) => (
-                <AppointmentCard key={`upcoming-${idx}`} appt={appt} onCancelSuccess={fetchDashboardData} />
-              ))
-            )}
-          </TabsContent>
+        <TabsContent value="upcoming" className="mt-4 space-y-3">
+          {appointments.upcoming.length === 0 ? (
+            <EmptyHint text="Nenhum agendamento próximo" />
+          ) : (
+            appointments.upcoming.map((appt, idx) => (
+              <AppointmentCard key={`up-${idx}`} appt={appt} onCancelSuccess={fetchDashboardData} />
+            ))
+          )}
+        </TabsContent>
 
-          <TabsContent value="history" className="mt-6 space-y-4">
-            {appointments.history.length === 0 ? (
-              <p className="text-sm text-[#8a9ab5] text-center py-10 border border-dashed border-[#2a3347] rounded-[4px]">
-                NENHUM HISTÓRICO ENCONTRADO
-              </p>
-            ) : (
-              appointments.history.map((appt, idx) => (
-                <AppointmentCard key={`history-${idx}`} appt={appt} />
-              ))
-            )}
-          </TabsContent>
-        </Tabs>
-      </div>
+        <TabsContent value="history" className="mt-4 space-y-3">
+          {appointments.history.length === 0 ? (
+            <EmptyHint text="Nenhum histórico encontrado" />
+          ) : (
+            appointments.history.map((appt, idx) => (
+              <AppointmentCard key={`h-${idx}`} appt={appt} />
+            ))
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
 
+function EmptyHint({ text }: { text: string }) {
+  return (
+    <div className="rounded-[8px] border border-dashed border-[#DDE3EE] bg-white py-8 text-center">
+      <p className="text-sm text-[#64748B]">{text}</p>
+    </div>
+  );
+}
 
 function AppointmentCard({ appt, onCancelSuccess }: { appt: Appointment, onCancelSuccess?: () => void }) {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
