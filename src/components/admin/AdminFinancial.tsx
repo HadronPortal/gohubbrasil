@@ -161,9 +161,9 @@ export default function AdminFinancial({ barbershopId }: { barbershopId: string 
 
   if (isLoading && !data) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-[#8a9ab5] font-oswald uppercase tracking-widest text-xs">
-        <TrendingUp className="w-8 h-8 mb-4 animate-pulse text-[#f0c040]" />
-        CARREGANDO FINANCEIRO...
+      <div className="flex flex-col items-center justify-center py-16 gap-3" style={{ fontFamily: "Poppins, sans-serif" }}>
+        <TrendingUp className="h-7 w-7 text-[#3157D5] animate-pulse" />
+        <p className="text-sm text-[#64748B]">Carregando financeiro...</p>
       </div>
     );
   }
@@ -171,148 +171,100 @@ export default function AdminFinancial({ barbershopId }: { barbershopId: string 
   const summary = data?.summary;
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-500">
-      <div className="space-y-4">
-        <h3 className="text-xs font-bold tracking-[0.25em] text-[#f0c040] font-oswald uppercase">Relatórios Financeiros</h3>
-        
-        {/* Period Filter */}
+    <div className="space-y-5" style={{ fontFamily: "Poppins, sans-serif" }}>
+      <div className="space-y-3">
+        <h3 className="text-base font-semibold text-[#172033]">Relatórios financeiros</h3>
+
         <div className="flex flex-wrap gap-2">
           {(["today", "yesterday", "this_month", "last_3_months", "custom"] as Period[]).map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
               className={cn(
-                "px-3 py-2 text-[9px] font-bold uppercase tracking-widest border rounded-[2px] transition-all",
-                period === p 
-                  ? "bg-[#f0c040] border-[#f0c040] text-[#1c2333]" 
-                  : "bg-[#141b2a] border-[#2a3347] text-[#8a9ab5] hover:border-[#f0c040]/50"
+                "h-9 px-3 text-xs font-medium rounded-[8px] border transition",
+                period === p
+                  ? "bg-[#3157D5] border-[#3157D5] text-white"
+                  : "bg-white border-[#DDE3EE] text-[#64748B] hover:border-[#3157D5]/40 hover:text-[#172033]"
               )}
             >
               {p === "today" && "Hoje"}
               {p === "yesterday" && "Ontem"}
-              {p === "this_month" && "Este Mês"}
-              {p === "last_3_months" && "3 Meses"}
+              {p === "this_month" && "Este mês"}
+              {p === "last_3_months" && "3 meses"}
               {p === "custom" && "Personalizado"}
             </button>
           ))}
         </div>
 
         {period === "custom" && (
-          <div className="grid grid-cols-2 gap-4 pt-2 animate-in slide-in-from-top-2 duration-300">
+          <div className="grid grid-cols-2 gap-3 pt-1">
             <div className="space-y-1">
-              <label className="text-[9px] text-[#8a9ab5] uppercase font-bold tracking-widest">Início</label>
-              <input 
-                type="date" 
+              <label className="text-xs font-medium text-[#172033]">Início</label>
+              <input
+                type="date"
                 value={customDates.start}
                 onChange={(e) => setCustomDates(prev => ({ ...prev, start: e.target.value }))}
-                className="w-full bg-[#141b2a] border border-[#2a3347] text-[#c8d4e8] text-[10px] p-2 rounded-[2px]"
+                className="w-full h-11 rounded-[8px] border border-[#DDE3EE] bg-white px-3 text-sm text-[#172033]"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[9px] text-[#8a9ab5] uppercase font-bold tracking-widest">Fim</label>
-              <input 
-                type="date" 
+              <label className="text-xs font-medium text-[#172033]">Fim</label>
+              <input
+                type="date"
                 value={customDates.end}
                 onChange={(e) => setCustomDates(prev => ({ ...prev, end: e.target.value }))}
-                className="w-full bg-[#141b2a] border border-[#2a3347] text-[#c8d4e8] text-[10px] p-2 rounded-[2px]"
+                className="w-full h-11 rounded-[8px] border border-[#DDE3EE] bg-white px-3 text-sm text-[#172033]"
               />
             </div>
           </div>
         )}
       </div>
 
-      {/* Main Stats Cards */}
-      <div className="grid grid-cols-2 gap-4">
-        <StatCard 
-          label="FATURAMENTO BRUTO" 
-          value={money(summary?.gross_revenue || 0)} 
-          icon={<TrendingUp className="w-4 h-4" />} 
-          color="text-[#f0c040]"
-        />
-        <StatCard 
-          label="COMISSÃO BARBEIROS" 
-          value={money(summary?.total_commission || 0)} 
-          icon={<Users className="w-4 h-4" />} 
-          color="text-red-400"
-        />
-        <StatCard 
-          label="LÍQUIDO BARBEARIA" 
-          value={money(summary?.net_revenue || 0)} 
-          icon={<TrendingUp className="w-4 h-4" />} 
-          color="text-green-400"
-        />
-        <StatCard 
-          label="ATENDIMENTOS" 
-          value={summary?.completed_count || 0} 
-          icon={<Scissors className="w-4 h-4" />} 
-          color="text-blue-400"
-        />
-        <StatCard 
-          label="TICKET MÉDIO" 
-          value={money(summary?.average_ticket || 0)} 
-          icon={<Ticket className="w-4 h-4" />} 
-          color="text-purple-400"
-        />
-        <StatCard 
-          label="CANCELAMENTOS" 
-          value={summary?.cancelled_count || 0} 
-          icon={<XCircle className="w-4 h-4" />} 
-          color="text-orange-400"
-        />
+      <div className="grid grid-cols-2 gap-3">
+        <StatCard label="Faturamento bruto" value={money(summary?.gross_revenue || 0)} icon={<TrendingUp className="h-4 w-4" />} accent="#3157D5" />
+        <StatCard label="Comissão profissionais" value={money(summary?.total_commission || 0)} icon={<Users className="h-4 w-4" />} accent="#DC2626" />
+        <StatCard label="Líquido estabelecimento" value={money(summary?.net_revenue || 0)} icon={<TrendingUp className="h-4 w-4" />} accent="#15803D" />
+        <StatCard label="Atendimentos" value={summary?.completed_count || 0} icon={<Scissors className="h-4 w-4" />} accent="#0EA5E9" />
+        <StatCard label="Ticket médio" value={money(summary?.average_ticket || 0)} icon={<Ticket className="h-4 w-4" />} accent="#7C3AED" />
+        <StatCard label="Cancelamentos" value={summary?.cancelled_count || 0} icon={<XCircle className="h-4 w-4" />} accent="#B45309" />
       </div>
 
-      {/* Rankings */}
-      <div className="space-y-10 pb-10">
-        {/* Barber Ranking */}
-        <div className="space-y-4">
-          <h4 className="text-[10px] font-bold tracking-widest text-[#8a9ab5] uppercase border-l-2 border-[#f0c040] pl-2">Desempenho por Barbeiro</h4>
-          <div className="space-y-3">
+      <div className="space-y-5 pb-6">
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-[#172033]">Desempenho por profissional</h4>
+          <div className="space-y-2">
             {data?.barber_ranking && data.barber_ranking.length > 0 ? (
               data.barber_ranking.map((barber, idx) => (
-                <div key={idx} className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-[#f0c040] font-oswald uppercase tracking-wider">{barber.name}</span>
-                    <span className="text-[9px] font-bold text-[#8a9ab5] uppercase tracking-widest">{barber.completed_count} ATENDIMENTOS</span>
+                <div key={idx} className="rounded-[8px] border border-[#DDE3EE] bg-white p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-[#172033] truncate">{barber.name}</span>
+                    <span className="text-xs text-[#64748B]">{barber.completed_count} atend.</span>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[#2a3347]/50">
-                    <div className="flex flex-col">
-                      <span className="text-[8px] text-[#8a9ab5] uppercase font-bold">BRUTO</span>
-                      <span className="text-[10px] font-bold text-[#c8d4e8]">{money(barber.gross_revenue)}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[8px] text-[#8a9ab5] uppercase font-bold">COMISSÃO</span>
-                      <span className="text-[10px] font-bold text-red-400/80">{money(barber.commission_total)}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[8px] text-[#8a9ab5] uppercase font-bold">LÍQUIDO</span>
-                      <span className="text-[10px] font-bold text-green-400/80">{money(barber.net_revenue)}</span>
-                    </div>
+                  <div className="grid grid-cols-3 gap-2 border-t border-[#DDE3EE] pt-2">
+                    <div><p className="text-[10px] text-[#64748B]">Bruto</p><p className="text-xs font-semibold text-[#172033]">{money(barber.gross_revenue)}</p></div>
+                    <div><p className="text-[10px] text-[#64748B]">Comissão</p><p className="text-xs font-semibold text-[#DC2626]">{money(barber.commission_total)}</p></div>
+                    <div><p className="text-[10px] text-[#64748B]">Líquido</p><p className="text-xs font-semibold text-[#15803D]">{money(barber.net_revenue)}</p></div>
                   </div>
                 </div>
               ))
-            ) : (
-              <EmptyState />
-            )}
+            ) : (<EmptyState />)}
           </div>
         </div>
 
-        {/* Service Ranking */}
-        <div className="space-y-4">
-          <h4 className="text-[10px] font-bold tracking-widest text-[#8a9ab5] uppercase border-l-2 border-[#f0c040] pl-2">Serviços mais Vendidos</h4>
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-[#172033]">Serviços mais vendidos</h4>
           <div className="space-y-2">
             {data?.service_ranking && data.service_ranking.length > 0 ? (
               data.service_ranking.map((service, idx) => (
-                <div key={idx} className="bg-[#141b2a] border border-[#2a3347] px-4 py-3 rounded-[4px] flex justify-between items-center">
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-[#c8d4e8] font-oswald uppercase tracking-wider">{service.name}</span>
-                    <span className="text-[9px] text-[#8a9ab5] font-bold uppercase tracking-widest">{service.quantity} UNIDADES</span>
+                <div key={idx} className="flex items-center justify-between rounded-[8px] border border-[#DDE3EE] bg-white px-3 py-2.5">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-[#172033]">{service.name}</p>
+                    <p className="text-xs text-[#64748B]">{service.quantity} unidades</p>
                   </div>
-                  <span className="text-xs font-bold text-[#f0c040]">{money(service.total_revenue)}</span>
+                  <span className="text-sm font-semibold text-[#3157D5]">{money(service.total_revenue)}</span>
                 </div>
               ))
-            ) : (
-              <EmptyState />
-            )}
+            ) : (<EmptyState />)}
           </div>
         </div>
       </div>
@@ -320,28 +272,24 @@ export default function AdminFinancial({ barbershopId }: { barbershopId: string 
   );
 }
 
-function StatCard({ label, value, icon, color }: { label: string; value: string | number; icon: React.ReactNode; color: string }) {
+function StatCard({ label, value, icon, accent }: { label: string; value: string | number; icon: React.ReactNode; accent: string }) {
   return (
-    <div className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] space-y-2">
+    <div className="rounded-[8px] border border-[#DDE3EE] bg-white p-3 space-y-1.5">
       <div className="flex items-center gap-2">
-        <div className={cn("p-1.5 rounded-[2px] bg-[#1c2333] border border-[#2a3347]", color)}>
+        <div className="rounded-[6px] p-1.5" style={{ backgroundColor: `${accent}15`, color: accent }}>
           {icon}
         </div>
-        <span className="text-[8px] font-bold text-[#8a9ab5] uppercase tracking-wider leading-tight">
-          {label}
-        </span>
+        <span className="text-[11px] font-medium text-[#64748B] leading-tight">{label}</span>
       </div>
-      <span className={cn("text-lg font-bold font-oswald block", color)}>
-        {value}
-      </span>
+      <p className="text-base font-semibold text-[#172033]">{value}</p>
     </div>
   );
 }
 
 function EmptyState() {
   return (
-    <div className="text-center py-10 border border-dashed border-[#2a3347] rounded-[4px]">
-      <p className="text-[10px] text-[#8a9ab5] uppercase font-bold tracking-widest">NENHUM DADO NESTE PERÍODO</p>
+    <div className="rounded-[8px] border border-dashed border-[#DDE3EE] bg-white py-8 text-center">
+      <p className="text-sm text-[#64748B]">Nenhum dado neste período.</p>
     </div>
   );
 }
