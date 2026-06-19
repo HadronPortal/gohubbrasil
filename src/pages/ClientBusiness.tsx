@@ -55,7 +55,11 @@ export default function ClientBusiness() {
         toast.error("Não foi possível carregar este estabelecimento.");
       }
       setShop(((shops || []) as Shop[]).find((item) => item.id === shopId) || null);
-      setServices(((serviceData || []) as Service[]).map((item) => ({ ...item, price: Number(item.price) || 0 })));
+      setServices(((serviceData || []) as unknown as Service[]).map((item: any) => ({
+        ...item,
+        price: Number(item.price) || 0,
+        service_catalog: Array.isArray(item.service_catalog) ? item.service_catalog[0] || null : item.service_catalog,
+      })));
       setLoading(false);
     })();
     return () => {
