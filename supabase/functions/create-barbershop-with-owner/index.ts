@@ -53,7 +53,8 @@ serve(async (req) => {
       ownerEmail, 
       ownerPhone, 
       ownerPassword,
-      ownerIsBarber: rawOwnerIsBarber
+      ownerIsBarber: rawOwnerIsBarber,
+      categoryId
     } = body
 
     const ownerIsBarber =
@@ -120,7 +121,8 @@ serve(async (req) => {
         description: description,
         payment_status: paymentStatus || "pending",
         payment_due_date: paymentDueDate || null,
-        slug: slug
+        slug: slug,
+        category_id: categoryId || null
       })
       .select()
       .single()
