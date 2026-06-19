@@ -180,7 +180,7 @@ export default function Login() {
           aria-hidden="true"
           className="h-full w-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-white/[0.25]" />
+        {/* overlay removed for full image visibility */}
       </div>
 
       {/* Scrollable content */}
@@ -280,12 +280,10 @@ export default function Login() {
                 </button>
               </div>
 
-              <div className="relative py-3">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-[#DDE3EE]" />
-                </div>
-                <div className="relative flex justify-center">
-                  <span className="bg-white px-3 text-[11px] uppercase tracking-wider text-[#718096]">
+              <div className="pt-3 pb-1">
+                <div className="h-px w-full bg-[#DDE3EE]" />
+                <div className="mt-2 flex justify-center">
+                  <span className="px-3 text-[11px] uppercase tracking-wider text-[#718096]">
                     ou continue com
                   </span>
                 </div>
