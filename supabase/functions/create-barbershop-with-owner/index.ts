@@ -54,8 +54,14 @@ serve(async (req) => {
       ownerPhone, 
       ownerPassword,
       ownerIsBarber: rawOwnerIsBarber,
-      categoryId
+      categoryId,
+      categoryIds: rawCategoryIds
     } = body
+
+    const categoryIds = Array.from(new Set(
+      [categoryId, ...(Array.isArray(rawCategoryIds) ? rawCategoryIds : [])]
+        .filter((value): value is string => typeof value === 'string' && value.length > 0)
+    ));
 
     const ownerIsBarber =
       rawOwnerIsBarber === true ||
@@ -132,6 +138,22 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       })
+    }
+
+    if (categoryIds.length > 0) {
+      const { error: categoriesError } = await supabaseAdmin
+        .from('barbershop_categories')
+        .upsert(
+          categoryIds.map((selectedCategoryId) => ({
+            barbershop_id: barbershop.id,
+            category_id: selectedCategoryId,
+          })),
+          { onConflict: 'barbershop_id,category_id' }
+        );
+
+      if (categoriesError) {
+        console.error('Error linking establishment categories:', categoriesError);
+      }
     }
 
     // 6. Update Auth User Metadata with barbershop_id

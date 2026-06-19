@@ -670,6 +670,17 @@ export default function ClientHome() {
     .toLowerCase();
 
   const nextAppt = appointments[0];
+  const nextAppointmentShop = nextAppt?.barbershop_id
+    ? barbershops.find((shop) => shop.id === nextAppt.barbershop_id)
+    : undefined;
+  const directionsUrl = nextAppointmentShop
+    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+        typeof nextAppointmentShop.latitude === "number" &&
+          typeof nextAppointmentShop.longitude === "number"
+          ? `${nextAppointmentShop.latitude},${nextAppointmentShop.longitude}`
+          : nextAppointmentShop.address || nextAppointmentShop.name,
+      )}`
+    : null;
 
   if (authLoading) return <LoadingScreen />;
 
@@ -791,10 +802,7 @@ export default function ClientHome() {
             {loadingAppts ? (
               <Skeleton className="h-24 w-full rounded-[8px]" />
             ) : nextAppt ? (
-              <button
-                onClick={() => navigate(`/barbers?barbershopId=${nextAppt.barbershop_id}`)}
-                className="select-none w-full text-left bg-white border border-slate-100 rounded-[8px] p-4 hover:border-indigo-200 transition shadow-sm"
-              >
+              <div className="w-full bg-white border border-slate-100 rounded-[8px] p-4 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs text-[#4338CA] font-semibold uppercase tracking-wide">
@@ -817,7 +825,22 @@ export default function ClientHome() {
                     </span>
                   </div>
                 </div>
-              </button>
+                <div className="mt-3 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+                  <span className="text-xs font-semibold text-slate-500">
+                    R$ {Number(nextAppt.price || 0).toFixed(2).replace(".", ",")}
+                  </span>
+                  {directionsUrl && (
+                    <a
+                      href={directionsUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-[#3157D5] px-4 text-xs font-bold text-white"
+                    >
+                      <MapPin className="h-4 w-4" /> Como chegar
+                    </a>
+                  )}
+                </div>
+              </div>
             ) : (
               <div className="bg-white border border-dashed border-slate-200 rounded-[8px] p-5 text-center">
                 <Calendar className="w-7 h-7 text-slate-300 mx-auto mb-2" />

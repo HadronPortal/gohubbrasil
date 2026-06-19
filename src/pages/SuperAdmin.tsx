@@ -77,6 +77,7 @@ interface Barbershop {
   blocked: boolean;
   created_at?: string | null;
   category_id?: string | null;
+  category_ids?: string[];
   owner?: { name: string; phone?: string } | null;
 }
 
@@ -178,6 +179,7 @@ export default function SuperAdmin() {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [createMonthlyPrice, setCreateMonthlyPrice] = useState("");
   const [createCategoryId, setCreateCategoryId] = useState<string>("");
+  const [createAdditionalCategoryIds, setCreateAdditionalCategoryIds] = useState<string[]>([]);
   const [createAddress, setCreateAddress] = useState<AddressData>(emptyAddress);
   const [ownerIsBarber, setOwnerIsBarber] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -188,6 +190,7 @@ export default function SuperAdmin() {
   const [editLogoPreview, setEditLogoPreview] = useState<string | null>(null);
   const [editMonthlyPrice, setEditMonthlyPrice] = useState("");
   const [editCategoryId, setEditCategoryId] = useState<string>("");
+  const [editAdditionalCategoryIds, setEditAdditionalCategoryIds] = useState<string[]>([]);
   const [editAddress, setEditAddress] = useState<AddressData>(emptyAddress);
 
   // Delete
@@ -255,10 +258,20 @@ export default function SuperAdmin() {
 
       if (error) throw error;
 
+      const { data: categoryLinks, error: categoryLinksError } = await (supabase as any)
+        .from("barbershop_categories")
+        .select("barbershop_id,category_id");
+      if (categoryLinksError) {
+        console.warn("Não foi possível carregar categorias adicionais:", categoryLinksError);
+      }
+
       const formatted: Barbershop[] = (shops || []).map((shop: any) => {
         const ownerUser = shop.users?.find((u: any) => u.role === "owner") || shop.users?.[0];
         return {
           ...shop,
+          category_ids: (categoryLinks || [])
+            .filter((link: any) => link.barbershop_id === shop.id)
+            .map((link: any) => link.category_id),
           owner: ownerUser ? { name: ownerUser.name, phone: ownerUser.phone } : null,
         };
       });
@@ -290,8 +303,10 @@ export default function SuperAdmin() {
         if (!haystack.includes(q)) return false;
       }
       if (categoryFilter !== "all") {
-        const slug = categoryIdToSlug[shop.category_id || ""] || "barbearias";
-        if (slug !== categoryFilter) return false;
+        const selectedSlugs = Array.from(
+          new Set([shop.category_id, ...(shop.category_ids || [])].filter(Boolean)),
+        ).map((categoryId) => categoryIdToSlug[categoryId as string] || "barbearias");
+        if (!selectedSlugs.includes(categoryFilter)) return false;
       }
       if (statusFilter !== "all" && resolveStatus(shop) !== statusFilter) return false;
       if (blockedFilter === "blocked" && !shop.blocked) return false;
@@ -402,6 +417,7 @@ export default function SuperAdmin() {
             ownerPassword: formData.get("owner_password") as string,
             ownerIsBarber: Boolean(ownerIsBarber),
             categoryId: createCategoryId,
+            categoryIds: Array.from(new Set([createCategoryId, ...createAdditionalCategoryIds])),
           },
         },
       );
@@ -423,6 +439,7 @@ export default function SuperAdmin() {
       setOwnerIsBarber(false);
       setCreateMonthlyPrice("");
       setCreateCategoryId("");
+      setCreateAdditionalCategoryIds([]);
       setCreateAddress(emptyAddress);
       fetchBarbershops();
     } catch (error: any) {
@@ -481,6 +498,25 @@ export default function SuperAdmin() {
         .eq("id", editingBarbershop.id);
 
       if (error) throw error;
+
+      const selectedCategoryIds = Array.from(
+        new Set([editCategoryId, ...editAdditionalCategoryIds]),
+      );
+      const { error: deleteCategoriesError } = await (supabase as any)
+        .from("barbershop_categories")
+        .delete()
+        .eq("barbershop_id", editingBarbershop.id);
+      if (deleteCategoriesError) throw deleteCategoriesError;
+
+      const { error: insertCategoriesError } = await (supabase as any)
+        .from("barbershop_categories")
+        .insert(
+          selectedCategoryIds.map((categoryId) => ({
+            barbershop_id: editingBarbershop.id,
+            category_id: categoryId,
+          })),
+        );
+      if (insertCategoriesError) throw insertCategoriesError;
 
       toast.success("Estabelecimento atualizado");
       setEditingBarbershop(null);
@@ -867,6 +903,11 @@ export default function SuperAdmin() {
                               setEditLogoPreview(shop.logo_url);
                               setEditMonthlyPrice(fmtBRL(shop.monthly_price));
                               setEditCategoryId(shop.category_id || "");
+                              setEditAdditionalCategoryIds(
+                                (shop.category_ids || []).filter(
+                                  (categoryId) => categoryId !== shop.category_id,
+                                ),
+                              );
                               setEditAddress({ ...emptyAddress, street: shop.address || "" });
                             }}
                           >
@@ -968,6 +1009,32 @@ export default function SuperAdmin() {
                   {categoriesError && (
                     <p className="mt-1 text-[11px] text-[#B91C1C]">{categoriesError}</p>
                   )}
+                </Field>
+
+                <Field label="Categorias adicionais" htmlFor="additional_categories">
+                  <div id="additional_categories" className="grid grid-cols-2 gap-2 rounded-[8px] border border-[#DDE3EE] bg-[#F8FAFC] p-3">
+                    {categories
+                      .filter((category) => category.id !== createCategoryId)
+                      .map((category) => {
+                        const checked = createAdditionalCategoryIds.includes(category.id);
+                        return (
+                          <label key={category.id} className="flex min-h-10 cursor-pointer items-center gap-2 text-xs text-[#172033]">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => setCreateAdditionalCategoryIds((current) =>
+                                checked
+                                  ? current.filter((id) => id !== category.id)
+                                  : [...current, category.id]
+                              )}
+                              className="h-4 w-4 rounded border-[#CBD5E1] text-[#3157D5] focus:ring-[#3157D5]"
+                            />
+                            {displayCategoryName(category.slug, category.name)}
+                          </label>
+                        );
+                      })}
+                  </div>
+                  <p className="mt-1 text-[11px] text-[#64748B]">Selecione todas as áreas em que o estabelecimento atende.</p>
                 </Field>
 
                 <AddressFields value={createAddress} onChange={setCreateAddress} idPrefix="create_addr" />
@@ -1145,6 +1212,30 @@ export default function SuperAdmin() {
                     ))}
                   </SelectContent>
                 </Select>
+              </Field>
+              <Field label="Categorias adicionais" htmlFor="edit_additional_categories">
+                <div id="edit_additional_categories" className="grid grid-cols-2 gap-2 rounded-[8px] border border-[#DDE3EE] bg-[#F8FAFC] p-3 md:col-span-2">
+                  {categories
+                    .filter((category) => category.id !== editCategoryId)
+                    .map((category) => {
+                      const checked = editAdditionalCategoryIds.includes(category.id);
+                      return (
+                        <label key={category.id} className="flex min-h-10 cursor-pointer items-center gap-2 text-xs text-[#172033]">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => setEditAdditionalCategoryIds((current) =>
+                              checked
+                                ? current.filter((id) => id !== category.id)
+                                : [...current, category.id]
+                            )}
+                            className="h-4 w-4 rounded border-[#CBD5E1] text-[#3157D5] focus:ring-[#3157D5]"
+                          />
+                          {displayCategoryName(category.slug, category.name)}
+                        </label>
+                      );
+                    })}
+                </div>
               </Field>
               <Field label="Valor mensal" htmlFor="edit_monthly">
                 <Input
