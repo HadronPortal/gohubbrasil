@@ -77,6 +77,7 @@ export default function ClientCategory() {
   const [shops, setShops] = useState<Shop[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [location] = useState<SavedLocation | null>(() => {
     try {
       return JSON.parse(localStorage.getItem("gohub_location_v2") || "null");
@@ -99,6 +100,7 @@ export default function ClientCategory() {
     let active = true;
     (async () => {
       setLoading(true);
+      setLoadError(null);
       const [{ data: shopData, error: shopError }, { data: serviceData, error: serviceError }] =
         await Promise.all([
           supabase.rpc("get_available_barbershops"),
@@ -107,9 +109,15 @@ export default function ClientCategory() {
       if (!active) return;
       if (shopError) {
         console.error("Erro ao carregar estabelecimentos:", shopError);
+        setLoadError(shopError.message || "Erro ao carregar estabelecimentos");
+        setLoading(false);
+        return;
       }
       if (serviceError) {
         console.error("Erro ao carregar serviços:", serviceError);
+      }
+      if (import.meta.env.DEV) {
+        console.log("[ClientCategory] get_available_barbershops →", shopData);
       }
       setShops((shopData || []) as Shop[]);
       setServices((serviceData || []) as Service[]);
@@ -140,7 +148,8 @@ export default function ClientCategory() {
           .join(" ")
           .toLocaleLowerCase("pt-BR");
         const matchesCategory =
-          category.id === "todos" || (shop.category_slug || "") === category.id;
+          category.id === "todos" ||
+          (shop.category_slug || "barbearias") === category.id;
         const matchesSubcategory = !subcategory || content.includes(subcategory.toLocaleLowerCase("pt-BR"));
         const matchesSearch = !normalizedQuery || content.includes(normalizedQuery);
         const minPrice = shopServices.length
@@ -156,6 +165,21 @@ export default function ClientCategory() {
         return { shop, services: shopServices, minPrice, distance, matchesCategory, matchesSubcategory, matchesSearch };
       })
       .filter((item) => item.matchesCategory && item.matchesSubcategory && item.matchesSearch);
+
+    if (import.meta.env.DEV) {
+      const afterCategory = shops.filter((s) =>
+        category.id === "todos" || (s.category_slug || "barbearias") === category.id,
+      ).length;
+      console.log({
+        categorySlug: category.id,
+        shopsReturned: shops.length,
+        selectedSubcategory: subcategory,
+        activeFilters: filters,
+        searchQuery: query,
+        afterCategory,
+        finalCount: result.length,
+      });
+    }
 
     return result.sort((a, b) => {
       if (filters.includes("price")) return (a.minPrice ?? Infinity) - (b.minPrice ?? Infinity);
@@ -314,6 +338,19 @@ export default function ClientCategory() {
                   </button>
                 );
               })}
+              {(filters.length > 0 || subcategory || query) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFilters([]);
+                    setSubcategory(null);
+                    setQuery("");
+                  }}
+                  className="h-9 shrink-0 rounded-full border border-slate-200 bg-white px-3 text-xs font-semibold text-[#3157D5]"
+                >
+                  Limpar
+                </button>
+              )}
             </div>
           </section>
 
@@ -329,6 +366,13 @@ export default function ClientCategory() {
             {loading ? (
               <div className="no-scrollbar flex gap-3 overflow-hidden px-4">
                 {[1, 2].map((item) => <Skeleton key={item} className="h-64 w-[82%] shrink-0" />)}
+              </div>
+            ) : loadError ? (
+              <div className="px-4">
+                <div className="rounded-[8px] border border-red-200 bg-red-50 p-6 text-center">
+                  <p className="text-sm font-semibold text-red-700">Erro ao carregar estabelecimentos</p>
+                  <p className="mt-1 text-xs text-red-600">{loadError}</p>
+                </div>
               </div>
             ) : stores.length === 0 ? (
               <div className="px-4">
