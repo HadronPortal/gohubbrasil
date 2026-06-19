@@ -59,6 +59,7 @@ import {
   ESTABLISHMENT_CATEGORIES,
   getCategoryMeta,
 } from "@/lib/establishmentCategories";
+import { AddressFields, AddressData, emptyAddress, composeAddress } from "@/components/admin/AddressFields";
 import gohubLogo from "@/assets/login/gohub-logo.png";
 
 interface Barbershop {
@@ -175,7 +176,8 @@ export default function SuperAdmin() {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [createMonthlyPrice, setCreateMonthlyPrice] = useState("");
-  const [createCategory, setCreateCategory] = useState("barbearias");
+  const [createCategoryId, setCreateCategoryId] = useState<string>("");
+  const [createAddress, setCreateAddress] = useState<AddressData>(emptyAddress);
   const [ownerIsBarber, setOwnerIsBarber] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -184,7 +186,8 @@ export default function SuperAdmin() {
   const [editLogoFile, setEditLogoFile] = useState<File | null>(null);
   const [editLogoPreview, setEditLogoPreview] = useState<string | null>(null);
   const [editMonthlyPrice, setEditMonthlyPrice] = useState("");
-  const [editCategory, setEditCategory] = useState("barbearias");
+  const [editCategoryId, setEditCategoryId] = useState<string>("");
+  const [editAddress, setEditAddress] = useState<AddressData>(emptyAddress);
 
   // Delete
   const [deletingShop, setDeletingShop] = useState<Barbershop | null>(null);
@@ -204,9 +207,14 @@ export default function SuperAdmin() {
   const [blockedFilter, setBlockedFilter] = useState("all");
   const [sortBy, setSortBy] = useState<"name" | "paid_until" | "created_at">("name");
 
-  // Category catalog from DB: id <-> slug
-  const [categorySlugToId, setCategorySlugToId] = useState<Record<string, string>>({});
-  const [categoryIdToSlug, setCategoryIdToSlug] = useState<Record<string, string>>({});
+  // Category catalog from DB (UUID is source of truth)
+  type CategoryRow = { id: string; slug: string; name: string };
+  const [categories, setCategories] = useState<CategoryRow[]>([]);
+  const categoryIdToSlug = useMemo(() => {
+    const m: Record<string, string> = {};
+    categories.forEach((c) => (m[c.id] = c.slug));
+    return m;
+  }, [categories]);
 
   useEffect(() => {
     if (isSuperAdmin) {
@@ -218,20 +226,14 @@ export default function SuperAdmin() {
   const fetchCategories = async () => {
     const { data, error } = await supabase
       .from("business_categories")
-      .select("id, slug")
-      .eq("active", true);
+      .select("id, slug, name")
+      .eq("active", true)
+      .order("name");
     if (error) {
       console.error("Error fetching categories:", error);
       return;
     }
-    const s2i: Record<string, string> = {};
-    const i2s: Record<string, string> = {};
-    (data || []).forEach((c: any) => {
-      s2i[c.slug] = c.id;
-      i2s[c.id] = c.slug;
-    });
-    setCategorySlugToId(s2i);
-    setCategoryIdToSlug(i2s);
+    setCategories((data || []) as CategoryRow[]);
   };
 
   const fetchBarbershops = async () => {
@@ -366,20 +368,21 @@ export default function SuperAdmin() {
       let subscriptionStatus = (formData.get("subscription_status") as string) || "trialing";
       if (paidUntilValue) subscriptionStatus = "active";
 
-      const categoryId = categorySlugToId[createCategory];
-      if (!categoryId) {
-        toast.error("Selecione uma categoria válida.");
+      if (!createCategoryId) {
+        toast.error("Selecione uma categoria.");
         setIsSubmitting(false);
         return;
       }
+
+      const addressString = composeAddress(createAddress);
 
       const { data: response, error } = await supabase.functions.invoke(
         "create-barbershop-with-owner",
         {
           body: {
             barbershopName: formData.get("barbershop_name") as string,
-            address: formData.get("barbershop_address") as string,
-            phone: formData.get("barbershop_phone") as string,
+            barbershopAddress: addressString,
+            barbershopPhone: formData.get("barbershop_phone") as string,
             logoUrl,
             description: formData.get("description") as string,
             subscriptionStatus,
@@ -390,7 +393,7 @@ export default function SuperAdmin() {
             ownerPhone: formData.get("owner_phone") as string,
             ownerPassword: formData.get("owner_password") as string,
             ownerIsBarber: Boolean(ownerIsBarber),
-            categoryId,
+            categoryId: createCategoryId,
           },
         },
       );
@@ -411,7 +414,8 @@ export default function SuperAdmin() {
       setLogoPreview(null);
       setOwnerIsBarber(false);
       setCreateMonthlyPrice("");
-      setCreateCategory("barbearias");
+      setCreateCategoryId("");
+      setCreateAddress(emptyAddress);
       fetchBarbershops();
     } catch (error: any) {
       toast.error(error.message || "Erro inesperado ao cadastrar estabelecimento.");
@@ -444,18 +448,19 @@ export default function SuperAdmin() {
       let logoUrl = editingBarbershop.logo_url;
       if (editLogoFile) logoUrl = await uploadLogo(editLogoFile);
 
-      const newCategoryId = categorySlugToId[editCategory];
-      if (!newCategoryId) {
-        toast.error("Selecione uma categoria válida.");
+      if (!editCategoryId) {
+        toast.error("Selecione uma categoria.");
         setIsSubmitting(false);
         return;
       }
+
+      const addressString = composeAddress(editAddress) || (editingBarbershop.address || "");
 
       const { error } = await supabase
         .from("barbershops")
         .update({
           name: formData.get("name") as string,
-          address: formData.get("address") as string,
+          address: addressString,
           phone: formData.get("phone") as string,
           description: formData.get("description") as string,
           subscription_status: subscriptionStatus,
@@ -463,7 +468,7 @@ export default function SuperAdmin() {
           paid_until: paidUntilValue || null,
           blocked,
           logo_url: logoUrl,
-          category_id: newCategoryId,
+          category_id: editCategoryId,
         })
         .eq("id", editingBarbershop.id);
 
@@ -853,7 +858,8 @@ export default function SuperAdmin() {
                               setEditingBarbershop(shop);
                               setEditLogoPreview(shop.logo_url);
                               setEditMonthlyPrice(fmtBRL(shop.monthly_price));
-                              setEditCategory(categoryIdToSlug[shop.category_id || ""] || "barbearias");
+                              setEditCategoryId(shop.category_id || "");
+                              setEditAddress({ ...emptyAddress, street: shop.address || "" });
                             }}
                           >
                             <Pencil className="h-4 w-4" />
@@ -930,23 +936,21 @@ export default function SuperAdmin() {
                 </Field>
 
                 <Field label="Categoria" htmlFor="category">
-                  <Select value={createCategory} onValueChange={setCreateCategory}>
+                  <Select value={createCategoryId} onValueChange={setCreateCategoryId}>
                     <SelectTrigger id="category" className={inputClass}>
-                      <SelectValue />
+                      <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
                     <SelectContent className="border border-[#DDE3EE] bg-white text-[#172033] shadow-lg rounded-[8px]">
-                      {ESTABLISHMENT_CATEGORIES.map((c) => (
+                      {categories.map((c) => (
                         <SelectItem className="text-[#172033] focus:bg-[#EAF0FF] focus:text-[#3157D5] data-[state=checked]:bg-[#EAF0FF] data-[state=checked]:text-[#3157D5]" key={c.id} value={c.id}>
-                          {c.label}
+                          {c.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </Field>
 
-                <Field label="Endereço" htmlFor="barbershop_address">
-                  <Input id="barbershop_address" name="barbershop_address" required className={inputClass} />
-                </Field>
+                <AddressFields value={createAddress} onChange={setCreateAddress} idPrefix="create_addr" />
 
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Telefone" htmlFor="barbershop_phone">
@@ -1103,14 +1107,14 @@ export default function SuperAdmin() {
                 <Input id="edit_name" name="name" defaultValue={editingBarbershop?.name} className={inputClass} />
               </Field>
               <Field label="Categoria" htmlFor="edit_category">
-                <Select value={editCategory} onValueChange={setEditCategory}>
+                <Select value={editCategoryId} onValueChange={setEditCategoryId}>
                   <SelectTrigger id="edit_category" className={inputClass}>
-                    <SelectValue />
+                    <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
                   <SelectContent className="border border-[#DDE3EE] bg-white text-[#172033] shadow-lg rounded-[8px]">
-                    {ESTABLISHMENT_CATEGORIES.map((c) => (
+                    {categories.map((c) => (
                       <SelectItem className="text-[#172033] focus:bg-[#EAF0FF] focus:text-[#3157D5] data-[state=checked]:bg-[#EAF0FF] data-[state=checked]:text-[#3157D5]" key={c.id} value={c.id}>
-                        {c.label}
+                        {c.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1165,14 +1169,13 @@ export default function SuperAdmin() {
                 />
               </Field>
               <div className="md:col-span-2">
-                <Field label="Endereço" htmlFor="edit_address">
-                  <Input
-                    id="edit_address"
-                    name="address"
-                    defaultValue={editingBarbershop?.address || ""}
-                    className={inputClass}
-                  />
-                </Field>
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-[#172033]">Endereço</p>
+                  {editingBarbershop?.address && (
+                    <p className="text-[11px] text-[#64748B]">Atual: {editingBarbershop.address}</p>
+                  )}
+                  <AddressFields value={editAddress} onChange={setEditAddress} idPrefix="edit_addr" />
+                </div>
               </div>
               <div className="md:col-span-2">
                 <Field label="Descrição" htmlFor="edit_description">
