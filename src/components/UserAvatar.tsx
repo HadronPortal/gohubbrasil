@@ -19,9 +19,9 @@ export function UserAvatar({ name, email, avatarUrl, size = "md", className }: U
   };
 
   return (
-    <Avatar className={cn(sizeClasses[size], "border border-[#f0c040] shadow-[0_0_15px_rgba(240,192,64,0.1)]", className)}>
+    <Avatar className={cn(sizeClasses[size], "border border-[#C7D6FF] bg-[#EAF0FF]", className)}>
       <AvatarImage src={avatarUrl || undefined} alt={name || "User"} className="object-cover" />
-      <AvatarFallback className="bg-[#141b2a] text-[#f0c040] font-oswald font-bold">
+      <AvatarFallback className="bg-[#EAF0FF] text-[#3157D5] font-semibold">
         {getInitial(name, email)}
       </AvatarFallback>
     </Avatar>
