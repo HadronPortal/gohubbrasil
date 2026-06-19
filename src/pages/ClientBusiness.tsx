@@ -7,6 +7,7 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 import { ClientBottomNav } from "@/components/client/ClientBottomNav";
 import { getCategoryBySlug } from "@/lib/clientCategories";
 import { getServiceVisual } from "@/lib/serviceVisuals";
+import "@/lib/serviceIcons";
 
 type Shop = {
   id: string;
@@ -23,6 +24,7 @@ type Service = {
   price: number;
   duration?: number | null;
   duration_minutes?: number | null;
+  icon_key?: string | null;
 };
 
 export default function ClientBusiness() {
@@ -146,7 +148,7 @@ export default function ClientBusiness() {
                       >
                         <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[8px] bg-slate-50">
                           <img
-                            src={getServiceVisual(service.name, category.id).image}
+                            src={getServiceVisual(service.icon_key || service.name, category.id).image}
                             alt=""
                             loading="lazy"
                             width={48}

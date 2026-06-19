@@ -305,6 +305,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           duration_minutes: number
+          icon_key: string | null
           id: string
           name: string
           price: number
@@ -315,6 +316,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           duration_minutes?: number
+          icon_key?: string | null
           id?: string
           name: string
           price: number
@@ -325,6 +327,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           duration_minutes?: number
+          icon_key?: string | null
           id?: string
           name?: string
           price?: number
