@@ -24,6 +24,7 @@ type Service = {
   price: number;
   duration?: number | null;
   duration_minutes?: number | null;
+  icon_key?: string | null;
 };
 
 export default function ClientBusiness() {
