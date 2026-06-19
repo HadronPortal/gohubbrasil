@@ -46,6 +46,11 @@ import podologiaCalosidades from "@/assets/services/podologia-calosidades.png";
 import podologiaReflexologia from "@/assets/services/podologia-reflexologia.png";
 import podologiaSpa from "@/assets/services/podologia-spa.png";
 
+// Massoterapia — biblioteca dedicada
+import massoAuriculo from "@/assets/services/massoterapia/auriculoterapia.png";
+import massoVentosa from "@/assets/services/massoterapia/ventosaterapia.png";
+import massoReflexo from "@/assets/services/massoterapia/reflexologia.png";
+
 export type IconEntry = {
   key: string;
   label: string;
@@ -85,6 +90,9 @@ export const ICON_LIBRARY: IconEntry[] = [
   { key: "massagem-desportiva", label: "Massagem desportiva", image: massagemDesportiva, category: "massoterapia", aliases: ["desportiva", "esportiva"] },
   { key: "drenagem-linfatica-massagem", label: "Drenagem linfática", image: massagemDrenagem, category: "massoterapia", aliases: ["drenagem", "drenagem linfatica"] },
   { key: "pedras-quentes", label: "Pedras quentes", image: massagemPedras, category: "massoterapia", aliases: ["pedras"] },
+  { key: "auriculoterapia", label: "Auriculoterapia", image: massoAuriculo, category: "massoterapia", aliases: ["auricular", "acupuntura auricular"] },
+  { key: "ventosaterapia", label: "Ventosaterapia", image: massoVentosa, category: "massoterapia", aliases: ["ventosa", "cupping"] },
+  { key: "reflexologia-massoterapia", label: "Reflexologia (massoterapia)", image: massoReflexo, category: "massoterapia", aliases: ["reflexologia podal", "reflexo"] },
   // Sobrancelhas e cílios
   { key: "design-sobrancelhas", label: "Design de sobrancelhas", image: sobrancelhasDesign, category: "sobrancelhas", aliases: ["design", "sobrancelhas"] },
   { key: "henna", label: "Henna", image: sobrancelhasHenna, category: "sobrancelhas" },
