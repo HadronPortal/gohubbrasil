@@ -366,6 +366,13 @@ export default function SuperAdmin() {
       let subscriptionStatus = (formData.get("subscription_status") as string) || "trialing";
       if (paidUntilValue) subscriptionStatus = "active";
 
+      const categoryId = categorySlugToId[createCategory];
+      if (!categoryId) {
+        toast.error("Selecione uma categoria válida.");
+        setIsSubmitting(false);
+        return;
+      }
+
       const { data: response, error } = await supabase.functions.invoke(
         "create-barbershop-with-owner",
         {
@@ -383,6 +390,7 @@ export default function SuperAdmin() {
             ownerPhone: formData.get("owner_phone") as string,
             ownerPassword: formData.get("owner_password") as string,
             ownerIsBarber: Boolean(ownerIsBarber),
+            categoryId,
           },
         },
       );
@@ -396,10 +404,6 @@ export default function SuperAdmin() {
         return;
       }
 
-      // Persist category locally
-      const newId = response?.barbershop_id || response?.id;
-      if (newId) setShopCategory(newId, createCategory);
-
       toast.success("Estabelecimento cadastrado com sucesso");
       setIsCreateModalOpen(false);
       (e.target as HTMLFormElement).reset();
@@ -407,7 +411,7 @@ export default function SuperAdmin() {
       setLogoPreview(null);
       setOwnerIsBarber(false);
       setCreateMonthlyPrice("");
-      setCreateCategory("barbearia");
+      setCreateCategory("barbearias");
       fetchBarbershops();
     } catch (error: any) {
       toast.error(error.message || "Erro inesperado ao cadastrar estabelecimento.");
@@ -440,6 +444,13 @@ export default function SuperAdmin() {
       let logoUrl = editingBarbershop.logo_url;
       if (editLogoFile) logoUrl = await uploadLogo(editLogoFile);
 
+      const newCategoryId = categorySlugToId[editCategory];
+      if (!newCategoryId) {
+        toast.error("Selecione uma categoria válida.");
+        setIsSubmitting(false);
+        return;
+      }
+
       const { error } = await supabase
         .from("barbershops")
         .update({
@@ -452,12 +463,11 @@ export default function SuperAdmin() {
           paid_until: paidUntilValue || null,
           blocked,
           logo_url: logoUrl,
+          category_id: newCategoryId,
         })
         .eq("id", editingBarbershop.id);
 
       if (error) throw error;
-
-      setShopCategory(editingBarbershop.id, editCategory);
 
       toast.success("Estabelecimento atualizado");
       setEditingBarbershop(null);
