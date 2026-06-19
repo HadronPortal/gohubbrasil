@@ -51,3 +51,28 @@ export function getCategoryMeta(id: string): EstablishmentCategory {
     ESTABLISHMENT_CATEGORIES.find((c) => c.id === id) || ESTABLISHMENT_CATEGORIES[0]
   );
 }
+
+/**
+ * Canonical pt-BR display name per category slug.
+ * Used to normalize category names that may arrive mojibake-encoded
+ * (e.g. "DepilaÃ§Ã£o") from the database. Display-only, never altered upstream.
+ */
+export const CATEGORY_SLUG_LABELS: Record<string, string> = {
+  barbearias: "Barbearias",
+  cabelos: "Cabelos",
+  unhas: "Unhas",
+  estetica: "Estética",
+  massoterapia: "Massoterapia",
+  sobrancelhas: "Sobrancelhas",
+  maquiagem: "Maquiagem",
+  depilacao: "Depilação",
+  podologia: "Podologia",
+};
+
+export function displayCategoryName(
+  slug?: string | null,
+  fallback: string = "",
+): string {
+  if (slug && CATEGORY_SLUG_LABELS[slug]) return CATEGORY_SLUG_LABELS[slug];
+  return fallback || slug || "";
+}

@@ -58,6 +58,7 @@ import { cn } from "@/lib/utils";
 import {
   ESTABLISHMENT_CATEGORIES,
   getCategoryMeta,
+  displayCategoryName,
 } from "@/lib/establishmentCategories";
 import { AddressFields, AddressData, emptyAddress, composeAddress } from "@/components/admin/AddressFields";
 import gohubLogo from "@/assets/login/gohub-logo.png";
