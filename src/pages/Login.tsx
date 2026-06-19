@@ -164,7 +164,7 @@ export default function Login() {
 
   return (
     <div
-      className="relative w-full min-h-[100dvh] overflow-x-hidden"
+      className="gohub-client relative w-full min-h-[100dvh] overflow-x-hidden"
       style={{
         paddingTop: "env(safe-area-inset-top)",
         paddingBottom: "env(safe-area-inset-bottom)",
@@ -280,13 +280,12 @@ export default function Login() {
                 </button>
               </div>
 
-              <div className="pt-3 pb-1">
-                <div className="h-px w-full bg-[#DDE3EE]" />
-                <div className="mt-2 flex justify-center">
-                  <span className="px-3 text-[11px] uppercase tracking-wider text-[#718096]">
-                    ou continue com
-                  </span>
-                </div>
+              <div className="flex items-center gap-3 py-3">
+                <div className="h-px flex-1 bg-[#111827] dark:bg-white/70" />
+                <span className="text-[11px] uppercase tracking-wider text-[#475569] dark:text-white/70">
+                  ou continue com
+                </span>
+                <div className="h-px flex-1 bg-[#111827] dark:bg-white/70" />
               </div>
 
               <Button
