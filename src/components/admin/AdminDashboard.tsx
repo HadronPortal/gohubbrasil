@@ -297,22 +297,22 @@ function AppointmentCard({ appt, onCancelSuccess }: { appt: Appointment, onCance
   const getStatusInfo = (status: string, client_attended?: boolean) => {
     const s = status.toLowerCase();
     if (s === "no_show" || (s === "completed" && client_attended === false)) {
-      return { label: "NÃO COMPARECEU", color: "text-orange-500 border-orange-500/30 bg-orange-500/10" };
+      return { label: "Não compareceu", color: "text-[#B45309] border-[#FEF3E2] bg-[#FEF3E2]" };
     }
     switch (s) {
       case "pending": 
-        return { label: "PENDENTE", color: "text-yellow-500 border-yellow-500/30 bg-yellow-500/10" };
+        return { label: "Pendente", color: "text-[#B45309] border-[#FEF3E2] bg-[#FEF3E2]" };
       case "confirmed": 
-        return { label: "CONFIRMADO", color: "text-green-500 border-green-500/30 bg-green-500/10" };
+        return { label: "Confirmado", color: "text-[#15803D] border-[#E7F7EE] bg-[#E7F7EE]" };
       case "cancelled": 
       case "canceled":
       case "cancelado":
-        return { label: "CANCELADO", color: "text-red-500 border-red-500/30 bg-red-500/10" };
+        return { label: "Cancelado", color: "text-[#B91C1C] border-[#FDECEC] bg-[#FDECEC]" };
       case "completed":
       case "finalizado":
-        return { label: "FINALIZADO", color: "text-blue-500 border-blue-500/30 bg-blue-500/10" };
+        return { label: "Finalizado", color: "text-[#3157D5] border-[#E8EEFD] bg-[#E8EEFD]" };
       default: 
-        return { label: status.toUpperCase(), color: "text-gray-500 border-gray-500/30 bg-gray-500/10" };
+        return { label: status, color: "text-[#475569] border-[#EEF1F6] bg-[#EEF1F6]" };
     }
   };
 
@@ -372,146 +372,123 @@ function AppointmentCard({ appt, onCancelSuccess }: { appt: Appointment, onCance
   const canBeFinished = ["pending", "confirmed"].includes(appt.status.toLowerCase());
 
   return (
-    <div className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] space-y-3">
-      <div className="flex justify-between items-start">
-        <div className="flex gap-3 items-center">
-          <UserAvatar 
-            name={appt.client_name} 
-            avatarUrl={null} 
-            size="sm" 
-            className="border-[#f0c040]/30" 
-          />
-          <div>
-            <h4 className="text-sm font-bold text-[#c8d4e8] font-oswald uppercase tracking-wider">
-              {appt.client_name}
-            </h4>
-
+    <div className="rounded-[8px] border border-[#DDE3EE] bg-white p-4 space-y-3" style={{ fontFamily: "Poppins, sans-serif" }}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-3 min-w-0">
+          <UserAvatar name={appt.client_name} avatarUrl={null} size="sm" className="border-[#DDE3EE]" />
+          <div className="min-w-0">
+            <h4 className="truncate text-sm font-semibold text-[#172033]">{appt.client_name}</h4>
             {appt.client_phone && (
-              <p className="text-[10px] text-[#8a9ab5] tracking-widest">
-                {appt.client_phone}
-              </p>
+              <p className="text-xs text-[#64748B]">{appt.client_phone}</p>
             )}
           </div>
         </div>
-        <div className="flex flex-col items-end gap-2">
-          <span className={`text-[9px] font-bold px-2 py-1 rounded-[2px] border uppercase tracking-widest ${getStatusInfo(appt.status, (appt as any).client_attended).color}`}>
-            {getStatusInfo(appt.status, (appt as any).client_attended).label}
-          </span>
-          {isCancelable && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsCancelModalOpen(true)}
-              className="h-7 text-[8px] text-red-500 hover:text-white hover:bg-red-500/20 font-bold uppercase tracking-widest border border-red-500/20 px-2 flex items-center gap-1"
-            >
-              <Trash2 className="w-3 h-3" />
-              CANCELAR
-            </Button>
-          )}
-        </div>
-      </div>
-      
-      <div className="py-2 px-3 bg-[#1c2333] rounded-[4px] border border-[#2a3347]/30">
-        <p className="text-[10px] text-[#8a9ab5] uppercase tracking-widest flex justify-between">
-          <span>{appt.service_name}</span>
-          <span className="text-[#c8d4e8] font-bold">{appt.barber_name}</span>
-        </p>
-      </div>
-
-      <div className="pt-2 border-t border-[#2a3347]/50 flex justify-between items-center">
-        <div className="flex flex-col">
-          <span className="text-lg font-bold text-[#f0c040] font-oswald">
-            {format(new Date(appt.starts_at), "HH:mm")}
-          </span>
-          <span className="text-[9px] text-[#8a9ab5] uppercase tracking-widest">
-            {format(new Date(appt.starts_at), "dd/MM/yyyy")}
-          </span>
-        </div>
-        <span className="text-[10px] font-bold text-[#c8d4e8]">
-          {money(appt.price)}
+        <span className={`shrink-0 inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${getStatusInfo(appt.status, (appt as any).client_attended).color}`}>
+          {getStatusInfo(appt.status, (appt as any).client_attended).label}
         </span>
       </div>
 
-      {canBeFinished && (
-        <div className="pt-2">
-          <Button
-            onClick={() => setIsFinishModalOpen(true)}
-            className="w-full h-10 bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2 text-[10px] uppercase font-bold tracking-widest"
-          >
-            Finalizar atendimento
-          </Button>
+      <div className="rounded-[8px] bg-[#F6F7FB] px-3 py-2 flex items-center justify-between text-xs">
+        <span className="text-[#172033] font-medium truncate">{appt.service_name}</span>
+        <span className="text-[#64748B] truncate ml-2">{appt.barber_name}</span>
+      </div>
+
+      <div className="flex items-center justify-between border-t border-[#DDE3EE] pt-3">
+        <div>
+          <p className="text-base font-semibold text-[#172033] leading-none">
+            {format(new Date(appt.starts_at), "HH:mm")}
+          </p>
+          <p className="text-[11px] text-[#64748B] mt-1">
+            {format(new Date(appt.starts_at), "dd/MM/yyyy")}
+          </p>
+        </div>
+        <span className="text-sm font-semibold text-[#172033]">{money(appt.price)}</span>
+      </div>
+
+      {(isCancelable || canBeFinished) && (
+        <div className="grid grid-cols-2 gap-2 pt-1">
+          {isCancelable ? (
+            <Button
+              variant="ghost"
+              onClick={() => setIsCancelModalOpen(true)}
+              className="h-10 rounded-[8px] border border-[#DDE3EE] text-sm font-medium text-[#DC2626] hover:bg-[#FDECEC] hover:text-[#B91C1C]"
+            >
+              <Trash2 className="w-4 h-4 mr-1.5" />
+              Cancelar
+            </Button>
+          ) : <div />}
+          {canBeFinished ? (
+            <Button
+              onClick={() => setIsFinishModalOpen(true)}
+              className="h-10 rounded-[8px] bg-[#15803D] text-sm font-semibold text-white hover:bg-[#126b34]"
+            >
+              Finalizar
+            </Button>
+          ) : <div />}
         </div>
       )}
 
       <AlertDialog open={isFinishModalOpen} onOpenChange={setIsFinishModalOpen}>
-        <AlertDialogContent className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8]">
+        <AlertDialogContent className="rounded-[8px] border-[#DDE3EE] bg-white text-[#172033]" style={{ fontFamily: "Poppins, sans-serif" }}>
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-oswald uppercase text-[#f0c040] tracking-widest">
-              O CLIENTE COMPARECEU?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-[#8a9ab5] text-[10px] uppercase tracking-widest leading-relaxed">
-              Selecione se o cliente realizou o serviço ou se não compareceu ao horário agendado.
+            <AlertDialogTitle className="text-base font-semibold text-[#172033]">O cliente compareceu?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-[#64748B]">
+              Selecione se o cliente realizou o atendimento ou se não compareceu ao horário agendado.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel className="bg-transparent border-[#2a3347] text-[#8a9ab5] hover:bg-[#1c2333] hover:text-white font-oswald uppercase text-xs tracking-widest rounded-none h-12 w-full sm:w-auto">
-              VOLTAR
+            <AlertDialogCancel className="h-11 rounded-[8px] border-[#DDE3EE] bg-white text-[#172033] hover:bg-[#F6F7FB]">
+              Voltar
             </AlertDialogCancel>
-            <div className="flex flex-col sm:flex-row gap-2 w-full">
-              <Button
-                onClick={() => handleFinish(false)}
-                disabled={isFinishing}
-                variant="outline"
-                className="bg-transparent border-red-500/50 text-red-400 hover:bg-red-500/10 font-oswald uppercase text-xs tracking-widest rounded-none h-12 w-full"
-              >
-                NÃO COMPARECEU
-              </Button>
-              <Button
-                onClick={() => handleFinish(true)}
-                disabled={isFinishing}
-                className="bg-green-600 hover:bg-green-700 text-white font-oswald uppercase text-xs tracking-widest rounded-none h-12 w-full"
-              >
-                {isFinishing ? "PROCESSANDO..." : "SIM, COMPARECEU"}
-              </Button>
-            </div>
+            <Button
+              onClick={() => handleFinish(false)}
+              disabled={isFinishing}
+              variant="outline"
+              className="h-11 rounded-[8px] border-[#DC2626]/40 text-[#DC2626] hover:bg-[#FDECEC]"
+            >
+              Não compareceu
+            </Button>
+            <Button
+              onClick={() => handleFinish(true)}
+              disabled={isFinishing}
+              className="h-11 rounded-[8px] bg-[#15803D] text-white hover:bg-[#126b34]"
+            >
+              {isFinishing ? "Processando..." : "Sim, compareceu"}
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       <AlertDialog open={isCancelModalOpen} onOpenChange={setIsCancelModalOpen}>
-        <AlertDialogContent className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8]">
+        <AlertDialogContent className="rounded-[8px] border-[#DDE3EE] bg-white text-[#172033]" style={{ fontFamily: "Poppins, sans-serif" }}>
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-oswald uppercase text-[#f0c040] tracking-widest">
-              CANCELAR AGENDAMENTO?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-[#8a9ab5] text-[10px] uppercase tracking-widest leading-relaxed">
+            <AlertDialogTitle className="text-base font-semibold text-[#172033]">Cancelar agendamento?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-[#64748B]">
               O cliente receberá uma notificação automática no WhatsApp informando sobre o cancelamento.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <div className="py-4 space-y-2">
-            <label className="text-[9px] font-bold text-[#8a9ab5] uppercase tracking-widest">
-              MOTIVO (OPCIONAL)
-            </label>
+          <div className="space-y-2 py-2">
+            <label className="text-xs font-medium text-[#172033]">Motivo (opcional)</label>
             <Input
-              placeholder="EX: IMPREVISTO NO ESTABELECIMENTO"
+              placeholder="Ex: imprevisto no estabelecimento"
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
-              className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8] placeholder:text-[#2a3347] text-xs uppercase font-oswald tracking-widest rounded-none h-12 focus-visible:ring-[#f0c040]"
+              className="h-11 rounded-[8px] border-[#DDE3EE] text-sm focus-visible:border-[#3157D5] focus-visible:ring-2 focus-visible:ring-[#3157D5]/15 focus-visible:ring-offset-0"
             />
           </div>
 
           <AlertDialogFooter className="gap-2">
-            <AlertDialogCancel className="bg-transparent border-[#2a3347] text-[#8a9ab5] hover:bg-[#1c2333] hover:text-white font-oswald uppercase text-xs tracking-widest rounded-none h-12">
-              VOLTAR
+            <AlertDialogCancel className="h-11 rounded-[8px] border-[#DDE3EE] bg-white text-[#172033] hover:bg-[#F6F7FB]">
+              Voltar
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleCancel}
               disabled={isCancelling}
-              className="bg-red-500 hover:bg-red-600 text-white font-oswald uppercase text-xs tracking-widest rounded-none h-12 border-none"
+              className="h-11 rounded-[8px] bg-[#DC2626] text-white hover:bg-[#bf1f1f]"
             >
-              {isCancelling ? "CANCELANDO..." : "CONFIRMAR CANCELAMENTO"}
+              {isCancelling ? "Cancelando..." : "Confirmar cancelamento"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
