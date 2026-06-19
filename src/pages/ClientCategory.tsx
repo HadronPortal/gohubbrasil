@@ -18,6 +18,7 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 import { ClientBottomNav } from "@/components/client/ClientBottomNav";
 import { CLIENT_CATEGORIES, getCategoryBySlug } from "@/lib/clientCategories";
 import { getServiceVisual } from "@/lib/serviceVisuals";
+import "@/lib/serviceIcons"; // registers icon_key → image map used by getServiceVisual
 
 type Shop = {
   id: string;
@@ -294,7 +295,10 @@ export default function ClientCategory() {
                   </button>
                 )}
               </div>
-              <div className="no-scrollbar flex items-start gap-3 overflow-x-auto px-4 pb-2">
+              <div
+                className="no-scrollbar flex items-start gap-3 overflow-x-auto px-4 pb-2"
+                style={{ scrollPaddingInline: 16, scrollSnapType: "x proximity" }}
+              >
                 {catalog.map((item) => {
                   const selected = selectedCatalog?.id === item.id;
                   const visual = getServiceVisual(item.icon_key || item.name, category.id);
@@ -304,6 +308,7 @@ export default function ClientCategory() {
                       type="button"
                       onClick={() => setSelectedCatalog(selected ? null : item)}
                       className="grid w-[76px] shrink-0 grid-rows-[64px_36px] gap-2 text-center active:scale-95"
+                      style={{ scrollSnapAlign: "start" }}
                     >
                       <div
                         className={`mx-auto flex h-16 w-16 items-center justify-center rounded-[8px] border bg-white ${
@@ -320,7 +325,7 @@ export default function ClientCategory() {
                           className="h-12 w-12 object-contain"
                         />
                       </div>
-                      <span className="flex h-9 items-start justify-center text-center text-[11px] font-semibold leading-[14px] text-slate-700 line-clamp-2">
+                      <span className="mx-auto flex h-9 w-full items-start justify-center overflow-hidden text-center text-[11px] font-semibold leading-[14px] text-slate-700 line-clamp-2 [overflow-wrap:anywhere]">
                         {item.name}
                       </span>
                     </button>
