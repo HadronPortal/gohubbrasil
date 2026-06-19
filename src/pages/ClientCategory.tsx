@@ -251,7 +251,7 @@ export default function ClientCategory() {
                   </button>
                 )}
               </div>
-              <div className="no-scrollbar flex gap-3 overflow-x-auto px-4 pb-2">
+              <div className="no-scrollbar flex items-start gap-3 overflow-x-auto px-4 pb-2">
                 {category.subcategories.map((item) => {
                   const selected = subcategory === item;
                   const visual = getServiceVisual(item, category.id);
@@ -260,7 +260,7 @@ export default function ClientCategory() {
                       key={item}
                       type="button"
                       onClick={() => setSubcategory(selected ? null : item)}
-                      className="w-[78px] shrink-0 text-center active:scale-95"
+                      className="grid w-[76px] shrink-0 grid-rows-[64px_36px] gap-2 text-center active:scale-95"
                     >
                       <div
                         className={`mx-auto flex h-16 w-16 items-center justify-center rounded-[8px] border bg-white ${
@@ -277,7 +277,9 @@ export default function ClientCategory() {
                           className="h-12 w-12 object-contain"
                         />
                       </div>
-                      <span className="mt-2 block text-[11px] font-semibold leading-tight text-slate-700 line-clamp-2">{item}</span>
+                      <span className="flex h-9 items-start justify-center text-center text-[11px] font-semibold leading-[14px] text-slate-700 line-clamp-2">
+                        {item}
+                      </span>
                     </button>
                   );
                 })}
