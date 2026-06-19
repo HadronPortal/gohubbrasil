@@ -93,6 +93,7 @@ interface Barbershop {
   description: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  category_slug?: string | null;
 }
 
 interface Appointment {
@@ -644,7 +645,9 @@ export default function ClientHome() {
       await supabase.rpc("set_my_selected_barbershop", { p_barbershop_id: shop.id });
       localStorage.setItem("selectedBarbershopId", shop.id);
     } catch {}
-    navigate(`/barbers?barbershopId=${shop.id}`);
+    const categorySlug =
+      shop.category_slug || (activeCategory !== "todos" ? activeCategory : "barbearias");
+    navigate(`/client-business/${shop.id}?category=${encodeURIComponent(categorySlug)}`);
   };
 
   const handleTab = (k: string) => {
