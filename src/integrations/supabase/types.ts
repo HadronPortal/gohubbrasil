@@ -166,6 +166,7 @@ export type Database = {
         Row: {
           address: string
           blocked: boolean | null
+          category_id: string | null
           created_at: string | null
           description: string | null
           id: string
@@ -185,6 +186,7 @@ export type Database = {
         Insert: {
           address: string
           blocked?: boolean | null
+          category_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -204,6 +206,7 @@ export type Database = {
         Update: {
           address?: string
           blocked?: boolean | null
+          category_id?: string | null
           created_at?: string | null
           description?: string | null
           id?: string
@@ -219,6 +222,38 @@ export type Database = {
           slug?: string | null
           subscription_status?: string | null
           trial_ends_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barbershops_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "business_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_categories: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
         }
         Relationships: []
       }
@@ -399,29 +434,20 @@ export type Database = {
         Args: never
         Returns: {
           address: string
-          blocked: boolean | null
-          created_at: string | null
-          description: string | null
+          blocked: boolean
+          category_id: string
+          category_name: string
+          category_slug: string
+          created_at: string
+          description: string
           id: string
-          latitude: number | null
-          logo_url: string | null
-          longitude: number | null
-          monthly_price: number | null
+          latitude: number
+          logo_url: string
+          longitude: number
           name: string
-          paid_until: string | null
-          payment_due_date: string | null
-          payment_status: string | null
-          phone: string | null
-          slug: string | null
-          subscription_status: string | null
-          trial_ends_at: string | null
+          phone: string
+          subscription_status: string
         }[]
-        SetofOptions: {
-          from: "*"
-          to: "barbershops"
-          isOneToOne: false
-          isSetofReturn: true
-        }
       }
       get_barber_dashboard: { Args: { p_day?: string }; Returns: Json }
       get_financial_report: {
