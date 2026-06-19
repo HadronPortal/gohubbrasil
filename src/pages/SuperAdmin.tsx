@@ -746,7 +746,7 @@ export default function SuperAdmin() {
             ) : (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {filtered.map((shop) => {
-                  const cat = getCategoryMeta(categoryMap[shop.id] || "barbearia");
+                  const cat = getCategoryMeta(categoryIdToSlug[shop.category_id || ""] || "barbearias");
                   return (
                     <article
                       key={shop.id}
@@ -853,7 +853,7 @@ export default function SuperAdmin() {
                               setEditingBarbershop(shop);
                               setEditLogoPreview(shop.logo_url);
                               setEditMonthlyPrice(fmtBRL(shop.monthly_price));
-                              setEditCategory(categoryMap[shop.id] || "barbearia");
+                              setEditCategory(categoryIdToSlug[shop.category_id || ""] || "barbearias");
                             }}
                           >
                             <Pencil className="h-4 w-4" />
