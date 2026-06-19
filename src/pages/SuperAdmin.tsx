@@ -631,10 +631,10 @@ export default function SuperAdmin() {
                   <SelectTrigger className={inputClass}>
                     <SelectValue placeholder="Categoria" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas as categorias</SelectItem>
+                  <SelectContent className="border border-[#DDE3EE] bg-white text-[#172033] shadow-lg rounded-[8px]">
+                    <SelectItem className="text-[#172033] focus:bg-[#EAF0FF] focus:text-[#3157D5] data-[state=checked]:bg-[#EAF0FF] data-[state=checked]:text-[#3157D5]" value="all">Todas as categorias</SelectItem>
                     {ESTABLISHMENT_CATEGORIES.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
+                      <SelectItem className="text-[#172033] focus:bg-[#EAF0FF] focus:text-[#3157D5] data-[state=checked]:bg-[#EAF0FF] data-[state=checked]:text-[#3157D5]" key={c.id} value={c.id}>
                         {c.label}
                       </SelectItem>
                     ))}
@@ -646,10 +646,10 @@ export default function SuperAdmin() {
                   <SelectTrigger className={inputClass}>
                     <SelectValue placeholder="Assinatura" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas as assinaturas</SelectItem>
+                  <SelectContent className="border border-[#DDE3EE] bg-white text-[#172033] shadow-lg rounded-[8px]">
+                    <SelectItem className="text-[#172033] focus:bg-[#EAF0FF] focus:text-[#3157D5] data-[state=checked]:bg-[#EAF0FF] data-[state=checked]:text-[#3157D5]" value="all">Todas as assinaturas</SelectItem>
                     {Object.entries(STATUS_LABELS).map(([v, l]) => (
-                      <SelectItem key={v} value={v}>
+                      <SelectItem className="text-[#172033] focus:bg-[#EAF0FF] focus:text-[#3157D5] data-[state=checked]:bg-[#EAF0FF] data-[state=checked]:text-[#3157D5]" key={v} value={v}>
                         {l}
                       </SelectItem>
                     ))}
@@ -661,10 +661,10 @@ export default function SuperAdmin() {
                   <SelectTrigger className={inputClass}>
                     <SelectValue placeholder="Bloqueio" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="active">Sem bloqueio</SelectItem>
-                    <SelectItem value="blocked">Somente bloqueados</SelectItem>
+                  <SelectContent className="border border-[#DDE3EE] bg-white text-[#172033] shadow-lg rounded-[8px]">
+                    <SelectItem className="text-[#172033] focus:bg-[#EAF0FF] focus:text-[#3157D5] data-[state=checked]:bg-[#EAF0FF] data-[state=checked]:text-[#3157D5]" value="all">Todos</SelectItem>
+                    <SelectItem className="text-[#172033] focus:bg-[#EAF0FF] focus:text-[#3157D5] data-[state=checked]:bg-[#EAF0FF] data-[state=checked]:text-[#3157D5]" value="active">Sem bloqueio</SelectItem>
+                    <SelectItem className="text-[#172033] focus:bg-[#EAF0FF] focus:text-[#3157D5] data-[state=checked]:bg-[#EAF0FF] data-[state=checked]:text-[#3157D5]" value="blocked">Somente bloqueados</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -673,10 +673,10 @@ export default function SuperAdmin() {
                   <SelectTrigger className={inputClass}>
                     <SelectValue placeholder="Ordenar" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="name">Ordenar por nome</SelectItem>
-                    <SelectItem value="paid_until">Ordenar por vencimento</SelectItem>
-                    <SelectItem value="created_at">Ordenar por cadastro</SelectItem>
+                  <SelectContent className="border border-[#DDE3EE] bg-white text-[#172033] shadow-lg rounded-[8px]">
+                    <SelectItem className="text-[#172033] focus:bg-[#EAF0FF] focus:text-[#3157D5] data-[state=checked]:bg-[#EAF0FF] data-[state=checked]:text-[#3157D5]" value="name">Ordenar por nome</SelectItem>
+                    <SelectItem className="text-[#172033] focus:bg-[#EAF0FF] focus:text-[#3157D5] data-[state=checked]:bg-[#EAF0FF] data-[state=checked]:text-[#3157D5]" value="paid_until">Ordenar por vencimento</SelectItem>
+                    <SelectItem className="text-[#172033] focus:bg-[#EAF0FF] focus:text-[#3157D5] data-[state=checked]:bg-[#EAF0FF] data-[state=checked]:text-[#3157D5]" value="created_at">Ordenar por cadastro</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -906,9 +906,9 @@ export default function SuperAdmin() {
                     <SelectTrigger id="category" className={inputClass}>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="border border-[#DDE3EE] bg-white text-[#172033] shadow-lg rounded-[8px]">
                       {ESTABLISHMENT_CATEGORIES.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
+                        <SelectItem className="text-[#172033] focus:bg-[#EAF0FF] focus:text-[#3157D5] data-[state=checked]:bg-[#EAF0FF] data-[state=checked]:text-[#3157D5]" key={c.id} value={c.id}>
                           {c.label}
                         </SelectItem>
                       ))}
@@ -946,9 +946,9 @@ export default function SuperAdmin() {
                       <SelectTrigger id="subscription_status" className={inputClass}>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="border border-[#DDE3EE] bg-white text-[#172033] shadow-lg rounded-[8px]">
                         {Object.entries(STATUS_LABELS).map(([v, l]) => (
-                          <SelectItem key={v} value={v}>
+                          <SelectItem className="text-[#172033] focus:bg-[#EAF0FF] focus:text-[#3157D5] data-[state=checked]:bg-[#EAF0FF] data-[state=checked]:text-[#3157D5]" key={v} value={v}>
                             {l}
                           </SelectItem>
                         ))}
@@ -1079,9 +1079,9 @@ export default function SuperAdmin() {
                   <SelectTrigger id="edit_category" className={inputClass}>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="border border-[#DDE3EE] bg-white text-[#172033] shadow-lg rounded-[8px]">
                     {ESTABLISHMENT_CATEGORIES.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
+                      <SelectItem className="text-[#172033] focus:bg-[#EAF0FF] focus:text-[#3157D5] data-[state=checked]:bg-[#EAF0FF] data-[state=checked]:text-[#3157D5]" key={c.id} value={c.id}>
                         {c.label}
                       </SelectItem>
                     ))}
@@ -1110,9 +1110,9 @@ export default function SuperAdmin() {
                   <SelectTrigger id="edit_status" className={inputClass}>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="border border-[#DDE3EE] bg-white text-[#172033] shadow-lg rounded-[8px]">
                     {Object.entries(STATUS_LABELS).map(([v, l]) => (
-                      <SelectItem key={v} value={v}>
+                      <SelectItem className="text-[#172033] focus:bg-[#EAF0FF] focus:text-[#3157D5] data-[state=checked]:bg-[#EAF0FF] data-[state=checked]:text-[#3157D5]" key={v} value={v}>
                         {l}
                       </SelectItem>
                     ))}
