@@ -254,6 +254,14 @@ const RULES: Rule[] = [
 
 export function getServiceVisual(name: string, categoryId?: string): ServiceVisual {
   const n = normalizeName(name);
+  // 0a) Direct icon_key lookup via the picker library (preferred path)
+  try {
+    // Lazy import to avoid circular references
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { getIconByKey } = require("@/lib/serviceIcons");
+    const direct = getIconByKey(name);
+    if (direct?.image) return { image: direct.image, matched: true };
+  } catch {}
   if (n) {
     // 0) category-scoped exact match (disambiguates names shared across categories)
     if (categoryId) {
