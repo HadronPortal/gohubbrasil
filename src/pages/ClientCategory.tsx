@@ -336,6 +336,15 @@ export default function ClientCategory() {
                   <Search className="mx-auto h-7 w-7 text-slate-300" />
                   <p className="mt-3 text-sm font-semibold">Nenhum estabelecimento encontrado</p>
                   <p className="mt-1 text-xs text-slate-500">Tente outra categoria ou remova os filtros.</p>
+                  {category.id !== "todos" && (
+                    <button
+                      type="button"
+                      onClick={() => navigate("/client-category/todos")}
+                      className="mt-4 inline-flex h-10 items-center justify-center rounded-[8px] bg-[#3157D5] px-4 text-xs font-semibold text-white"
+                    >
+                      Ver todos os estabelecimentos
+                    </button>
+                  )}
                 </div>
               </div>
             ) : (
