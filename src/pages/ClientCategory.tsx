@@ -34,6 +34,7 @@ type Shop = {
 };
 
 type Service = { barbershop_id: string; name: string; price: number };
+type CatalogItem = { id: string; name: string; slug: string; icon_key: string | null };
 type SavedLocation = { label: string; latitude?: number; longitude?: number };
 type FilterKey = "distance" | "today" | "rating" | "price";
 
@@ -72,7 +73,8 @@ export default function ClientCategory() {
   const category = getCategoryBySlug(categorySlug) || getCategoryBySlug("todos")!;
 
   const [query, setQuery] = useState("");
-  const [subcategory, setSubcategory] = useState<string | null>(null);
+  const [selectedCatalog, setSelectedCatalog] = useState<CatalogItem | null>(null);
+  const [catalog, setCatalog] = useState<CatalogItem[]>([]);
   const [filters, setFilters] = useState<FilterKey[]>([]);
   const [shops, setShops] = useState<Shop[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -90,9 +92,37 @@ export default function ClientCategory() {
   }, [authLoading, navigate, user]);
 
   useEffect(() => {
-    setSubcategory(null);
+    setSelectedCatalog(null);
     setQuery("");
   }, [categorySlug]);
+
+  // Load global catalog for the selected category (skip for 'todos')
+  useEffect(() => {
+    if (category.id === "todos") {
+      setCatalog([]);
+      return;
+    }
+    let active = true;
+    (async () => {
+      const { data: catData } = await supabase
+        .from("business_categories")
+        .select("id")
+        .eq("slug", category.id)
+        .maybeSingle();
+      if (!active || !catData) return;
+      const { data, error } = await supabase
+        .from("service_catalog")
+        .select("id,name,slug,icon_key")
+        .eq("category_id", catData.id)
+        .eq("active", true)
+        .order("name");
+      if (error) console.error("Erro ao carregar catálogo:", error);
+      if (active) setCatalog((data || []) as CatalogItem[]);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [category.id]);
 
   useEffect(() => {
     if (!user) return;
@@ -101,7 +131,10 @@ export default function ClientCategory() {
       setLoading(true);
       const [{ data: shopData, error: shopError }, { data: serviceData, error: serviceError }] =
         await Promise.all([
-          supabase.rpc("get_available_barbershops"),
+          supabase.rpc("get_barbershops_by_category_service", {
+            p_category_slug: category.id,
+            p_catalog_service_id: selectedCatalog?.id ?? null,
+          }),
           supabase.from("services").select("barbershop_id,name,price"),
         ]);
       if (!active) return;
@@ -118,7 +151,7 @@ export default function ClientCategory() {
     return () => {
       active = false;
     };
-  }, [user]);
+  }, [user, category.id, selectedCatalog?.id]);
 
   const stores = useMemo(() => {
     const grouped = new Map<string, Service[]>();
@@ -139,9 +172,6 @@ export default function ClientCategory() {
           .filter(Boolean)
           .join(" ")
           .toLocaleLowerCase("pt-BR");
-        const matchesCategory =
-          category.id === "todos" || (shop.category_slug || "") === category.id;
-        const matchesSubcategory = !subcategory || content.includes(subcategory.toLocaleLowerCase("pt-BR"));
         const matchesSearch = !normalizedQuery || content.includes(normalizedQuery);
         const minPrice = shopServices.length
           ? Math.min(...shopServices.map((item) => item.price).filter((price) => price > 0))
@@ -153,15 +183,10 @@ export default function ClientCategory() {
           typeof shop.longitude === "number"
             ? distanceKm(lat, lon, shop.latitude, shop.longitude)
             : null;
-        return { shop, services: shopServices, minPrice, distance, matchesCategory, matchesSubcategory, matchesSearch };
+        return { shop, services: shopServices, minPrice, distance, matchesSearch };
       })
-      .filter((item) => item.matchesCategory && item.matchesSearch);
-
-    const subFiltered = subcategory
-      ? enriched.filter((item) => item.matchesSubcategory)
-      : enriched;
-    // Rule 4: if the selected subcategory has no matches, fall back to all of the category.
-    const result = subcategory && subFiltered.length === 0 ? enriched : subFiltered;
+      .filter((item) => item.matchesSearch);
+    const result = enriched;
 
     return result.sort((a, b) => {
       if (filters.includes("price")) return (a.minPrice ?? Infinity) - (b.minPrice ?? Infinity);
@@ -173,7 +198,7 @@ export default function ClientCategory() {
       }
       return a.shop.name.localeCompare(b.shop.name, "pt-BR");
     });
-  }, [category, filters, location, query, services, shops, subcategory]);
+  }, [filters, location, query, services, shops]);
 
   const toggleFilter = (key: FilterKey) =>
     setFilters((current) => (current.includes(key) ? current.filter((item) => item !== key) : [...current, key]));
@@ -259,25 +284,25 @@ export default function ClientCategory() {
             </div>
           </section>
 
-          {category.subcategories.length > 0 && (
+          {catalog.length > 0 && (
             <section className="pt-6">
               <div className="mb-3 flex items-center justify-between px-4">
                 <h2 className="text-lg font-extrabold">Explore serviços</h2>
-                {subcategory && (
-                  <button type="button" onClick={() => setSubcategory(null)} className="text-xs font-semibold text-[#3157D5]">
+                {selectedCatalog && (
+                  <button type="button" onClick={() => setSelectedCatalog(null)} className="text-xs font-semibold text-[#3157D5]">
                     Limpar
                   </button>
                 )}
               </div>
               <div className="no-scrollbar flex items-start gap-3 overflow-x-auto px-4 pb-2">
-                {category.subcategories.map((item) => {
-                  const selected = subcategory === item;
-                  const visual = getServiceVisual(item, category.id);
+                {catalog.map((item) => {
+                  const selected = selectedCatalog?.id === item.id;
+                  const visual = getServiceVisual(item.icon_key || item.name, category.id);
                   return (
                     <button
-                      key={item}
+                      key={item.id}
                       type="button"
-                      onClick={() => setSubcategory(selected ? null : item)}
+                      onClick={() => setSelectedCatalog(selected ? null : item)}
                       className="grid w-[76px] shrink-0 grid-rows-[64px_36px] gap-2 text-center active:scale-95"
                     >
                       <div
@@ -296,7 +321,7 @@ export default function ClientCategory() {
                         />
                       </div>
                       <span className="flex h-9 items-start justify-center text-center text-[11px] font-semibold leading-[14px] text-slate-700 line-clamp-2">
-                        {item}
+                        {item.name}
                       </span>
                     </button>
                   );
@@ -345,14 +370,28 @@ export default function ClientCategory() {
               <div className="px-4">
                 <div className="rounded-[8px] border border-dashed border-slate-300 bg-white p-8 text-center">
                   <Search className="mx-auto h-7 w-7 text-slate-300" />
-                  <p className="mt-3 text-sm font-semibold">Nenhum estabelecimento encontrado</p>
-                  <p className="mt-1 text-xs text-slate-500">Tente outra categoria ou remova os filtros.</p>
-                  {category.id !== "todos" && (
+                  <p className="mt-3 text-sm font-semibold">
+                    {selectedCatalog
+                      ? "Nenhum estabelecimento oferece este serviço no momento."
+                      : "Nenhum estabelecimento encontrado"}
+                  </p>
+                  {!selectedCatalog && (
+                    <p className="mt-1 text-xs text-slate-500">Tente outra categoria ou remova os filtros.</p>
+                  )}
+                  {selectedCatalog ? (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCatalog(null)}
+                      className="mt-4 inline-flex h-10 items-center justify-center rounded-[8px] bg-[#3157D5] px-4 text-xs font-semibold text-white"
+                    >
+                      Limpar serviço
+                    </button>
+                  ) : category.id !== "todos" && (
                     <button
                       type="button"
                       onClick={() => {
                         setQuery("");
-                        setSubcategory(null);
+                        setSelectedCatalog(null);
                         setFilters([]);
                         navigate("/client-category/todos");
                       }}

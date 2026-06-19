@@ -257,9 +257,51 @@ export type Database = {
         }
         Relationships: []
       }
+      service_catalog: {
+        Row: {
+          active: boolean
+          category_id: string
+          created_at: string
+          icon_key: string | null
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category_id: string
+          created_at?: string
+          icon_key?: string | null
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category_id?: string
+          created_at?: string
+          icon_key?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_catalog_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "business_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
           barbershop_id: string
+          catalog_service_id: string | null
           created_at: string | null
           description: string | null
           duration_minutes: number
@@ -269,6 +311,7 @@ export type Database = {
         }
         Insert: {
           barbershop_id: string
+          catalog_service_id?: string | null
           created_at?: string | null
           description?: string | null
           duration_minutes?: number
@@ -278,6 +321,7 @@ export type Database = {
         }
         Update: {
           barbershop_id?: string
+          catalog_service_id?: string | null
           created_at?: string | null
           description?: string | null
           duration_minutes?: number
@@ -291,6 +335,13 @@ export type Database = {
             columns: ["barbershop_id"]
             isOneToOne: false
             referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "services_catalog_service_id_fkey"
+            columns: ["catalog_service_id"]
+            isOneToOne: false
+            referencedRelation: "service_catalog"
             referencedColumns: ["id"]
           },
         ]
@@ -450,6 +501,25 @@ export type Database = {
         }[]
       }
       get_barber_dashboard: { Args: { p_day?: string }; Returns: Json }
+      get_barbershops_by_category_service: {
+        Args: { p_catalog_service_id?: string; p_category_slug: string }
+        Returns: {
+          address: string
+          blocked: boolean
+          category_id: string
+          category_name: string
+          category_slug: string
+          created_at: string
+          description: string
+          id: string
+          latitude: number
+          logo_url: string
+          longitude: number
+          name: string
+          phone: string
+          subscription_status: string
+        }[]
+      }
       get_financial_report: {
         Args: {
           p_barbershop_id: string
@@ -508,9 +578,15 @@ export type Database = {
         }
         Returns: Json
       }
+      normalize_service_slug: { Args: { p_name: string }; Returns: string }
       refresh_barbershop_payment_status: {
         Args: { p_barbershop_id: string }
         Returns: Json
+      }
+      unaccent: { Args: { "": string }; Returns: string }
+      upsert_catalog_service: {
+        Args: { p_barbershop_id: string; p_name: string }
+        Returns: string
       }
     }
     Enums: {
