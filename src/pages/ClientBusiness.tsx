@@ -25,6 +25,8 @@ type Service = {
   duration?: number | null;
   duration_minutes?: number | null;
   icon_key?: string | null;
+  catalog_service_id?: string | null;
+  service_catalog?: { icon_key: string | null; slug: string | null; name: string | null } | null;
 };
 
 export default function ClientBusiness() {
@@ -42,7 +44,10 @@ export default function ClientBusiness() {
       setLoading(true);
       const [{ data: shops, error: shopError }, { data: serviceData, error: serviceError }] = await Promise.all([
         supabase.rpc("get_available_barbershops"),
-        supabase.from("services").select("*").eq("barbershop_id", shopId),
+        supabase
+          .from("services")
+          .select("*, service_catalog:catalog_service_id(icon_key,slug,name)")
+          .eq("barbershop_id", shopId),
       ]);
       if (!active) return;
       if (shopError || serviceError) {
@@ -50,7 +55,11 @@ export default function ClientBusiness() {
         toast.error("Não foi possível carregar este estabelecimento.");
       }
       setShop(((shops || []) as Shop[]).find((item) => item.id === shopId) || null);
-      setServices(((serviceData || []) as Service[]).map((item) => ({ ...item, price: Number(item.price) || 0 })));
+      setServices(((serviceData || []) as unknown as Service[]).map((item: any) => ({
+        ...item,
+        price: Number(item.price) || 0,
+        service_catalog: Array.isArray(item.service_catalog) ? item.service_catalog[0] || null : item.service_catalog,
+      })));
       setLoading(false);
     })();
     return () => {
@@ -58,14 +67,10 @@ export default function ClientBusiness() {
     };
   }, [shopId]);
 
-  const grouped = useMemo(() => {
-    const result = new Map<string, Service[]>();
-    services.forEach((service) => {
-      const group = category.subcategories.find((item) => service.name.toLocaleLowerCase("pt-BR").includes(item.toLocaleLowerCase("pt-BR"))) || "Serviços";
-      result.set(group, [...(result.get(group) || []), service]);
-    });
-    return Array.from(result.entries());
-  }, [category.subcategories, services]);
+  const sortedServices = useMemo(
+    () => [...services].sort((a, b) => a.name.localeCompare(b.name, "pt-BR")),
+    [services]
+  );
 
   const startBooking = async (serviceId?: string) => {
     if (!shop) return;
@@ -134,12 +139,8 @@ export default function ClientBusiness() {
               <p className="mt-3 text-sm font-semibold">Serviços em atualização</p>
             </div>
           ) : (
-            <div className="space-y-6">
-              {grouped.map(([title, items]) => (
-                <div key={title}>
-                  <h3 className="mb-2 text-sm font-extrabold">{title}</h3>
-                  <div className="overflow-hidden rounded-[8px] border border-slate-200 bg-white">
-                    {items.map((service, index) => (
+            <div className="overflow-hidden rounded-[8px] border border-slate-200 bg-white">
+              {sortedServices.map((service, index) => (
                       <button
                         key={service.id}
                         type="button"
@@ -148,7 +149,13 @@ export default function ClientBusiness() {
                       >
                         <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[8px] bg-slate-50">
                           <img
-                            src={getServiceVisual(service.icon_key || service.name, category.id).image}
+                            src={getServiceVisual({
+                              name: service.name,
+                              serviceIconKey: service.icon_key,
+                              catalogIconKey: service.service_catalog?.icon_key,
+                              catalogSlug: service.service_catalog?.slug,
+                              categorySlug: category.id,
+                            }).image}
                             alt=""
                             loading="lazy"
                             width={48}
@@ -166,9 +173,6 @@ export default function ClientBusiness() {
                           <span className="mt-2 inline-flex h-8 items-center rounded-[6px] px-3 text-xs font-bold text-white" style={{ backgroundColor: category.accent }}>Agendar</span>
                         </div>
                       </button>
-                    ))}
-                  </div>
-                </div>
               ))}
             </div>
           )}

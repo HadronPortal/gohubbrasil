@@ -57,6 +57,14 @@ import catVerMais from "@/assets/categories/ver-mais.png";
 
 export type ServiceVisual = { image: string; matched: boolean };
 
+export type ServiceVisualInput = {
+  name?: string | null;
+  serviceIconKey?: string | null;
+  catalogIconKey?: string | null;
+  catalogSlug?: string | null;
+  categorySlug?: string | null;
+};
+
 const CATEGORY_FALLBACK: Record<string, string> = {
   barbearias: catBarbearias,
   cabelos: catCabelos,
@@ -252,16 +260,41 @@ const RULES: Rule[] = [
   { image: podologiaClinica, all: [["podolog", "clinic"]] },
 ];
 
-export function getServiceVisual(name: string, categoryId?: string): ServiceVisual {
-  const n = normalizeName(name);
-  // 0a) Direct icon_key lookup via the picker library (preferred path).
-  // We use a dynamic dictionary set by serviceIcons.ts to avoid circular imports.
-  const direct = (globalThis as any).__GOHUB_ICONS__?.[name];
-  if (direct) return { image: direct, matched: true };
+function resolveByKey(key?: string | null): string | null {
+  if (!key) return null;
+  return (globalThis as any).__GOHUB_ICONS__?.[key] || null;
+}
+
+export function getServiceVisual(
+  nameOrInput: string | ServiceVisualInput,
+  categoryId?: string
+): ServiceVisual {
+  const input: ServiceVisualInput =
+    typeof nameOrInput === "string"
+      ? { name: nameOrInput, categorySlug: categoryId }
+      : { ...nameOrInput, categorySlug: nameOrInput.categorySlug ?? categoryId };
+
+  // 1) services.icon_key (escolha explícita do estabelecimento)
+  const byService = resolveByKey(input.serviceIconKey);
+  if (byService) return { image: byService, matched: true };
+
+  // 2) service_catalog.icon_key (sugestão global)
+  const byCatalog = resolveByKey(input.catalogIconKey);
+  if (byCatalog) return { image: byCatalog, matched: true };
+
+  // 3) catálogo: slug normalizado também é uma chave válida do icon library
+  const bySlug = resolveByKey(input.catalogSlug);
+  if (bySlug) return { image: bySlug, matched: true };
+
+  const categorySlug = input.categorySlug;
+  const n = normalizeName(input.name || "");
   if (n) {
+    // 3a) o próprio nome pode coincidir com uma key do icon library
+    const byName = resolveByKey(n.replace(/\s+/g, "-"));
+    if (byName) return { image: byName, matched: true };
     // 0) category-scoped exact match (disambiguates names shared across categories)
-    if (categoryId) {
-      const scoped = SERVICE_VISUALS_BY_CATEGORY[categoryId]?.[n];
+    if (categorySlug) {
+      const scoped = SERVICE_VISUALS_BY_CATEGORY[categorySlug]?.[n];
       if (scoped) return { image: scoped, matched: true };
     }
     // 1) exact map
@@ -275,8 +308,8 @@ export function getServiceVisual(name: string, categoryId?: string): ServiceVisu
   }
   if (import.meta.env.DEV) {
     // eslint-disable-next-line no-console
-    console.warn("[GoHub] Serviço usando fallback:", name);
+    console.warn("[GoHub] Serviço usando fallback:", input);
   }
-  const fallback = (categoryId && CATEGORY_FALLBACK[categoryId]) || catVerMais;
+  const fallback = (categorySlug && CATEGORY_FALLBACK[categorySlug]) || catVerMais;
   return { image: fallback, matched: false };
 }

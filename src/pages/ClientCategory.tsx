@@ -301,7 +301,12 @@ export default function ClientCategory() {
               >
                 {catalog.map((item) => {
                   const selected = selectedCatalog?.id === item.id;
-                  const visual = getServiceVisual(item.icon_key || item.name, category.id);
+                  const visual = getServiceVisual({
+                    name: item.name,
+                    catalogIconKey: item.icon_key,
+                    catalogSlug: item.slug,
+                    categorySlug: category.id,
+                  });
                   return (
                     <button
                       key={item.id}

@@ -9,7 +9,16 @@ import { ClientFlowLayout } from "@/components/client/ClientFlowLayout";
 import { getServiceVisual } from "@/lib/serviceVisuals";
 import "@/lib/serviceIcons"; // registers icon_key → image map for resolver
 
-type Service = { id: string; name: string; description?: string | null; price: number; duration_minutes: number; icon_key?: string | null };
+type Service = {
+  id: string;
+  name: string;
+  description?: string | null;
+  price: number;
+  duration_minutes: number;
+  icon_key?: string | null;
+  catalog_service_id?: string | null;
+  service_catalog?: { icon_key: string | null; slug: string | null } | null;
+};
 
 export default function Services() {
   const [params] = useSearchParams();
@@ -32,12 +41,19 @@ export default function Services() {
     let active = true;
     (async () => {
       const [{ data: serviceData, error }, { data: shop }] = await Promise.all([
-        supabase.from("services").select("id,name,description,price,duration_minutes,icon_key").eq("barbershop_id", barbershopId),
+        supabase
+          .from("services")
+          .select("id,name,description,price,duration_minutes,icon_key,catalog_service_id,service_catalog:catalog_service_id(icon_key,slug)")
+          .eq("barbershop_id", barbershopId),
         supabase.from("barbershops").select("name").eq("id", barbershopId).single(),
       ]);
       if (!active) return;
       if (error) toast.error("Não foi possível carregar os serviços.");
-      setServices(((serviceData || []) as Service[]).map((item) => ({ ...item, price: Number(item.price) || 0 })));
+      setServices(((serviceData || []) as unknown as Service[]).map((item: any) => ({
+        ...item,
+        price: Number(item.price) || 0,
+        service_catalog: Array.isArray(item.service_catalog) ? item.service_catalog[0] || null : item.service_catalog,
+      })));
       setShopName(shop?.name || "Estabelecimento GoHub");
       setLoading(false);
     })();
@@ -64,7 +80,19 @@ export default function Services() {
           return (
             <button key={service.id} type="button" onClick={() => setSelectedId(service.id)} className={`flex w-full items-center gap-3 rounded-[8px] border bg-white p-4 text-left transition active:scale-[0.99] ${selected ? "border-[#3157D5] ring-2 ring-[#3157D5]/15" : "border-slate-200"}`}>
               <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[8px] bg-slate-50">
-                <img src={getServiceVisual(service.icon_key || service.name).image} alt="" loading="lazy" width={48} height={48} className="h-12 w-12 object-contain" />
+                <img
+                  src={getServiceVisual({
+                    name: service.name,
+                    serviceIconKey: service.icon_key,
+                    catalogIconKey: service.service_catalog?.icon_key,
+                    catalogSlug: service.service_catalog?.slug,
+                  }).image}
+                  alt=""
+                  loading="lazy"
+                  width={48}
+                  height={48}
+                  className="h-12 w-12 object-contain"
+                />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-extrabold">{service.name}</span>
