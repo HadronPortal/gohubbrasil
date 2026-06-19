@@ -180,7 +180,7 @@ export default function Login() {
           aria-hidden="true"
           className="h-full w-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-white/[0.38]" />
+        <div className="absolute inset-0 bg-white/[0.25]" />
       </div>
 
       {/* Scrollable content */}
@@ -285,7 +285,7 @@ export default function Login() {
                   <span className="w-full border-t border-[#DDE3EE]" />
                 </div>
                 <div className="relative flex justify-center">
-                  <span className="bg-white/0 px-3 text-[11px] uppercase tracking-wider text-[#718096]">
+                  <span className="bg-white px-3 text-[11px] uppercase tracking-wider text-[#718096]">
                     ou continue com
                   </span>
                 </div>
