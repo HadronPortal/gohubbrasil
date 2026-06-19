@@ -84,7 +84,8 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
       setServices(list as Service[]);
       const map: Record<string, string | null> = {};
       list.forEach((s) => {
-        map[s.id] = s.service_catalog?.icon_key || null;
+        // Prioridade: escolha do estabelecimento → sugestão global do catálogo
+        map[s.id] = s.icon_key || s.service_catalog?.icon_key || null;
       });
       setServiceIconMap(map);
     }
@@ -130,10 +131,10 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
     setIsLoading(true);
 
     try {
+      const finalIconKey = iconKey || suggestIconKey(name, categorySlug) || null;
       // Ensure global catalog entry exists for this category and link it.
       let catalogServiceId: string | null = null;
       if (barbershopId) {
-        const finalIconKey = iconKey || suggestIconKey(name, categorySlug) || null;
         const { data: catId, error: catErr } = await supabase.rpc("upsert_catalog_service", {
           p_barbershop_id: barbershopId,
           p_name: name,
@@ -153,8 +154,9 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
             name,
             duration_minutes: parseInt(duration),
             price: parsePrice(price),
+            icon_key: finalIconKey,
             ...(catalogServiceId ? { catalog_service_id: catalogServiceId } : {}),
-          })
+          } as any)
           .eq("id", editingService.id);
 
         if (error) throw error;
@@ -167,8 +169,9 @@ export default function AdminServices({ barbershopId }: { barbershopId: string |
             name,
             duration_minutes: parseInt(duration),
             price: parsePrice(price),
+            icon_key: finalIconKey,
             ...(catalogServiceId ? { catalog_service_id: catalogServiceId } : {}),
-          });
+          } as any);
 
         if (error) throw error;
         toast.success("Serviço adicionado!");
