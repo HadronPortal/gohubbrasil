@@ -116,6 +116,16 @@ const ICON_BY_KEY: Record<string, IconEntry> = ICON_LIBRARY.reduce((acc, entry) 
   return acc;
 }, {} as Record<string, IconEntry>);
 
+// Expose a flat key→image map for getServiceVisual() to consume without
+// introducing a circular import between serviceVisuals.ts and this file.
+if (typeof globalThis !== "undefined") {
+  const map: Record<string, string> = {};
+  ICON_LIBRARY.forEach((entry) => {
+    map[entry.key] = entry.image;
+  });
+  (globalThis as any).__GOHUB_ICONS__ = map;
+}
+
 export function getIconByKey(key?: string | null): IconEntry | null {
   if (!key) return null;
   return ICON_BY_KEY[key] || null;
