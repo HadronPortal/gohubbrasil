@@ -15,7 +15,7 @@ export type EstablishmentCategory = {
 };
 
 export const ESTABLISHMENT_CATEGORIES: EstablishmentCategory[] = [
-  { id: "barbearia", label: "Barbearia", image: iconBarbearias },
+  { id: "barbearias", label: "Barbearia", image: iconBarbearias },
   { id: "cabelos", label: "Cabelos", image: iconCabelos },
   { id: "unhas", label: "Unhas", image: iconUnhas },
   { id: "estetica", label: "Estética", image: iconEstetica },
@@ -29,12 +29,12 @@ export const ESTABLISHMENT_CATEGORIES: EstablishmentCategory[] = [
 const STORAGE_KEY = "gohub:shop-category";
 
 export function getShopCategory(shopId: string): string {
-  if (typeof window === "undefined") return "barbearia";
+  if (typeof window === "undefined") return "barbearias";
   try {
     const raw = localStorage.getItem(`${STORAGE_KEY}:${shopId}`);
-    return raw && ESTABLISHMENT_CATEGORIES.some((c) => c.id === raw) ? raw : "barbearia";
+    return raw && ESTABLISHMENT_CATEGORIES.some((c) => c.id === raw) ? raw : "barbearias";
   } catch {
-    return "barbearia";
+    return "barbearias";
   }
 }
 
