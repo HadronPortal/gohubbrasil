@@ -28,6 +28,9 @@ type Shop = {
   latitude?: number | null;
   longitude?: number | null;
   created_at?: string | null;
+  category_slug?: string | null;
+  category_id?: string | null;
+  blocked?: boolean | null;
 };
 
 type Service = { barbershop_id: string; name: string; price: number };
@@ -102,8 +105,12 @@ export default function ClientCategory() {
           supabase.from("services").select("barbershop_id,name,price"),
         ]);
       if (!active) return;
-      if (shopError) console.error("Erro ao carregar estabelecimentos:", shopError);
-      if (serviceError) console.error("Erro ao carregar serviços:", serviceError);
+      if (shopError) {
+        console.error("Erro ao carregar estabelecimentos:", shopError);
+      }
+      if (serviceError) {
+        console.error("Erro ao carregar serviços:", serviceError);
+      }
       setShops((shopData || []) as Shop[]);
       setServices((serviceData || []) as Service[]);
       setLoading(false);
@@ -133,7 +140,7 @@ export default function ClientCategory() {
           .join(" ")
           .toLocaleLowerCase("pt-BR");
         const matchesCategory =
-          category.id === "todos" || category.keywords.some((word) => content.includes(word));
+          category.id === "todos" || (shop.category_slug || "") === category.id;
         const matchesSubcategory = !subcategory || content.includes(subcategory.toLocaleLowerCase("pt-BR"));
         const matchesSearch = !normalizedQuery || content.includes(normalizedQuery);
         const minPrice = shopServices.length
