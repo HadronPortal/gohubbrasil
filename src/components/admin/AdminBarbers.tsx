@@ -266,104 +266,111 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
 
   if (isAdding) {
     return (
-      <form onSubmit={handleSave} className="space-y-8 animate-in slide-in-from-right duration-300">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" type="button" onClick={resetForm} className="text-[#8a9ab5]">VOLTAR</Button>
-          <h3 className="text-xs font-bold tracking-[0.25em] text-[#f0c040] font-oswald uppercase">
-            {editingBarber ? "EDITAR BARBEIRO" : "NOVO BARBEIRO"}
+      <form onSubmit={handleSave} className="space-y-6" style={{ fontFamily: "Poppins, sans-serif" }}>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" type="button" onClick={resetForm} className="h-9 px-3 rounded-[8px] text-sm text-[#64748B] hover:text-[#172033] hover:bg-[#F6F7FB]">
+            Voltar
+          </Button>
+          <h3 className="text-base font-semibold text-[#172033]">
+            {editingBarber ? "Editar profissional" : "Novo profissional"}
           </h3>
         </div>
 
-        {/* Avatar Upload */}
-        <div className="flex flex-col items-center gap-4">
-          <div 
+        <div className="flex flex-col items-center gap-2">
+          <button
+            type="button"
             onClick={() => document.getElementById('avatar-input')?.click()}
-            className="w-32 h-32 rounded-full border-2 border-[#f0c040] flex items-center justify-center overflow-hidden cursor-pointer bg-[#141b2a]"
+            className="h-24 w-24 rounded-full border border-dashed border-[#DDE3EE] bg-white flex items-center justify-center overflow-hidden hover:border-[#3157D5]/40 transition"
           >
             {avatarPreview ? (
-              <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
+              <img src={avatarPreview} alt="Preview" className="h-full w-full object-cover" />
             ) : (
-              <Camera className="w-8 h-8 text-[#8a9ab5]" />
+              <Camera className="h-6 w-6 text-[#94A3B8]" />
             )}
-          </div>
+          </button>
           <input id="avatar-input" type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-          <span className="text-[10px] text-[#8a9ab5] uppercase tracking-widest font-bold">FOTO DE PERFIL</span>
+          <span className="text-xs text-[#64748B]">Foto de perfil</span>
         </div>
 
-        <div className="space-y-4">
-          <Input placeholder="NOME COMPLETO" value={name} onChange={e => setName(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
-          <Input placeholder="WHATSAPP" type="tel" value={phone} onChange={e => setPhone(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
-          <Input placeholder="E-MAIL" type="email" value={email} onChange={e => setEmail(e.target.value)} required className="bg-[#141b2a] border-[#2a3347] h-12" />
-          <Input placeholder={editingBarber ? "NOVA SENHA (DEIXE EM BRANCO PARA MANTER)" : "SENHA INICIAL"} type="password" value={password} onChange={e => setPassword(e.target.value)} required={!editingBarber} className="bg-[#141b2a] border-[#2a3347] h-12" />
-          <Input placeholder="ESPECIALIDADE (EX: CORTE CLÁSSICO)" value={bio} onChange={e => setBio(e.target.value)} className="bg-[#141b2a] border-[#2a3347] h-12" />
-          <div className="flex gap-4">
+        <div className="space-y-3">
+          <Input placeholder="Nome completo" value={name} onChange={e => setName(e.target.value)} required className="h-11 rounded-[8px] border-[#DDE3EE]" />
+          <Input placeholder="WhatsApp" type="tel" value={phone} onChange={e => setPhone(e.target.value)} required className="h-11 rounded-[8px] border-[#DDE3EE]" />
+          <Input placeholder="E-mail" type="email" value={email} onChange={e => setEmail(e.target.value)} required className="h-11 rounded-[8px] border-[#DDE3EE]" />
+          <Input placeholder={editingBarber ? "Nova senha (deixe em branco para manter)" : "Senha inicial"} type="password" value={password} onChange={e => setPassword(e.target.value)} required={!editingBarber} className="h-11 rounded-[8px] border-[#DDE3EE]" />
+          <Input placeholder="Especialidade (ex: corte clássico)" value={bio} onChange={e => setBio(e.target.value)} className="h-11 rounded-[8px] border-[#DDE3EE]" />
+          <div className="flex gap-3 items-end">
             <div className="flex-1 space-y-1">
-              <label className="text-[10px] text-[#8a9ab5] ml-1 uppercase font-bold">COMISSÃO %</label>
-              <Input type="text" value={commission} onChange={e => setCommission(formatPercentage(e.target.value))} className="bg-[#141b2a] border-[#2a3347] h-12" />
+              <label className="text-xs font-medium text-[#172033]">Comissão %</label>
+              <Input type="text" value={commission} onChange={e => setCommission(formatPercentage(e.target.value))} className="h-11 rounded-[8px] border-[#DDE3EE]" />
             </div>
-            <div className="flex-1 flex flex-col justify-end pb-3">
-              <div className="flex items-center gap-2">
-                <input type="checkbox" id="active" checked={active} onChange={e => setActive(e.target.checked)} className="accent-[#f0c040]" />
-                <label htmlFor="active" className="text-xs text-[#c8d4e8] uppercase font-bold tracking-widest">ATIVO</label>
-              </div>
-            </div>
+            <label className="flex h-11 flex-1 items-center gap-2 rounded-[8px] border border-[#DDE3EE] bg-white px-3">
+              <input type="checkbox" id="active" checked={active} onChange={e => setActive(e.target.checked)} className="accent-[#3157D5]" />
+              <span className="text-sm font-medium text-[#172033]">Ativo</span>
+            </label>
           </div>
         </div>
 
-        <Button type="submit" className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-7 text-lg rounded-[4px] font-oswald uppercase tracking-[3px]" disabled={isLoading}>
-          {isLoading ? "SALVANDO..." : "SALVAR BARBEIRO"}
+        <Button type="submit" className="w-full h-12 rounded-[8px] bg-[#3157D5] text-sm font-semibold text-white hover:bg-[#274ac0]" disabled={isLoading}>
+          {isLoading ? "Salvando..." : "Salvar profissional"}
         </Button>
       </form>
     );
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <h3 className="text-xs font-bold tracking-[0.25em] text-[#f0c040] font-oswald uppercase">GERENCIAR BARBEIROS</h3>
-      
-      <div className="space-y-4">
-        {barbers.map(barber => (
-          <div 
-            key={barber.barber_id} 
-            onClick={() => handleEdit(barber)}
-            className="bg-[#141b2a] border border-[#2a3347] p-4 rounded-[4px] flex items-center gap-4 cursor-pointer hover:border-[#f0c040]/50 transition-all"
-          >
-            <UserAvatar 
-              name={barber.name} 
-              avatarUrl={barber.avatar_url} 
-              size="md" 
-              className="border-[#f0c040]" 
-            />
+    <div className="space-y-4" style={{ fontFamily: "Poppins, sans-serif" }}>
+      <h3 className="text-base font-semibold text-[#172033]">Equipe</h3>
 
-            <div className="flex-1">
-              <h4 className="text-sm font-bold text-[#c8d4e8] font-oswald uppercase tracking-wider">{barber.name}</h4>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] text-[#8a9ab5] uppercase tracking-wider">{barber.phone}</span>
-                <span className="text-[10px] text-[#8a9ab5] lowercase tracking-wider">{barber.email}</span>
-                <span className="text-[10px] text-[#f0c040] font-bold uppercase tracking-widest">COMISSÃO: {barber.commission_pct}%</span>
-              </div>
-              <span className={`text-[9px] font-bold uppercase tracking-widest ${barber.active ? "text-green-500" : "text-red-500"}`}>
-                {barber.active ? "ATIVO" : "INATIVO"}
-              </span>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              type="button"
-              onClick={(e) => handleDelete(barber.barber_id, e)}
-              className="text-[#8a9ab5] hover:text-red-500 transition-colors"
+      {isLoading && barbers.length === 0 ? (
+        <div className="space-y-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-20 animate-pulse rounded-[8px] border border-[#DDE3EE] bg-white" />
+          ))}
+        </div>
+      ) : barbers.length === 0 ? (
+        <div className="rounded-[8px] border border-dashed border-[#DDE3EE] bg-white py-8 text-center">
+          <p className="text-sm text-[#64748B]">Nenhum profissional cadastrado.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {barbers.map(barber => (
+            <div
+              key={barber.barber_id}
+              onClick={() => handleEdit(barber)}
+              className="flex items-center gap-3 rounded-[8px] border border-[#DDE3EE] bg-white p-3 cursor-pointer hover:border-[#3157D5]/40 hover:shadow-sm transition"
             >
-              <Trash2 className="w-5 h-5" />
-            </Button>
-          </div>
-        ))}
-      </div>
+              <UserAvatar name={barber.name} avatarUrl={barber.avatar_url} size="md" className="border-[#DDE3EE]" />
+              <div className="min-w-0 flex-1">
+                <h4 className="truncate text-sm font-semibold text-[#172033]">{barber.name}</h4>
+                <p className="truncate text-xs text-[#64748B]">{barber.phone || "—"}</p>
+                <p className="truncate text-xs text-[#64748B] lowercase">{barber.email}</p>
+                <div className="mt-1 flex items-center gap-2">
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${barber.active ? "bg-[#E7F7EE] text-[#15803D]" : "bg-[#FDECEC] text-[#B91C1C]"}`}>
+                    {barber.active ? "Ativo" : "Inativo"}
+                  </span>
+                  <span className="text-[11px] text-[#64748B]">Comissão {barber.commission_pct ?? 0}%</span>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                onClick={(e) => handleDelete(barber.barber_id, e)}
+                className="h-9 w-9 rounded-[8px] text-[#64748B] hover:bg-[#FDECEC] hover:text-[#DC2626]"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
 
-      <Button 
+      <Button
         onClick={() => setIsAdding(true)}
-        className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold py-7 text-lg rounded-[4px] font-oswald uppercase tracking-[3px] mt-4"
+        className="w-full h-12 rounded-[8px] bg-[#3157D5] text-sm font-semibold text-white hover:bg-[#274ac0] gap-2"
       >
-        ADICIONAR BARBEIRO
+        <Plus className="h-4 w-4" />
+        Adicionar profissional
       </Button>
     </div>
   );
