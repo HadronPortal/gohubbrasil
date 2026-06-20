@@ -65,6 +65,58 @@ export type ServiceVisualInput = {
   categorySlug?: string | null;
 };
 
+const SERVICE_DISPLAY_NAMES: Record<string, string> = {
+  "corte": "Corte",
+  "barba": "Barba",
+  "corte-e-barba": "Corte e barba",
+  "corte-infantil": "Corte infantil",
+  "pigmentacao": "Pigmentação",
+  "corte-feminino": "Corte feminino",
+  "escova": "Escova",
+  "coloracao": "Coloração",
+  "hidratacao": "Hidratação",
+  "penteados": "Penteados",
+  "manicure": "Manicure",
+  "pedicure": "Pedicure",
+  "alongamento": "Alongamento",
+  "esmaltacao-em-gel": "Esmaltação em gel",
+  "nail-art": "Nail art",
+  "limpeza-de-pele": "Limpeza de pele",
+  "estetica-facial": "Estética facial",
+  "estetica-corporal": "Estética corporal",
+  "drenagem": "Drenagem",
+  "harmonizacao-facial": "Harmonização facial",
+  "massagem-relaxante": "Massagem relaxante",
+  "massagem-terapeutica": "Massagem terapêutica",
+  "massagem-desportiva": "Massagem desportiva",
+  "drenagem-linfatica": "Drenagem linfática",
+  "pedras-quentes": "Pedras quentes",
+  "design-de-sobrancelhas": "Design de sobrancelhas",
+  "henna": "Henna",
+  "micropigmentacao": "Micropigmentação",
+  "lash-lifting": "Lash lifting",
+  "extensao-de-cilios": "Extensão de cílios",
+  "maquiagem-social": "Maquiagem social",
+  "maquiagem-para-noiva": "Maquiagem para noiva",
+  "maquiagem-para-festa": "Maquiagem para festa",
+  "maquiagem-editorial": "Maquiagem editorial",
+  "maquiagem-dia-a-dia": "Maquiagem dia a dia",
+  "depilacao-com-cera": "Depilação com cera",
+  "depilacao-a-laser": "Depilação a laser",
+  "depilacao-facial": "Depilação facial",
+  "depilacao-corporal": "Depilação corporal",
+  "depilacao-intima": "Depilação íntima",
+  "atendimento-clinico": "Atendimento clínico",
+  "unha-encravada": "Unha encravada",
+  "calosidades": "Calosidades",
+  "reflexologia": "Reflexologia",
+  "spa-dos-pes": "Spa dos pés",
+};
+
+export function getServiceDisplayName(name: string, slug?: string | null): string {
+  return (slug && SERVICE_DISPLAY_NAMES[slug]) || name;
+}
+
 const CATEGORY_FALLBACK: Record<string, string> = {
   barbearias: catBarbearias,
   cabelos: catCabelos,

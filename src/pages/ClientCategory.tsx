@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { ClientBottomNav } from "@/components/client/ClientBottomNav";
 import { CLIENT_CATEGORIES, getCategoryBySlug } from "@/lib/clientCategories";
-import { getServiceVisual } from "@/lib/serviceVisuals";
+import { getServiceDisplayName, getServiceVisual } from "@/lib/serviceVisuals";
 import "@/lib/serviceIcons"; // registers icon_key → image map used by getServiceVisual
 
 type Shop = {
@@ -301,8 +301,9 @@ export default function ClientCategory() {
               >
                 {catalog.map((item) => {
                   const selected = selectedCatalog?.id === item.id;
+                  const displayName = getServiceDisplayName(item.name, item.slug);
                   const visual = getServiceVisual({
-                    name: item.name,
+                    name: displayName,
                     catalogIconKey: item.icon_key,
                     catalogSlug: item.slug,
                     categorySlug: category.id,
@@ -312,7 +313,7 @@ export default function ClientCategory() {
                       key={item.id}
                       type="button"
                       onClick={() => setSelectedCatalog(selected ? null : item)}
-                      className="grid w-[76px] shrink-0 grid-rows-[64px_36px] gap-2 text-center active:scale-95"
+                      className="grid w-[88px] shrink-0 grid-rows-[64px_40px] gap-2 text-center active:scale-95"
                       style={{ scrollSnapAlign: "start" }}
                     >
                       <div
@@ -330,8 +331,8 @@ export default function ClientCategory() {
                           className="h-12 w-12 object-contain"
                         />
                       </div>
-                      <span className="mx-auto flex h-9 w-full items-start justify-center overflow-hidden text-center text-[11px] font-semibold leading-[14px] text-slate-700 line-clamp-2 [overflow-wrap:anywhere]">
-                        {item.name}
+                      <span className="mx-auto flex h-10 w-full items-start justify-center overflow-hidden px-0.5 text-center text-[11px] font-semibold leading-[14px] text-slate-700 line-clamp-2 break-words">
+                        {displayName}
                       </span>
                     </button>
                   );
