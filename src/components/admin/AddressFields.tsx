@@ -33,6 +33,36 @@ export function composeAddress(a: AddressData): string {
   return parts.join(" - ");
 }
 
+export function parseAddress(address?: string | null): AddressData {
+  if (!address?.trim()) return { ...emptyAddress };
+
+  let remaining = address.trim();
+  const parsed: AddressData = { ...emptyAddress };
+
+  const cepMatch = remaining.match(/\s*-\s*CEP\s+(\d{5}-?\d{3})\s*$/i);
+  if (cepMatch) {
+    parsed.cep = maskCep(cepMatch[1]);
+    remaining = remaining.slice(0, cepMatch.index).trim();
+  }
+
+  const cityStateMatch = remaining.match(/\s*-\s*([^,-]+)\/([A-Za-z]{2})\s*$/);
+  if (cityStateMatch) {
+    parsed.city = cityStateMatch[1].trim();
+    parsed.state = cityStateMatch[2].toUpperCase();
+    remaining = remaining.slice(0, cityStateMatch.index).trim();
+  }
+
+  const segments = remaining.split(/\s+-\s+/).map((part) => part.trim()).filter(Boolean);
+  const streetAndNumber = segments.shift() || "";
+  if (segments.length) parsed.neighborhood = segments.pop() || "";
+  if (segments.length) parsed.complement = segments.join(" - ");
+
+  const lineMatch = streetAndNumber.match(/^(.*?)(?:,\s*([^,]+))?$/);
+  parsed.street = lineMatch?.[1]?.trim() || streetAndNumber;
+  parsed.number = lineMatch?.[2]?.trim() || "";
+  return parsed;
+}
+
 function maskCep(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 8);
   if (digits.length > 5) return `${digits.slice(0, 5)}-${digits.slice(5)}`;

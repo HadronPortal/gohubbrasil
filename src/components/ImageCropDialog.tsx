@@ -132,10 +132,10 @@ export function ImageCropDialog({
           <p className="text-center text-xs text-slate-500">Arraste a imagem para ajustar o enquadramento.</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Button type="button" variant="outline" className="h-12 rounded-[8px]" onClick={onCancel}>
+          <Button type="button" variant="outline" className="h-12 rounded-[8px] !border-[#CBD5E1] !bg-white !text-[#172033] hover:!bg-[#F1F5F9]" onClick={onCancel}>
             Cancelar
           </Button>
-          <Button type="button" className="h-12 rounded-[8px] bg-[#3157D5]" onClick={confirm} disabled={!pixels || processing}>
+          <Button type="button" className="h-12 rounded-[8px] !bg-[#3157D5] !text-white hover:!bg-[#274AC0]" onClick={confirm} disabled={!pixels || processing}>
             {processing ? "Recortando..." : "Usar imagem"}
           </Button>
         </div>

@@ -60,7 +60,7 @@ import {
   getCategoryMeta,
   displayCategoryName,
 } from "@/lib/establishmentCategories";
-import { AddressFields, AddressData, emptyAddress, composeAddress } from "@/components/admin/AddressFields";
+import { AddressFields, AddressData, emptyAddress, composeAddress, parseAddress } from "@/components/admin/AddressFields";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 import gohubLogo from "@/assets/login/gohub-logo.png";
 
@@ -948,7 +948,7 @@ export default function SuperAdmin() {
                                   (categoryId) => categoryId !== shop.category_id,
                                 ),
                               );
-                              setEditAddress({ ...emptyAddress, street: shop.address || "" });
+                              setEditAddress(parseAddress(shop.address));
                             }}
                           >
                             <Pencil className="h-4 w-4" />
