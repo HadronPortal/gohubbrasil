@@ -8,6 +8,7 @@ type ImageCropDialogProps = {
   open: boolean;
   title: string;
   cropShape?: "rect" | "round";
+  aspect?: number;
   onCancel: () => void;
   onConfirm: (file: File) => void;
 };
@@ -59,6 +60,7 @@ export function ImageCropDialog({
   open,
   title,
   cropShape = "rect",
+  aspect = 1,
   onCancel,
   onConfirm,
 }: ImageCropDialogProps) {
@@ -106,7 +108,7 @@ export function ImageCropDialog({
               image={source}
               crop={crop}
               zoom={zoom}
-              aspect={1}
+              aspect={aspect}
               cropShape={cropShape}
               showGrid
               onCropChange={setCrop}

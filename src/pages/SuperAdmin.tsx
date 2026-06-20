@@ -363,6 +363,19 @@ export default function SuperAdmin() {
     e.target.value = "";
   };
 
+  const cropExistingLogo = async () => {
+    if (!editingBarbershop?.logo_url) return;
+    try {
+      const response = await fetch(editingBarbershop.logo_url);
+      if (!response.ok) throw new Error("Não foi possível carregar a foto atual.");
+      const blob = await response.blob();
+      setPendingLogoIsEdit(true);
+      setPendingLogoFile(new File([blob], "estabelecimento-atual.jpg", { type: blob.type || "image/jpeg" }));
+    } catch (error: any) {
+      toast.error(error.message || "Não foi possível ajustar a foto atual.");
+    }
+  };
+
   const uploadLogo = async (file: File) => {
     const ext = file.name.split(".").pop();
     const path = `${crypto.randomUUID()}.${ext}`;
@@ -1214,6 +1227,17 @@ export default function SuperAdmin() {
               >
                 Trocar logo
               </Button>
+              {editingBarbershop?.logo_url && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={cropExistingLogo}
+                  className="h-9 rounded-[8px] text-xs text-[#3157D5] hover:bg-[#EAF0FF]"
+                >
+                  Ajustar enquadramento
+                </Button>
+              )}
             </div>
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -1468,6 +1492,7 @@ export default function SuperAdmin() {
         file={pendingLogoFile}
         open={!!pendingLogoFile}
         title="Enquadrar foto do estabelecimento"
+        aspect={16 / 9}
         onCancel={() => setPendingLogoFile(null)}
         onConfirm={(croppedFile) => {
           if (pendingLogoIsEdit) {

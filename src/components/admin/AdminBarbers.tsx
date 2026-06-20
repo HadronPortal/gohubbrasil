@@ -116,6 +116,18 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
     }
   };
 
+  const cropExistingAvatar = async () => {
+    if (!avatarPreview) return;
+    try {
+      const response = await fetch(avatarPreview);
+      if (!response.ok) throw new Error("Não foi possível carregar a foto atual.");
+      const blob = await response.blob();
+      setPendingAvatarFile(new File([blob], "profissional-atual.jpg", { type: blob.type || "image/jpeg" }));
+    } catch (error: any) {
+      toast.error(error.message || "Não foi possível ajustar a foto atual.");
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -293,6 +305,11 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
           </button>
           <input id="avatar-input" type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
           <span className="text-xs text-[#64748B]">Foto de perfil</span>
+          {avatarPreview && (
+            <button type="button" onClick={cropExistingAvatar} className="text-xs font-semibold text-[#3157D5]">
+              Ajustar enquadramento
+            </button>
+          )}
         </div>
 
         <div className="space-y-3">
