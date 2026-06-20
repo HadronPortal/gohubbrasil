@@ -65,15 +65,56 @@ const businesses = {
 };
 
 const photos = {
-  barbearias: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=900&q=80",
-  cabelos: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=900&q=80",
-  unhas: "https://images.unsplash.com/photo-1604654894610-df63bc536371?auto=format&fit=crop&w=900&q=80",
-  estetica: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=900&q=80",
-  massoterapia: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=900&q=80",
-  sobrancelhas: "https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=900&q=80",
-  maquiagem: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=900&q=80",
-  depilacao: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=80",
-  podologia: "https://images.unsplash.com/photo-1519415510236-718bdfcd89c8?auto=format&fit=crop&w=900&q=80",
+  barbearias: [
+    "photo-1503951914875-452162b0f3f1",
+    "photo-1621605815971-fbc98d665033",
+    "photo-1585747860715-2ba37e788b70",
+  ],
+  cabelos: [
+    "photo-1560066984-138dadb4c035",
+    "photo-1522337360788-8b13dee7a37e",
+    "photo-1633681926022-84c23e8cb2d6",
+  ],
+  unhas: [
+    "photo-1604654894610-df63bc536371",
+    "photo-1610992015732-2449b76344bc",
+    "photo-1632345031435-8727f6897d53",
+  ],
+  estetica: [
+    "photo-1570172619644-dfd03ed5d881",
+    "photo-1616394584738-fc6e612e71b9",
+    "photo-1515377905703-c4788e51af15",
+  ],
+  massoterapia: [
+    "photo-1544161515-4ab6ce6db874",
+    "photo-1600334089648-b0d9d3028eb2",
+    "photo-1519823551278-64ac92734fb1",
+  ],
+  sobrancelhas: [
+    "photo-1487412912498-0447578fcca8",
+    "photo-1512496015851-a90fb38ba796",
+    "photo-1526045478516-99145907023c",
+  ],
+  maquiagem: [
+    "photo-1522335789203-aabd1fc54bc9",
+    "photo-1596462502278-27bfdc403348",
+    "photo-1515688594390-b649af70d282",
+  ],
+  depilacao: [
+    "photo-1540555700478-4be289fbecef",
+    "photo-1560750588-73207b1ef5b8",
+    "photo-1556228578-8c89e6adf883",
+  ],
+  podologia: [
+    "photo-1519415510236-718bdfcd89c8",
+    "photo-1629909613654-28e377c37b09",
+    "photo-1512678080530-7760d81faba6",
+  ],
+};
+
+const photoUrl = (categorySlug, index) => {
+  const photoId = photos[categorySlug]?.[index];
+  return `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=900&h=600&q=82`;
 };
 
 const addresses = [
@@ -133,7 +174,7 @@ for (const [categoryIndex, category] of categories.entries()) {
       slug,
       phone: `1699${String(categoryIndex + 1).padStart(2, "0")}${String(businessIndex + 1).padStart(2, "0")}000`,
       address: address[0],
-      logo_url: photos[category.slug],
+      logo_url: photoUrl(category.slug, businessIndex),
       active: true,
       description,
       blocked: false,
@@ -162,6 +203,12 @@ for (const [categoryIndex, category] of categories.entries()) {
       if (error) throw error;
       barbershopId = created.id;
       insertedBusinesses += 1;
+    } else {
+      const { error } = await supabase
+        .from("barbershops")
+        .update(payload)
+        .eq("id", barbershopId);
+      if (error) throw error;
     }
 
     const { error: linkError } = await supabase
