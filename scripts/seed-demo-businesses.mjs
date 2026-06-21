@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { randomUUID } from "node:crypto";
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -62,6 +63,18 @@ const businesses = {
     ["Clínica Passo Leve", "Podologia clínica e cuidados preventivos."],
     ["Espaço Pé Saudável", "Tratamentos especializados e spa dos pés."],
   ],
+};
+
+const professionalNames = {
+  barbearias: ["Rafael Martins", "Caio Oliveira", "Lucas Andrade", "Bruno Lima", "Diego Alves", "Matheus Rocha"],
+  cabelos: ["Marina Costa", "Júlia Freitas", "Camila Nunes", "Renata Alves", "Bianca Martins", "Larissa Prado"],
+  unhas: ["Amanda Ribeiro", "Natália Souza", "Carla Mendes", "Isabela Lima", "Fernanda Castro", "Letícia Moraes"],
+  estetica: ["Dra. Paula Ribeiro", "Aline Martins", "Dra. Beatriz Souza", "Mônica Reis", "Dra. Laura Campos", "Vanessa Lima"],
+  massoterapia: ["Eduardo Nunes", "Patrícia Gomes", "Marcelo Farias", "Denise Rocha", "Thiago Barros", "Sabrina Alves"],
+  sobrancelhas: ["Gabriela Freitas", "Lívia Martins", "Priscila Nunes", "Evelyn Costa", "Raquel Lima", "Débora Souza"],
+  maquiagem: ["Bruna Ferreira", "Nicole Martins", "Vitória Alves", "Manuela Costa", "Giovana Ribeiro", "Milena Prado"],
+  depilacao: ["Cristina Lopes", "Elisa Martins", "Mirela Santos", "Tatiane Alves", "Daniela Nunes", "Flávia Costa"],
+  podologia: ["Dra. Adriana Lima", "Cláudia Martins", "Dra. Silvana Rocha", "Márcia Nunes", "Dra. Elaine Costa", "Rosana Alves"],
 };
 
 const photos = {
@@ -161,6 +174,16 @@ if (catalogError) throw catalogError;
 
 let insertedBusinesses = 0;
 let insertedServices = 0;
+let insertedProfessionals = 0;
+
+const { data: authPage, error: authListError } = await supabase.auth.admin.listUsers({
+  page: 1,
+  perPage: 1000,
+});
+if (authListError) throw authListError;
+const authUsersByEmail = new Map(
+  (authPage.users || []).map((user) => [String(user.email || "").toLowerCase(), user]),
+);
 
 for (const [categoryIndex, category] of categories.entries()) {
   const entries = businesses[category.slug] || [];
@@ -251,6 +274,75 @@ for (const [categoryIndex, category] of categories.entries()) {
       if (error) throw error;
       insertedServices += servicesToCreate.length;
     }
+
+    const names = professionalNames[category.slug] || [];
+    const selectedProfessionals = names.slice(businessIndex * 2, businessIndex * 2 + 2);
+
+    for (const [professionalIndex, professionalName] of selectedProfessionals.entries()) {
+      const demoIndex = businessIndex * 2 + professionalIndex + 1;
+      const email = `demo.${slug}.${demoIndex}@gohub.app`.toLowerCase();
+      const phone = `1698${String(categoryIndex + 1).padStart(2, "0")}${String(demoIndex).padStart(2, "0")}00`;
+      let authUser = authUsersByEmail.get(email);
+
+      if (!authUser) {
+        const { data: createdAuth, error: createAuthError } = await supabase.auth.admin.createUser({
+          email,
+          password: `Demo-${randomUUID()}-A1!`,
+          email_confirm: true,
+          user_metadata: {
+            name: professionalName,
+            phone,
+            role: "barber",
+            barbershop_id: barbershopId,
+            demo: true,
+          },
+        });
+        if (createAuthError) throw createAuthError;
+        authUser = createdAuth.user;
+        authUsersByEmail.set(email, authUser);
+      }
+
+      const avatarNumber = ((categoryIndex * 6 + demoIndex - 1) % 70) + 1;
+      const { error: profileError } = await supabase.from("users").upsert(
+        {
+          id: authUser.id,
+          barbershop_id: barbershopId,
+          role: "barber",
+          name: professionalName,
+          phone,
+          avatar_url: `https://i.pravatar.cc/300?img=${avatarNumber}`,
+        },
+        { onConflict: "id" },
+      );
+      if (profileError) throw profileError;
+
+      const { data: existingBarber, error: barberFindError } = await supabase
+        .from("barbers")
+        .select("id")
+        .eq("user_id", authUser.id)
+        .maybeSingle();
+      if (barberFindError) throw barberFindError;
+
+      const barberPayload = {
+        user_id: authUser.id,
+        barbershop_id: barbershopId,
+        bio: `Profissional de ${category.name.toLowerCase()} com atendimento personalizado.`,
+        commission_pct: 45 + professionalIndex * 5,
+        active: true,
+      };
+
+      if (existingBarber?.id) {
+        const { error } = await supabase
+          .from("barbers")
+          .update(barberPayload)
+          .eq("id", existingBarber.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("barbers").insert(barberPayload);
+        if (error) throw error;
+        insertedProfessionals += 1;
+      }
+    }
   }
 }
 
@@ -264,6 +356,7 @@ console.log(
     {
       insertedBusinesses,
       insertedServices,
+      insertedProfessionals,
       totalBusinesses: count,
       preservedRealBusinesses: 2,
     },
