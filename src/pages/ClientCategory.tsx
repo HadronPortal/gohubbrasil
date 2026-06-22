@@ -19,13 +19,24 @@ import { ClientBottomNav } from "@/components/client/ClientBottomNav";
 import { CLIENT_CATEGORIES, getCategoryBySlug } from "@/lib/clientCategories";
 import { getServiceDisplayName, getServiceVisual } from "@/lib/serviceVisuals";
 import "@/lib/serviceIcons"; // registers icon_key → image map used by getServiceVisual
+import petProdRacoes from "@/assets/services/pet/produto-racoes.png";
+import petProdPetiscos from "@/assets/services/pet/produto-petiscos.png";
+import petProdHigiene from "@/assets/services/pet/produto-higiene.png";
+import petProdBrinquedos from "@/assets/services/pet/produto-brinquedos.png";
+import petProdAcessorios from "@/assets/services/pet/produto-acessorios.png";
 
 // Tipos comerciais Pet: exibem estabelecimentos sem fluxo de agendamento.
 const PET_STORE_TYPES = ["Pet shop", "Rações e acessórios"] as const;
 type PetStoreType = (typeof PET_STORE_TYPES)[number];
 
-const PET_PRODUCT_FILTERS = ["Rações", "Petiscos", "Higiene", "Brinquedos", "Acessórios"] as const;
-type PetProductFilter = (typeof PET_PRODUCT_FILTERS)[number];
+const PET_PRODUCT_FILTERS: { label: PetProductFilter; image: string }[] = [
+  { label: "Rações", image: petProdRacoes },
+  { label: "Petiscos", image: petProdPetiscos },
+  { label: "Higiene", image: petProdHigiene },
+  { label: "Brinquedos", image: petProdBrinquedos },
+  { label: "Acessórios", image: petProdAcessorios },
+];
+type PetProductFilter = "Rações" | "Petiscos" | "Higiene" | "Brinquedos" | "Acessórios";
 
 type Shop = {
   id: string;
