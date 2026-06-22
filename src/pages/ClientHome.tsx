@@ -406,13 +406,21 @@ function LocationModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white border-slate-200 max-w-md">
-        <DialogHeader>
+      <DialogContent
+        className="bg-white border-slate-200 p-0 gap-0 flex flex-col w-[calc(100vw-32px)] max-w-[480px] translate-x-[-50%] translate-y-[-50%] rounded-[12px] sm:rounded-[12px]"
+        style={{
+          maxHeight: "calc(100dvh - 32px)",
+          paddingTop: "max(env(safe-area-inset-top), 0px)",
+          paddingBottom: "max(env(safe-area-inset-bottom), 0px)",
+        }}
+      >
+        <DialogHeader className="px-5 pt-5 pb-3 shrink-0">
           <DialogTitle className="text-[#172033]">Sua localização</DialogTitle>
           <DialogDescription className="text-slate-500">
             {current ? `Atual: ${current.label}` : "Defina sua localização para ver estabelecimentos próximos."}
           </DialogDescription>
         </DialogHeader>
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 pb-5 space-y-4">
         <button
           onClick={useCurrentLocation}
           disabled={requesting || resolving}
@@ -421,9 +429,9 @@ function LocationModal({
           <div className="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center">
             <Navigation className="w-4 h-4 text-indigo-600" />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-medium text-[#172033]">Usar minha localização atual</p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 truncate">
               {requesting
                 ? "Buscando sua localização..."
                 : resolving
@@ -442,9 +450,12 @@ function LocationModal({
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Rua, número, bairro, cidade ou CEP"
               onKeyDown={(e) => e.key === "Enter" && submitSearch()}
-              className="bg-white border-slate-200 text-[#172033]"
+              className="bg-white border-slate-200 text-[#172033] min-w-0 flex-1"
+              onFocus={(e) => {
+                setTimeout(() => e.currentTarget?.scrollIntoView({ block: "center", behavior: "smooth" }), 250);
+              }}
             />
-            <Button onClick={submitSearch} disabled={searching || !query.trim()} className="bg-[#4338CA] hover:bg-[#3730A3] text-white">
+            <Button onClick={submitSearch} disabled={searching || !query.trim()} className="bg-[#4338CA] hover:bg-[#3730A3] text-white shrink-0">
               {searching ? "..." : "Buscar"}
             </Button>
           </div>
@@ -457,7 +468,7 @@ function LocationModal({
                   className="select-none w-full flex items-start gap-2 p-2 rounded-[6px] hover:bg-slate-50 transition text-left"
                 >
                   <MapPin className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm text-[#172033]">{r.label}{r.city ? ` — ${r.city}${r.state ? `/${r.state}` : ""}` : ""}</span>
+                  <span className="text-sm text-[#172033] break-words min-w-0">{r.label}{r.city ? ` — ${r.city}${r.state ? `/${r.state}` : ""}` : ""}</span>
                 </button>
               ))}
             </div>
@@ -473,13 +484,14 @@ function LocationModal({
                   onClick={() => onPick(s)}
                   className="select-none w-full flex items-center gap-3 p-2 rounded-[6px] hover:bg-slate-50 transition text-left"
                 >
-                  <MapPin className="w-4 h-4 text-slate-400" />
+                  <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
                   <span className="text-sm text-[#172033] truncate">{s.label}</span>
                 </button>
               ))}
             </div>
           </div>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   );
