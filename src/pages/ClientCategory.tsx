@@ -317,6 +317,7 @@ export default function ClientCategory() {
                       onClick={() => {
                         setSelectedPetType(selected ? null : type);
                         setSelectedCatalog(null);
+                        setSelectedProductFilter(null);
                       }}
                       className={`h-9 shrink-0 rounded-full border px-3 text-xs font-semibold transition ${
                         selected
