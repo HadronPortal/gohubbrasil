@@ -7,6 +7,7 @@ import iconSobrancelhas from "@/assets/categories/sobrancelhas.png";
 import iconMaquiagem from "@/assets/categories/maquiagem.png";
 import iconDepilacao from "@/assets/categories/depilacao.png";
 import iconPodologia from "@/assets/categories/podologia.png";
+import iconPet from "@/assets/categories/pet.png";
 
 export type EstablishmentCategory = {
   id: string;
@@ -24,6 +25,7 @@ export const ESTABLISHMENT_CATEGORIES: EstablishmentCategory[] = [
   { id: "maquiagem", label: "Maquiagem", image: iconMaquiagem },
   { id: "depilacao", label: "Depilação", image: iconDepilacao },
   { id: "podologia", label: "Podologia", image: iconPodologia },
+  { id: "pet", label: "Pet", image: iconPet },
 ];
 
 const STORAGE_KEY = "gohub:shop-category";
@@ -67,7 +69,20 @@ export const CATEGORY_SLUG_LABELS: Record<string, string> = {
   maquiagem: "Maquiagem",
   depilacao: "Depilação",
   podologia: "Podologia",
+  pet: "Pet",
 };
+
+/**
+ * Sub-tipos que um estabelecimento Pet pode marcar simultaneamente
+ * (ex.: um Pet shop que também faz Banho e tosa).
+ */
+export const PET_BUSINESS_TYPES = [
+  "Pet shop",
+  "Loja de rações",
+  "Banho e tosa",
+  "Clínica veterinária",
+] as const;
+export type PetBusinessType = (typeof PET_BUSINESS_TYPES)[number];
 
 export function displayCategoryName(
   slug?: string | null,

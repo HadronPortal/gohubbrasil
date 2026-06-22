@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Clock3, Heart, MapPin, Share2, Sparkles, Star } from "lucide-react";
+import { ArrowLeft, Clock3, Heart, MapPin, Share2, Sparkles, Star, Store } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingScreen } from "@/components/LoadingScreen";
@@ -134,9 +134,22 @@ export default function ClientBusiness() {
           </div>
 
           {services.length === 0 ? (
-            <div className="rounded-[8px] border border-dashed border-slate-300 bg-white p-8 text-center">
-              <Sparkles className="mx-auto h-7 w-7 text-slate-300" />
-              <p className="mt-3 text-sm font-semibold">Serviços em atualização</p>
+            <div className="rounded-[8px] border border-slate-200 bg-white p-6 text-center">
+              <div
+                className="mx-auto flex h-12 w-12 items-center justify-center rounded-full"
+                style={{ backgroundColor: `${category.accent}1A`, color: category.accent }}
+              >
+                <Store className="h-6 w-6" />
+              </div>
+              <p className="mt-3 text-sm font-bold">Ver loja</p>
+              <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                Este estabelecimento não realiza agendamentos online. Visite a loja para conhecer os produtos e serviços.
+              </p>
+              {shop.address && (
+                <p className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-slate-600">
+                  <MapPin className="h-3.5 w-3.5" /> {shop.address}
+                </p>
+              )}
             </div>
           ) : (
             <div className="overflow-hidden rounded-[8px] border border-slate-200 bg-white">

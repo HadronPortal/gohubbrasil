@@ -51,6 +51,18 @@ import massoAuriculo from "@/assets/services/massoterapia/auriculoterapia.png";
 import massoVentosa from "@/assets/services/massoterapia/ventosaterapia.png";
 import massoReflexo from "@/assets/services/massoterapia/reflexologia.png";
 
+// Pet — biblioteca dedicada
+import petBanho from "@/assets/services/pet/banho.png";
+import petTosa from "@/assets/services/pet/tosa.png";
+import petBanhoETosa from "@/assets/services/pet/banho-e-tosa.png";
+import petTosaHigienica from "@/assets/services/pet/tosa-higienica.png";
+import petHidratacao from "@/assets/services/pet/hidratacao.png";
+import petCorteUnhas from "@/assets/services/pet/corte-de-unhas.png";
+import petLimpezaOuvidos from "@/assets/services/pet/limpeza-de-ouvidos.png";
+import petEscovacao from "@/assets/services/pet/escovacao.png";
+import petTaxi from "@/assets/services/pet/taxi-pet.png";
+import petCreche from "@/assets/services/pet/creche-pet.png";
+
 export type IconEntry = {
   key: string;
   label: string;
@@ -117,6 +129,17 @@ export const ICON_LIBRARY: IconEntry[] = [
   { key: "calosidades", label: "Calosidades", image: podologiaCalosidades, category: "podologia", aliases: ["calos"] },
   { key: "reflexologia", label: "Reflexologia", image: podologiaReflexologia, category: "podologia" },
   { key: "spa-dos-pes", label: "Spa dos pés", image: podologiaSpa, category: "podologia", aliases: ["spa"] },
+  // Pet
+  { key: "pet-banho", label: "Banho", image: petBanho, category: "pet", aliases: ["banho"] },
+  { key: "pet-tosa", label: "Tosa", image: petTosa, category: "pet", aliases: ["tosa"] },
+  { key: "pet-banho-e-tosa", label: "Banho e tosa", image: petBanhoETosa, category: "pet", aliases: ["banho e tosa"] },
+  { key: "pet-tosa-higienica", label: "Tosa higiênica", image: petTosaHigienica, category: "pet", aliases: ["tosa higienica", "higienica"] },
+  { key: "pet-hidratacao", label: "Hidratação", image: petHidratacao, category: "pet", aliases: ["hidratacao pet", "hidratacao", "hidratação"] },
+  { key: "pet-corte-de-unhas", label: "Corte de unhas", image: petCorteUnhas, category: "pet", aliases: ["corte de unhas", "unhas"] },
+  { key: "pet-limpeza-de-ouvidos", label: "Limpeza de ouvidos", image: petLimpezaOuvidos, category: "pet", aliases: ["limpeza de ouvidos", "ouvidos"] },
+  { key: "pet-escovacao", label: "Escovação", image: petEscovacao, category: "pet", aliases: ["escovacao", "escovação"] },
+  { key: "pet-taxi", label: "Táxi pet", image: petTaxi, category: "pet", aliases: ["taxi pet", "taxi"] },
+  { key: "pet-creche", label: "Creche pet", image: petCreche, category: "pet", aliases: ["creche pet", "creche"] },
 ];
 
 const ICON_BY_KEY: Record<string, IconEntry> = ICON_LIBRARY.reduce((acc, entry) => {

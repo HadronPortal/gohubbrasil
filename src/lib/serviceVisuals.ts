@@ -53,6 +53,7 @@ import catSobrancelhas from "@/assets/categories/sobrancelhas.png";
 import catMaquiagem from "@/assets/categories/maquiagem.png";
 import catDepilacao from "@/assets/categories/depilacao.png";
 import catPodologia from "@/assets/categories/podologia.png";
+import catPet from "@/assets/categories/pet.png";
 import catVerMais from "@/assets/categories/ver-mais.png";
 
 export type ServiceVisual = { image: string; matched: boolean };
@@ -127,6 +128,7 @@ const CATEGORY_FALLBACK: Record<string, string> = {
   maquiagem: catMaquiagem,
   depilacao: catDepilacao,
   podologia: catPodologia,
+  pet: catPet,
   todos: catVerMais,
 };
 

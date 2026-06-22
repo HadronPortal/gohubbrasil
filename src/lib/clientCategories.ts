@@ -7,6 +7,7 @@ import iconSobrancelhas from "@/assets/categories/sobrancelhas.png";
 import iconMaquiagem from "@/assets/categories/maquiagem.png";
 import iconDepilacao from "@/assets/categories/depilacao.png";
 import iconPodologia from "@/assets/categories/podologia.png";
+import iconPet from "@/assets/categories/pet.png";
 import iconVerMais from "@/assets/categories/ver-mais.png";
 
 export type ClientCategory = {
@@ -120,6 +121,28 @@ export const CLIENT_CATEGORIES: ClientCategory[] = [
     headline: "Cuidado especializado para seus pés",
     accent: "#E27B35",
     soft: "#FFF0E5",
+  },
+  {
+    id: "pet",
+    label: "Pet",
+    image: iconPet,
+    subcategories: [
+      "Banho",
+      "Tosa",
+      "Banho e tosa",
+      "Tosa higiênica",
+      "Hidratação",
+      "Corte de unhas",
+      "Limpeza de ouvidos",
+      "Escovação",
+      "Táxi pet",
+      "Creche pet",
+    ],
+    keywords: ["pet", "cachorro", "gato", "banho e tosa", "veterinário", "ração"],
+    eyebrow: "Cuidando de quem você ama",
+    headline: "Tudo para o seu pet em um só lugar",
+    accent: "#F59E0B",
+    soft: "#FFF4DC",
   },
   {
     id: "todos",
