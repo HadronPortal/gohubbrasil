@@ -1,55 +1,34 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import robustusLogo from "@/assets/sponsors/robustus/logo.png";
-import bannerLifeSpecial from "@/assets/sponsors/robustus/banner-life-special.jpg";
-import bannerMais from "@/assets/sponsors/robustus/banner-mais.jpg";
-import bannerDiaADia from "@/assets/sponsors/robustus/banner-dia-a-dia.jpg";
-import bannerOndeComprar from "@/assets/sponsors/robustus/banner-onde-comprar.jpg";
-import bannerInstitucional from "@/assets/sponsors/robustus/banner-institucional.jpg";
+import bannerLifeSpecial from "@/assets/sponsors/robustus/official-life-special.png";
+import bannerMais from "@/assets/sponsors/robustus/official-mais.png";
+import bannerInstitucional from "@/assets/sponsors/robustus/official-institucional.png";
 
 type Slide = {
   image: string;
-  title: string;
-  cta: string;
   href: string;
   alt: string;
+  background: string;
 };
 
 const SLIDES: Slide[] = [
   {
     image: bannerLifeSpecial,
-    title: "Nutrição especial para quem faz parte da família",
-    cta: "Conhecer a linha",
     href: "https://robustus.com.br/life-special/",
-    alt: "Robustus Life Special",
+    alt: "Robustus Life Special - para quem torna sua vida especial",
+    background: "#038fc5",
   },
   {
     image: bannerMais,
-    title: "Mais sabor e cuidado todos os dias",
-    cta: "Ver produtos",
     href: "https://robustus.com.br/mais/",
-    alt: "Robustus +Mais",
-  },
-  {
-    image: bannerDiaADia,
-    title: "Nutrição completa para a rotina do seu pet",
-    cta: "Conhecer",
-    href: "https://robustus.com.br/dia-a-dia/",
-    alt: "Robustus Dia a Dia",
-  },
-  {
-    image: bannerOndeComprar,
-    title: "Encontre Robustus perto de você",
-    cta: "Onde comprar",
-    href: "https://robustus.com.br/onde-comprar",
-    alt: "Onde comprar Robustus",
+    alt: "Robustus +Mais - nutrição, longevidade e energia",
+    background: "#b9e3f3",
   },
   {
     image: bannerInstitucional,
-    title: "Cuidamos com amor da nutrição do seu pet",
-    cta: "Conheça a Robustus",
     href: "https://robustus.com.br/sobre-nos/",
-    alt: "Sobre a Robustus",
+    alt: "Robustus - fórmula focada na nutrição do seu pet",
+    background: "#d8d0b8",
   },
 ];
 
@@ -156,8 +135,8 @@ export function RobustusCarousel() {
   return (
     <div className="px-4">
       <div
-        className="relative w-full overflow-hidden rounded-[8px] bg-[#0A8FD6] shadow-sm select-none"
-        style={{ aspectRatio: "16 / 9", touchAction: "pan-y" }}
+        className="relative w-full overflow-hidden rounded-[8px] shadow-sm select-none"
+        style={{ aspectRatio: "640 / 533", touchAction: "pan-y" }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
@@ -186,10 +165,9 @@ export function RobustusCarousel() {
                   if (Math.abs(dragX) < 4) open(s.href);
                 }}
                 className="relative h-full w-full flex-shrink-0 text-left"
-                aria-label={`${s.alt} — ${s.cta}`}
+                aria-label={s.alt}
+                style={{ backgroundColor: s.background }}
               >
-                {/* Brand fallback background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#0A8FD6] to-[#0B6AB0]" />
                 {shouldLoad && !failed[i] && (
                   <img
                     src={s.image}
@@ -198,30 +176,12 @@ export function RobustusCarousel() {
                     loading={i === 0 ? "eager" : "lazy"}
                     onLoad={() => setLoaded((m) => ({ ...m, [i]: true }))}
                     onError={() => setFailed((m) => ({ ...m, [i]: true }))}
-                    className="absolute inset-0 h-full w-full object-cover"
+                    className="absolute inset-0 h-full w-full object-contain"
                   />
                 )}
-                {/* Left-side contrast overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#072F4D]/85 via-[#0A4F7E]/55 to-transparent" />
-                {/* Sponsored chip */}
-                <span className="absolute right-2 top-2 rounded bg-black/45 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white/95">
+                <span className="absolute right-2 top-2 rounded bg-black/55 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white">
                   Patrocinado
                 </span>
-                <div className="absolute inset-0 flex flex-col justify-between p-4 sm:p-5">
-                  <img
-                    src={robustusLogo}
-                    alt="Robustus"
-                    className="h-5 w-auto drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)] sm:h-6"
-                  />
-                  <div className="max-w-[68%]">
-                    <h3 className="text-[15px] font-bold leading-tight text-white drop-shadow-sm sm:text-base">
-                      {s.title}
-                    </h3>
-                    <span className="mt-2 inline-flex w-fit items-center rounded-md bg-white px-2.5 py-1 text-[11px] font-semibold text-[#0A4F7E] shadow-sm sm:text-xs">
-                      {s.cta}
-                    </span>
-                  </div>
-                </div>
               </button>
             );
           })}
