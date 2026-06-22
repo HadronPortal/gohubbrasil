@@ -59,6 +59,7 @@ import {
   ESTABLISHMENT_CATEGORIES,
   getCategoryMeta,
   displayCategoryName,
+  PET_BUSINESS_TYPES,
 } from "@/lib/establishmentCategories";
 import { AddressFields, AddressData, emptyAddress, composeAddress, parseAddress } from "@/components/admin/AddressFields";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
@@ -79,6 +80,7 @@ interface Barbershop {
   created_at?: string | null;
   category_id?: string | null;
   category_ids?: string[];
+  pet_types?: string[] | null;
   owner?: { name: string; phone?: string } | null;
 }
 
