@@ -17,8 +17,7 @@ import { Input } from "@/components/ui/input";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { ClientBottomNav } from "@/components/client/ClientBottomNav";
 import { CLIENT_CATEGORIES, getCategoryBySlug } from "@/lib/clientCategories";
-import { getServiceDisplayName, getServiceVisual } from "@/lib/serviceVisuals";
-import { normalizeName } from "@/lib/serviceVisuals";
+import { getServiceDisplayName, getServiceVisual, normalizeName } from "@/lib/serviceVisuals";
 import "@/lib/serviceIcons"; // registers icon_key → image map used by getServiceVisual
 import petProdRacoes from "@/assets/services/pet/produto-racoes.png";
 import petProdPetiscos from "@/assets/services/pet/produto-petiscos.png";
