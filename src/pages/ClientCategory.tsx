@@ -25,6 +25,8 @@ import petProdPetiscos from "@/assets/services/pet/produto-petiscos.png";
 import petProdHigiene from "@/assets/services/pet/produto-higiene.png";
 import petProdBrinquedos from "@/assets/services/pet/produto-brinquedos.png";
 import petProdAcessorios from "@/assets/services/pet/produto-acessorios.png";
+import petHeroImage from "@/assets/banners/banner-pet.jpg";
+import { RobustusCarousel } from "@/components/client/RobustusCarousel";
 
 // Tipos comerciais Pet: exibem estabelecimentos sem fluxo de agendamento.
 const PET_STORE_TYPES = ["Pet shop", "Rações e acessórios"] as const;
@@ -401,22 +403,54 @@ export default function ClientCategory() {
 
         <main>
           <section className="px-4 pt-4">
-            <div
-              className="relative min-h-40 overflow-hidden rounded-[8px] p-5"
-              style={{ backgroundColor: category.soft }}
-            >
-              <div className="relative z-10 max-w-[68%]">
-                <p className="text-[11px] font-bold uppercase text-slate-500">{category.eyebrow}</p>
-                <h1 className="mt-2 text-[22px] font-extrabold leading-tight">{category.headline}</h1>
-                <p className="mt-3 text-xs leading-relaxed text-slate-600">Agende online com profissionais selecionados pelo GoHub.</p>
+            {category.id === "pet" ? (
+              <div
+                className="relative w-full overflow-hidden rounded-[8px]"
+                style={{ height: "clamp(180px, 52vw, 210px)", backgroundColor: category.soft }}
+              >
+                <img
+                  src={petHeroImage}
+                  alt="Pet — cuidados, produtos e profissionais"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  loading="eager"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/35 to-transparent" />
+                <div className="relative z-10 flex h-full max-w-[62%] flex-col justify-center px-4 py-4 sm:px-5">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-white/85">
+                    {category.eyebrow}
+                  </p>
+                  <h1 className="mt-1 text-[18px] font-extrabold leading-tight text-white drop-shadow-sm sm:text-[20px]">
+                    Tudo para o seu pet em um só lugar
+                  </h1>
+                  <p className="mt-1.5 text-[11px] leading-snug text-white/90 sm:text-xs">
+                    Encontre cuidados, produtos e profissionais perto de você.
+                  </p>
+                </div>
               </div>
-              <img
-                src={category.image}
-                alt=""
-                className="absolute -bottom-3 -right-1 h-36 w-36 object-contain drop-shadow-xl"
-              />
-            </div>
+            ) : (
+              <div
+                className="relative min-h-40 overflow-hidden rounded-[8px] p-5"
+                style={{ backgroundColor: category.soft }}
+              >
+                <div className="relative z-10 max-w-[68%]">
+                  <p className="text-[11px] font-bold uppercase text-slate-500">{category.eyebrow}</p>
+                  <h1 className="mt-2 text-[22px] font-extrabold leading-tight">{category.headline}</h1>
+                  <p className="mt-3 text-xs leading-relaxed text-slate-600">Agende online com profissionais selecionados pelo GoHub.</p>
+                </div>
+                <img
+                  src={category.image}
+                  alt=""
+                  className="absolute -bottom-3 -right-1 h-36 w-36 object-contain drop-shadow-xl"
+                />
+              </div>
+            )}
           </section>
+
+          {category.id === "pet" && (
+            <section className="pt-4">
+              <RobustusCarousel />
+            </section>
+          )}
 
           {category.id === "pet" && (
             <section className="pt-5">
