@@ -183,6 +183,7 @@ export default function SuperAdmin() {
   const [createMonthlyPrice, setCreateMonthlyPrice] = useState("");
   const [createCategoryId, setCreateCategoryId] = useState<string>("");
   const [createAdditionalCategoryIds, setCreateAdditionalCategoryIds] = useState<string[]>([]);
+  const [createPetTypes, setCreatePetTypes] = useState<string[]>([]);
   const [createAddress, setCreateAddress] = useState<AddressData>(emptyAddress);
   const [ownerIsBarber, setOwnerIsBarber] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -196,6 +197,7 @@ export default function SuperAdmin() {
   const [editMonthlyPrice, setEditMonthlyPrice] = useState("");
   const [editCategoryId, setEditCategoryId] = useState<string>("");
   const [editAdditionalCategoryIds, setEditAdditionalCategoryIds] = useState<string[]>([]);
+  const [editPetTypes, setEditPetTypes] = useState<string[]>([]);
   const [editAddress, setEditAddress] = useState<AddressData>(emptyAddress);
 
   // Delete
@@ -226,6 +228,24 @@ export default function SuperAdmin() {
     categories.forEach((c) => (m[c.id] = c.slug));
     return m;
   }, [categories]);
+
+  const petCategoryId = useMemo(
+    () => categories.find((c) => c.slug === "pet")?.id || null,
+    [categories],
+  );
+
+  const createIncludesPet = useMemo(
+    () =>
+      !!petCategoryId &&
+      (createCategoryId === petCategoryId || createAdditionalCategoryIds.includes(petCategoryId)),
+    [petCategoryId, createCategoryId, createAdditionalCategoryIds],
+  );
+  const editIncludesPet = useMemo(
+    () =>
+      !!petCategoryId &&
+      (editCategoryId === petCategoryId || editAdditionalCategoryIds.includes(petCategoryId)),
+    [petCategoryId, editCategoryId, editAdditionalCategoryIds],
+  );
 
   useEffect(() => {
     if (isSuperAdmin) {
