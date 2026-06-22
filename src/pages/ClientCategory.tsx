@@ -21,7 +21,7 @@ import { getServiceDisplayName, getServiceVisual } from "@/lib/serviceVisuals";
 import "@/lib/serviceIcons"; // registers icon_key → image map used by getServiceVisual
 
 // Tipos comerciais Pet: exibem estabelecimentos sem fluxo de agendamento.
-const PET_STORE_TYPES = ["Pet shop", "Loja de rações", "Rações e acessórios"] as const;
+const PET_STORE_TYPES = ["Pet shop", "Rações e acessórios"] as const;
 type PetStoreType = (typeof PET_STORE_TYPES)[number];
 
 type Shop = {
