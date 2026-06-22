@@ -24,6 +24,9 @@ import "@/lib/serviceIcons"; // registers icon_key → image map used by getServ
 const PET_STORE_TYPES = ["Pet shop", "Rações e acessórios"] as const;
 type PetStoreType = (typeof PET_STORE_TYPES)[number];
 
+const PET_PRODUCT_FILTERS = ["Rações", "Petiscos", "Higiene", "Brinquedos", "Acessórios"] as const;
+type PetProductFilter = (typeof PET_PRODUCT_FILTERS)[number];
+
 type Shop = {
   id: string;
   name: string;
