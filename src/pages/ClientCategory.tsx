@@ -25,6 +25,8 @@ import petProdPetiscos from "@/assets/services/pet/produto-petiscos.png";
 import petProdHigiene from "@/assets/services/pet/produto-higiene.png";
 import petProdBrinquedos from "@/assets/services/pet/produto-brinquedos.png";
 import petProdAcessorios from "@/assets/services/pet/produto-acessorios.png";
+import petHeroImage from "@/assets/banners/banner-pet.jpg";
+import { RobustusCarousel } from "@/components/client/RobustusCarousel";
 
 // Tipos comerciais Pet: exibem estabelecimentos sem fluxo de agendamento.
 const PET_STORE_TYPES = ["Pet shop", "Rações e acessórios"] as const;
