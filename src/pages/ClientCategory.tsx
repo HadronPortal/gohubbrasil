@@ -510,6 +510,14 @@ export default function ClientCategory() {
             </section>
           )}
 
+          {catalogErrorMessage && selectedPetType !== "Rações e acessórios" && (
+            <section className="px-4 pt-4">
+              <div className="rounded-[8px] border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">
+                {catalogErrorMessage}
+              </div>
+            </section>
+          )}
+
           {catalog.length > 0 && selectedPetType !== "Rações e acessórios" && (
             <section className="pt-6">
               <div className="mb-3 flex items-center justify-between px-4">
