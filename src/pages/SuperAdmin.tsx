@@ -297,6 +297,7 @@ export default function SuperAdmin() {
           category_ids: (categoryLinks || [])
             .filter((link: any) => link.barbershop_id === shop.id)
             .map((link: any) => link.category_id),
+          pet_types: Array.isArray(shop.pet_types) ? shop.pet_types : null,
           owner: ownerUser ? { name: ownerUser.name, phone: ownerUser.phone } : null,
         };
       });
@@ -478,6 +479,7 @@ export default function SuperAdmin() {
           subscription_status: subscriptionStatus,
           monthly_price: monthlyPriceValue,
           paid_until: paidUntilValue || null,
+          pet_types: createIncludesPet ? createPetTypes : null,
         })
         .eq("id", createdShopId);
       if (createdShopUpdateError) throw createdShopUpdateError;
@@ -502,6 +504,7 @@ export default function SuperAdmin() {
       setCreateMonthlyPrice("");
       setCreateCategoryId("");
       setCreateAdditionalCategoryIds([]);
+      setCreatePetTypes([]);
       setCreateAddress(emptyAddress);
       fetchBarbershops();
     } catch (error: any) {
@@ -556,6 +559,7 @@ export default function SuperAdmin() {
           blocked,
           logo_url: logoUrl,
           category_id: editCategoryId,
+          pet_types: editIncludesPet ? editPetTypes : null,
         })
         .eq("id", editingBarbershop.id);
 
@@ -970,6 +974,7 @@ export default function SuperAdmin() {
                                   (categoryId) => categoryId !== shop.category_id,
                                 ),
                               );
+                              setEditPetTypes(shop.pet_types || []);
                               setEditAddress(parseAddress(shop.address));
                             }}
                           >
