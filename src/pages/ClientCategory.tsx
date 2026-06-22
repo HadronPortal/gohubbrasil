@@ -18,6 +18,7 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 import { ClientBottomNav } from "@/components/client/ClientBottomNav";
 import { CLIENT_CATEGORIES, getCategoryBySlug } from "@/lib/clientCategories";
 import { getServiceDisplayName, getServiceVisual } from "@/lib/serviceVisuals";
+import { normalizeName } from "@/lib/serviceVisuals";
 import "@/lib/serviceIcons"; // registers icon_key → image map used by getServiceVisual
 import petProdRacoes from "@/assets/services/pet/produto-racoes.png";
 import petProdPetiscos from "@/assets/services/pet/produto-petiscos.png";
@@ -54,7 +55,21 @@ type Shop = {
 };
 
 type Service = { barbershop_id: string; name: string; price: number };
-type CatalogItem = { id: string; name: string; slug: string; icon_key: string | null };
+type CatalogItem = {
+  id: string;
+  name: string;
+  slug: string;
+  icon_key: string | null;
+  custom?: boolean;
+};
+
+// Slugs comerciais que pertencem ao seletor "Comprar para o pet"
+// e NÃO devem aparecer na lista de serviços agendáveis.
+const PET_STORE_CATALOG_SLUGS = new Set(["pet-shop", "racoes-e-acessorios"]);
+
+function slugifyServiceName(name: string): string {
+  return normalizeName(name).replace(/\s+/g, "-");
+}
 type SavedLocation = { label: string; latitude?: number; longitude?: number };
 type FilterKey = "distance" | "today" | "rating" | "price";
 
@@ -141,7 +156,45 @@ export default function ClientCategory() {
         .eq("active", true)
         .order("name");
       if (error) console.error("Erro ao carregar catálogo:", error);
-      if (active) setCatalog((data || []) as CatalogItem[]);
+      if (!active) return;
+      let items = ((data || []) as CatalogItem[]).filter(
+        (item) => !(category.id === "pet" && PET_STORE_CATALOG_SLUGS.has(item.slug)),
+      );
+
+      // Pet: incluir serviços personalizados cadastrados pelos estabelecimentos
+      // (services sem catalog_service_id) como entradas virtuais, sem duplicar.
+      if (category.id === "pet") {
+        const { data: petShops } = await supabase
+          .from("barbershops")
+          .select("id")
+          .eq("category_id", catData.id);
+        const ids = (petShops || []).map((s: { id: string }) => s.id);
+        if (ids.length > 0) {
+          const { data: customSvcs } = await supabase
+            .from("services")
+            .select("name, catalog_service_id")
+            .in("barbershop_id", ids)
+            .is("catalog_service_id", null);
+          const knownSlugs = new Set(items.map((i) => i.slug));
+          const seen = new Set<string>();
+          for (const svc of (customSvcs || []) as { name: string }[]) {
+            const slug = slugifyServiceName(svc.name);
+            if (!slug || knownSlugs.has(slug) || seen.has(slug)) continue;
+            if (PET_STORE_CATALOG_SLUGS.has(slug)) continue;
+            seen.add(slug);
+            items.push({
+              id: `custom:${slug}`,
+              name: svc.name.trim(),
+              slug,
+              icon_key: null,
+              custom: true,
+            });
+          }
+          items = items.sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
+        }
+      }
+
+      setCatalog(items);
     })();
     return () => {
       active = false;
@@ -153,11 +206,13 @@ export default function ClientCategory() {
     let active = true;
     (async () => {
       setLoading(true);
+      const catalogIdForRpc =
+        selectedCatalog && !selectedCatalog.custom ? selectedCatalog.id : null;
       const [{ data: shopData, error: shopError }, { data: serviceData, error: serviceError }] =
         await Promise.all([
           supabase.rpc("get_barbershops_by_category_service", {
             p_category_slug: category.id,
-            p_catalog_service_id: selectedCatalog?.id ?? null,
+            p_catalog_service_id: catalogIdForRpc,
             p_pet_type: selectedPetType ?? null,
           }),
           supabase.from("services").select("barbershop_id,name,price"),
@@ -169,14 +224,27 @@ export default function ClientCategory() {
       if (serviceError) {
         console.error("Erro ao carregar serviços:", serviceError);
       }
-      setShops((shopData || []) as Shop[]);
-      setServices((serviceData || []) as Service[]);
+      const allServices = (serviceData || []) as Service[];
+      let resultShops = (shopData || []) as Shop[];
+      // Para serviços personalizados (sem id no catálogo), filtrar shops client-side
+      // pelo slug normalizado do nome do serviço.
+      if (selectedCatalog?.custom) {
+        const target = selectedCatalog.slug;
+        const matchingShopIds = new Set(
+          allServices
+            .filter((s) => slugifyServiceName(s.name) === target)
+            .map((s) => s.barbershop_id),
+        );
+        resultShops = resultShops.filter((s) => matchingShopIds.has(s.id));
+      }
+      setShops(resultShops);
+      setServices(allServices);
       setLoading(false);
     })();
     return () => {
       active = false;
     };
-  }, [user, category.id, selectedCatalog?.id, selectedPetType]);
+  }, [user, category.id, selectedCatalog?.id, selectedCatalog?.custom, selectedCatalog?.slug, selectedPetType]);
 
   const stores = useMemo(() => {
     const grouped = new Map<string, Service[]>();
