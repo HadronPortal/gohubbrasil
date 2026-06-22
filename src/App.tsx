@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App as CapacitorApp } from '@capacitor/app';
 import { Browser } from "@capacitor/browser";
 import { supabase } from "@/integrations/supabase/client";
@@ -80,6 +81,8 @@ const router = createBrowserRouter([
     element: <ResetPassword />,
   },
 ]);
+
+const queryClient = new QueryClient();
 
 function App() {
   useEffect(() => {
@@ -178,13 +181,15 @@ function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <PushNotificationRegistrar />
-      <PhoneGate>
-        <RouterProvider router={router} />
-      </PhoneGate>
-      <Toaster position="top-center" richColors />
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <PushNotificationRegistrar />
+        <PhoneGate>
+          <RouterProvider router={router} />
+        </PhoneGate>
+        <Toaster position="top-center" richColors />
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
