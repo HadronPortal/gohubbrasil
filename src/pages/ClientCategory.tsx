@@ -19,13 +19,24 @@ import { ClientBottomNav } from "@/components/client/ClientBottomNav";
 import { CLIENT_CATEGORIES, getCategoryBySlug } from "@/lib/clientCategories";
 import { getServiceDisplayName, getServiceVisual } from "@/lib/serviceVisuals";
 import "@/lib/serviceIcons"; // registers icon_key → image map used by getServiceVisual
+import petProdRacoes from "@/assets/services/pet/produto-racoes.png";
+import petProdPetiscos from "@/assets/services/pet/produto-petiscos.png";
+import petProdHigiene from "@/assets/services/pet/produto-higiene.png";
+import petProdBrinquedos from "@/assets/services/pet/produto-brinquedos.png";
+import petProdAcessorios from "@/assets/services/pet/produto-acessorios.png";
 
 // Tipos comerciais Pet: exibem estabelecimentos sem fluxo de agendamento.
 const PET_STORE_TYPES = ["Pet shop", "Rações e acessórios"] as const;
 type PetStoreType = (typeof PET_STORE_TYPES)[number];
 
-const PET_PRODUCT_FILTERS = ["Rações", "Petiscos", "Higiene", "Brinquedos", "Acessórios"] as const;
-type PetProductFilter = (typeof PET_PRODUCT_FILTERS)[number];
+const PET_PRODUCT_FILTERS: { label: PetProductFilter; image: string }[] = [
+  { label: "Rações", image: petProdRacoes },
+  { label: "Petiscos", image: petProdPetiscos },
+  { label: "Higiene", image: petProdHigiene },
+  { label: "Brinquedos", image: petProdBrinquedos },
+  { label: "Acessórios", image: petProdAcessorios },
+];
+type PetProductFilter = "Rações" | "Petiscos" | "Higiene" | "Brinquedos" | "Acessórios";
 
 type Shop = {
   id: string;
@@ -351,22 +362,44 @@ export default function ClientCategory() {
                   </button>
                 )}
               </div>
-              <div className="no-scrollbar flex gap-2 overflow-x-auto px-4 pb-1">
+              <div
+                className="no-scrollbar flex items-start gap-3 overflow-x-auto px-4 pb-2"
+                style={{ scrollPaddingInline: 16, scrollSnapType: "x proximity" }}
+              >
                 {PET_PRODUCT_FILTERS.map((filter) => {
-                  const selected = selectedProductFilter === filter;
+                  const selected = selectedProductFilter === filter.label;
                   return (
                     <button
-                      key={filter}
+                      key={filter.label}
                       type="button"
-                      onClick={() => setSelectedProductFilter(selected ? null : filter)}
-                      className={`h-9 shrink-0 rounded-full border px-3 text-xs font-semibold transition ${
-                        selected
-                          ? "border-transparent text-white shadow-sm"
-                          : "border-slate-200 bg-white text-slate-700"
-                      }`}
-                      style={selected ? { backgroundColor: category.accent } : undefined}
+                      onClick={() =>
+                        setSelectedProductFilter(selected ? null : filter.label)
+                      }
+                      className="grid w-[88px] shrink-0 grid-rows-[64px_40px] gap-2 text-center active:scale-95"
+                      style={{ scrollSnapAlign: "start" }}
                     >
-                      {filter}
+                      <div
+                        className={`mx-auto flex h-16 w-16 items-center justify-center rounded-[8px] border bg-white ${
+                          selected ? "ring-2 ring-offset-2" : "border-slate-100"
+                        }`}
+                        style={
+                          selected
+                            ? { borderColor: category.accent, color: category.accent }
+                            : undefined
+                        }
+                      >
+                        <img
+                          src={filter.image}
+                          alt=""
+                          loading="lazy"
+                          width={48}
+                          height={48}
+                          className="h-12 w-12 object-contain"
+                        />
+                      </div>
+                      <span className="mx-auto flex h-10 w-full items-start justify-center overflow-hidden px-0.5 text-center text-[11px] font-semibold leading-[14px] text-slate-700 line-clamp-2 break-words">
+                        {filter.label}
+                      </span>
                     </button>
                   );
                 })}
@@ -440,7 +473,14 @@ export default function ClientCategory() {
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white">
                 <SlidersHorizontal className="h-4 w-4" />
               </span>
-              {FILTERS.map((filter) => {
+              {(selectedPetType === "Rações e acessórios"
+                ? ([
+                    { key: "distance", label: "Mais próximos" },
+                    { key: "today", label: "Aberto agora" },
+                    { key: "rating", label: "Melhor avaliados" },
+                  ] as { key: FilterKey; label: string }[])
+                : FILTERS
+              ).map((filter) => {
                 const selected = filters.includes(filter.key);
                 return (
                   <button
