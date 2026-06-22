@@ -79,6 +79,7 @@ export const CATEGORY_SLUG_LABELS: Record<string, string> = {
 export const PET_BUSINESS_TYPES = [
   "Pet shop",
   "Loja de rações",
+  "Rações e acessórios",
   "Banho e tosa",
   "Clínica veterinária",
 ] as const;
