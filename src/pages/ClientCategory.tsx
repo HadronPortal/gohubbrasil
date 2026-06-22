@@ -121,6 +121,9 @@ export default function ClientCategory() {
   const [selectedCatalog, setSelectedCatalog] = useState<CatalogItem | null>(null);
   const [selectedPetType, setSelectedPetType] = useState<PetStoreType | null>(null);
   const [selectedProductFilter, setSelectedProductFilter] = useState<PetProductFilter | null>(null);
+  const selectedCatalogId = selectedCatalog?.id ?? null;
+  const selectedCatalogSlug = selectedCatalog?.slug ?? null;
+  const selectedCatalogIsCustom = Boolean(selectedCatalog?.custom);
   const [filters, setFilters] = useState<FilterKey[]>([]);
   const [shops, setShops] = useState<Shop[]>([]);
   const [services, setServices] = useState<Service[]>([]);
@@ -242,7 +245,7 @@ export default function ClientCategory() {
     (async () => {
       setLoading(true);
       const catalogIdForRpc =
-        selectedCatalog && !selectedCatalog.custom ? selectedCatalog.id : null;
+        selectedCatalogId && !selectedCatalogIsCustom ? selectedCatalogId : null;
       const [{ data: shopData, error: shopError }, { data: serviceData, error: serviceError }] =
         await Promise.all([
           supabase.rpc("get_barbershops_by_category_service", {
@@ -263,8 +266,8 @@ export default function ClientCategory() {
       let resultShops = (shopData || []) as Shop[];
       // Para serviços personalizados (sem id no catálogo), filtrar shops client-side
       // pelo slug normalizado do nome do serviço.
-      if (selectedCatalog?.custom) {
-        const target = selectedCatalog.slug;
+      if (selectedCatalogIsCustom && selectedCatalogSlug) {
+        const target = selectedCatalogSlug;
         const matchingShopIds = new Set(
           allServices
             .filter((s) => slugifyServiceName(s.name) === target)
@@ -279,7 +282,7 @@ export default function ClientCategory() {
     return () => {
       active = false;
     };
-  }, [user, category.id, selectedCatalog?.id, selectedCatalog?.custom, selectedCatalog?.slug, selectedPetType]);
+  }, [user, category.id, selectedCatalogId, selectedCatalogIsCustom, selectedCatalogSlug, selectedPetType]);
 
   const stores = useMemo(() => {
     const grouped = new Map<string, Service[]>();
