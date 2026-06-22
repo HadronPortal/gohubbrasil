@@ -136,7 +136,6 @@ function ShopMiniCard({ shop, badge, onClick }: { shop: Barbershop; badge?: stri
         )}
       </div>
       <div className="px-1 pt-2">
-        <p className="text-[11px] font-bold text-[#FF6B6B]">Grátis a 1ª visita</p>
         <p className="text-sm font-semibold text-[#172033] truncate mt-0.5">{shop.name}</p>
         <p className="text-[11px] text-slate-500 truncate">{shop.address || "Sem endereço"}</p>
       </div>
