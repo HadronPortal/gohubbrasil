@@ -1,0 +1,29 @@
+name: 🧭 Orquestrador (Resumo do Pipeline)
+
+# Este workflow não faz nenhum trabalho pesado — ele só espera os outros dois
+# agentes (Segurança e Testes) terminarem e publica um resumo único.
+# Você usa o resultado dele como "obrigatório" na branch protection do GitHub,
+# assim o deploy da Vercel só vira "produção" depois que os 2 agentes passarem.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  orquestrador:
+    name: Decisão final do pipeline
+    runs-on: ubuntu-latest
+    needs: []  # o GitHub já roda os 3 workflows em paralelo; este job só resume
+    steps:
+      - name: 📋 Resumo
+        run: |
+          echo "## 🧭 Status do Pipeline" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔒 Agente de Segurança: ver workflow 'Agente de Segurança'" >> $GITHUB_STEP_SUMMARY
+          echo "- 🧪 Agente de Testes: ver workflow 'Agente de Testes'" >> $GITHUB_STEP_SUMMARY
+          echo "- 🚀 Deploy: feito automaticamente pela Vercel após aprovação" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Configure a branch protection do 'main' para exigir os checks:" >> $GITHUB_STEP_SUMMARY
+          echo "'security-scan' e 'test' antes de permitir merge." >> $GITHUB_STEP_SUMMARY
