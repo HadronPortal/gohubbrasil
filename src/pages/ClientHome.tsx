@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,6 +14,16 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -40,6 +50,7 @@ import {
   User as UserIcon,
   Star,
   Clock,
+  Loader2,
 } from "lucide-react";
 
 import iconBarbearias from "@/assets/categories/barbearias.png";
@@ -560,6 +571,8 @@ export default function ClientHome() {
   });
   const [locationOpen, setLocationOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [appointmentToCancel, setAppointmentToCancel] = useState<Appointment | null>(null);
+  const [cancelingAppointment, setCancelingAppointment] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
   const [showPromoStrip, setShowPromoStrip] = useState(true);
   const [notifCount] = useState(0);
@@ -581,6 +594,18 @@ export default function ClientHome() {
     }
   }, [user, profile, authLoading, navigate]);
 
+  const loadAppointments = useCallback(async () => {
+    setLoadingAppts(true);
+    try {
+      const { data } = await supabase.rpc("get_my_appointments_safe");
+      if (data?.success) setAppointments((data.active || []) as Appointment[]);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingAppts(false);
+    }
+  }, []);
+
   // Fetch
   useEffect(() => {
     if (!user || !profile) return;
@@ -596,18 +621,35 @@ export default function ClientHome() {
         setLoadingShops(false);
       }
     })();
-    (async () => {
-      setLoadingAppts(true);
-      try {
-        const { data } = await supabase.rpc("get_my_appointments_safe");
-        if (data?.success) setAppointments((data.active || []) as Appointment[]);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoadingAppts(false);
+    loadAppointments();
+  }, [user, profile, loadAppointments]);
+
+  const handleCancelAppointment = async () => {
+    if (!appointmentToCancel) return;
+
+    setCancelingAppointment(true);
+    try {
+      const { data, error } = await supabase.rpc("cancel_my_appointment", {
+        p_appointment_id: appointmentToCancel.id,
+      });
+
+      if (error) throw error;
+      if (data && typeof data === "object" && "success" in data && !(data as any).success) {
+        throw new Error((data as any).error || "Nao foi possivel cancelar o agendamento.");
       }
-    })();
-  }, [user, profile]);
+
+      setAppointments((current) =>
+        current.filter((appointment) => appointment.id !== appointmentToCancel.id),
+      );
+      setAppointmentToCancel(null);
+      toast.success("Agendamento cancelado. O estabelecimento sera avisado.");
+      await loadAppointments();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao cancelar agendamento.");
+    } finally {
+      setCancelingAppointment(false);
+    }
+  };
 
   const handlePickCategory = (id: string) => {
     setActiveCategory(id);
@@ -665,7 +707,7 @@ export default function ClientHome() {
     setActiveTab(k);
     if (k === "profile") setProfileOpen(true);
     else if (k === "appts") document.getElementById("proximos")?.scrollIntoView({ behavior: "smooth" });
-    else if (k === "search") toast.info("Busca em breve");
+    else if (k === "search") navigate("/client-category/todos");
     else if (k === "home") window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -840,16 +882,25 @@ export default function ClientHome() {
                   <span className="text-xs font-semibold text-slate-500">
                     R$ {Number(nextAppt.price || 0).toFixed(2).replace(".", ",")}
                   </span>
-                  {directionsUrl && (
-                    <a
-                      href={directionsUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-[#3157D5] px-4 text-xs font-bold text-white"
+                  <div className="flex shrink-0 items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setAppointmentToCancel(nextAppt)}
+                      className="inline-flex h-10 items-center justify-center rounded-[8px] border border-red-100 bg-red-50 px-3 text-xs font-bold text-red-600 active:scale-95"
                     >
-                      <MapPin className="h-4 w-4" /> Como chegar
-                    </a>
-                  )}
+                      Cancelar
+                    </button>
+                    {directionsUrl && (
+                      <a
+                        href={directionsUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-[#3157D5] px-3 text-xs font-bold text-white"
+                      >
+                        <MapPin className="h-4 w-4" /> Como chegar
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : (
@@ -970,6 +1021,49 @@ export default function ClientHome() {
         current={location}
       />
       <ProfileModal isOpen={profileOpen} onOpenChange={setProfileOpen} />
+      <AlertDialog
+        open={Boolean(appointmentToCancel)}
+        onOpenChange={(open) => {
+          if (!open && !cancelingAppointment) setAppointmentToCancel(null);
+        }}
+      >
+        <AlertDialogContent className="w-[calc(100vw-32px)] max-w-sm rounded-[16px] border-0 bg-white p-5 text-[#172033]">
+          <AlertDialogHeader className="text-left">
+            <AlertDialogTitle className="text-lg font-extrabold">
+              Cancelar agendamento?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm leading-relaxed text-slate-600">
+              Seu horario sera liberado para outros clientes e o estabelecimento recebera
+              uma notificacao do cancelamento.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:space-x-0">
+            <AlertDialogCancel
+              disabled={cancelingAppointment}
+              className="mt-0 h-11 rounded-[8px] border-slate-200 font-bold"
+            >
+              Voltar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault();
+                handleCancelAppointment();
+              }}
+              disabled={cancelingAppointment}
+              className="h-11 rounded-[8px] bg-red-600 font-bold text-white hover:bg-red-700"
+            >
+              {cancelingAppointment ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Cancelando
+                </>
+              ) : (
+                "Confirmar cancelamento"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

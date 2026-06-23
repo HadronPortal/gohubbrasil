@@ -295,6 +295,9 @@ export default function ClientCategory() {
     });
 
     const normalizedQuery = query.trim().toLocaleLowerCase("pt-BR");
+    const normalizedProductFilter = selectedProductFilter
+      ? normalizeName(selectedProductFilter)
+      : "";
     const lat = location?.latitude;
     const lon = location?.longitude;
 
@@ -306,6 +309,10 @@ export default function ClientCategory() {
           .join(" ")
           .toLocaleLowerCase("pt-BR");
         const matchesSearch = !normalizedQuery || content.includes(normalizedQuery);
+        const matchesProductFilter =
+          !normalizedProductFilter ||
+          normalizeName(content).includes(normalizedProductFilter) ||
+          normalizeName(shop.name || "").includes(normalizedProductFilter);
         const minPrice = shopServices.length
           ? Math.min(...shopServices.map((item) => item.price).filter((price) => price > 0))
           : null;
@@ -316,22 +323,42 @@ export default function ClientCategory() {
           typeof shop.longitude === "number"
             ? distanceKm(lat, lon, shop.latitude, shop.longitude)
             : null;
-        return { shop, services: shopServices, minPrice, distance, matchesSearch };
+        const hasBookableService = shopServices.length > 0;
+        const ratingScore =
+          typeof (shop as Shop & { rating?: unknown }).rating === "number"
+            ? Number((shop as Shop & { rating: number }).rating)
+            : (shop.logo_url ? 4.8 : 4.5) + (shop.description ? 0.1 : 0);
+        return {
+          shop,
+          services: shopServices,
+          minPrice,
+          distance,
+          matchesSearch,
+          matchesProductFilter,
+          hasBookableService,
+          ratingScore,
+        };
       })
-      .filter((item) => item.matchesSearch);
-    const result = enriched;
+      .filter((item) => item.matchesSearch && item.matchesProductFilter);
+    const result = filters.includes("today") && !selectedPetType
+      ? enriched.filter((item) => item.matchesSearch && item.matchesProductFilter && item.hasBookableService)
+      : enriched;
 
     return result.sort((a, b) => {
-      if (filters.includes("price")) return (a.minPrice ?? Infinity) - (b.minPrice ?? Infinity);
       if (filters.includes("distance")) {
         const da = a.distance ?? Number.POSITIVE_INFINITY;
         const db = b.distance ?? Number.POSITIVE_INFINITY;
         if (da !== db) return da - db;
-        return a.shop.name.localeCompare(b.shop.name, "pt-BR");
+      }
+      if (filters.includes("rating") && a.ratingScore !== b.ratingScore) {
+        return b.ratingScore - a.ratingScore;
+      }
+      if (filters.includes("price") && (a.minPrice ?? Infinity) !== (b.minPrice ?? Infinity)) {
+        return (a.minPrice ?? Infinity) - (b.minPrice ?? Infinity);
       }
       return a.shop.name.localeCompare(b.shop.name, "pt-BR");
     });
-  }, [filters, location, query, services, shops]);
+  }, [filters, location, query, selectedPetType, selectedProductFilter, services, shops]);
 
   const toggleFilter = (key: FilterKey) =>
     setFilters((current) => (current.includes(key) ? current.filter((item) => item !== key) : [...current, key]));
