@@ -722,18 +722,29 @@ export default function ClientHome() {
     .split(" ")[0]
     .toLowerCase();
 
-  const nextAppt = appointments[0];
-  const nextAppointmentShop = nextAppt?.barbershop_id
-    ? barbershops.find((shop) => shop.id === nextAppt.barbershop_id)
-    : undefined;
-  const directionsUrl = nextAppointmentShop
-    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-        typeof nextAppointmentShop.latitude === "number" &&
-          typeof nextAppointmentShop.longitude === "number"
-          ? `${nextAppointmentShop.latitude},${nextAppointmentShop.longitude}`
-          : nextAppointmentShop.address || nextAppointmentShop.name,
-      )}`
-    : null;
+  const activeAppointments = useMemo(
+    () =>
+      [...appointments].sort(
+        (a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime(),
+      ),
+    [appointments],
+  );
+
+  const getDirectionsUrl = (appointment: Appointment) => {
+    const appointmentShop = appointment.barbershop_id
+      ? barbershops.find((shop) => shop.id === appointment.barbershop_id)
+      : undefined;
+
+    if (!appointmentShop) return null;
+
+    const destination =
+      typeof appointmentShop.latitude === "number" &&
+      typeof appointmentShop.longitude === "number"
+        ? `${appointmentShop.latitude},${appointmentShop.longitude}`
+        : appointmentShop.address || appointmentShop.name;
+
+    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+  };
 
   if (authLoading) return <LoadingScreen />;
 
@@ -854,54 +865,67 @@ export default function ClientHome() {
           <div className="px-4">
             {loadingAppts ? (
               <Skeleton className="h-24 w-full rounded-[8px]" />
-            ) : nextAppt ? (
-              <div className="w-full bg-white border border-slate-100 rounded-[8px] p-4 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-xs text-[#4338CA] font-semibold uppercase tracking-wide">
-                      {nextAppt.service_name}
-                    </p>
-                    <p className="text-sm font-semibold text-[#172033] truncate mt-0.5">
-                      {nextAppt.barbershop_name}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-0.5">com {nextAppt.barber_name}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-xs text-slate-500">
-                      {format(new Date(nextAppt.starts_at), "dd/MM", { locale: ptBR })}
-                    </p>
-                    <p className="text-sm font-bold text-[#172033]">
-                      {format(new Date(nextAppt.starts_at), "HH:mm")}
-                    </p>
-                    <span className="inline-block mt-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-                      Confirmado
-                    </span>
-                  </div>
-                </div>
-                <div className="mt-3 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
-                  <span className="text-xs font-semibold text-slate-500">
-                    R$ {Number(nextAppt.price || 0).toFixed(2).replace(".", ",")}
-                  </span>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setAppointmentToCancel(nextAppt)}
-                      className="inline-flex h-10 items-center justify-center rounded-[8px] border border-red-100 bg-red-50 px-3 text-xs font-bold text-red-600 active:scale-95"
+            ) : activeAppointments.length > 0 ? (
+              <div className="space-y-3">
+                {activeAppointments.map((appointment) => {
+                  const directionsUrl = getDirectionsUrl(appointment);
+
+                  return (
+                    <div
+                      key={appointment.id}
+                      className="w-full bg-white border border-slate-100 rounded-[8px] p-4 shadow-sm"
                     >
-                      Cancelar
-                    </button>
-                    {directionsUrl && (
-                      <a
-                        href={directionsUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-[#3157D5] px-3 text-xs font-bold text-white"
-                      >
-                        <MapPin className="h-4 w-4" /> Como chegar
-                      </a>
-                    )}
-                  </div>
-                </div>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-xs text-[#4338CA] font-semibold uppercase tracking-wide">
+                            {appointment.service_name}
+                          </p>
+                          <p className="text-sm font-semibold text-[#172033] truncate mt-0.5">
+                            {appointment.barbershop_name}
+                          </p>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            com {appointment.barber_name}
+                          </p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-xs text-slate-500">
+                            {format(new Date(appointment.starts_at), "dd/MM", { locale: ptBR })}
+                          </p>
+                          <p className="text-sm font-bold text-[#172033]">
+                            {format(new Date(appointment.starts_at), "HH:mm")}
+                          </p>
+                          <span className="inline-block mt-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                            {appointment.status || "Confirmado"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+                        <span className="text-xs font-semibold text-slate-500">
+                          R$ {Number(appointment.price || 0).toFixed(2).replace(".", ",")}
+                        </span>
+                        <div className="flex shrink-0 items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setAppointmentToCancel(appointment)}
+                            className="inline-flex h-10 items-center justify-center rounded-[8px] border border-red-100 bg-red-50 px-3 text-xs font-bold text-red-600 active:scale-95"
+                          >
+                            Cancelar
+                          </button>
+                          {directionsUrl && (
+                            <a
+                              href={directionsUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-[#3157D5] px-3 text-xs font-bold text-white"
+                            >
+                              <MapPin className="h-4 w-4" /> Como chegar
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div className="bg-white border border-dashed border-slate-200 rounded-[8px] p-5 text-center">
