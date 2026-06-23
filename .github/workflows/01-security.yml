@@ -1,0 +1,38 @@
+name: 🔒 Agente de Segurança
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  security-scan:
+    name: Verificação de segurança
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # necessário pro Gitleaks escanear todo o histórico do diff
+
+      - name: 🔍 Procurar secrets vazados (Gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: 🛡️ Auditoria de dependências vulneráveis
+        run: npm audit --audit-level=high
+        continue-on-error: false  # bloqueia o pipeline se achar vulnerabilidade alta/crítica
+
+      - name: ✅ Segurança OK
+        if: success()
+        run: echo "Nenhum problema crítico de segurança encontrado. Liberado para a próxima etapa."
