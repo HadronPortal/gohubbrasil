@@ -27,6 +27,7 @@ import {
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { translateAppointmentStatus, statusBadgeClasses } from "@/lib/appointmentStatus";
 import {
   Bell,
   ChevronDown,
