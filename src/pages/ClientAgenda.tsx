@@ -1,0 +1,438 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { LoadingScreen } from "@/components/LoadingScreen";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { translateAppointmentStatus, statusBadgeClasses } from "@/lib/appointmentStatus";
+import {
+  ArrowLeft,
+  Calendar,
+  CalendarCheck,
+  CalendarX,
+  Clock,
+  Loader2,
+  MapPin,
+  Home,
+  Search,
+  User as UserIcon,
+} from "lucide-react";
+import { money } from "@/utils/format";
+
+type AgendaAppointment = {
+  id: string;
+  status: string;
+  starts_at: string;
+  price: number | null;
+  price_charged: number | null;
+  barbershop_id: string | null;
+  service_name: string;
+  barber_name: string;
+  barbershop_name: string;
+  barbershop_address: string | null;
+  barbershop_lat: number | null;
+  barbershop_lng: number | null;
+};
+
+const CANCELLED_SET = new Set(["cancelled", "canceled", "cancelado", "no_show", "noshow"]);
+const FINISHED_SET = new Set(["completed", "finalizado", "finished"]);
+
+type Bucket = "upcoming" | "history" | "cancelled";
+
+function bucketOf(a: AgendaAppointment): Bucket {
+  const s = (a.status || "").toLowerCase();
+  if (CANCELLED_SET.has(s)) return "cancelled";
+  if (FINISHED_SET.has(s)) return "history";
+  const t = new Date(a.starts_at).getTime();
+  if (Number.isFinite(t) && t < Date.now()) return "history";
+  return "upcoming";
+}
+
+function canCancel(a: AgendaAppointment): boolean {
+  const b = bucketOf(a);
+  return b === "upcoming";
+}
+
+function directionsUrl(a: AgendaAppointment): string | null {
+  if (typeof a.barbershop_lat === "number" && typeof a.barbershop_lng === "number") {
+    return `https://www.google.com/maps/dir/?api=1&destination=${a.barbershop_lat},${a.barbershop_lng}`;
+  }
+  if (a.barbershop_address && a.barbershop_address.trim()) {
+    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(a.barbershop_address)}`;
+  }
+  return null;
+}
+
+function BottomNav({ onChange }: { onChange: (k: string) => void }) {
+  const items = [
+    { key: "home", label: "Início", icon: Home },
+    { key: "search", label: "Busca", icon: Search },
+    { key: "appts", label: "Agenda", icon: Calendar, active: true },
+    { key: "profile", label: "Perfil", icon: UserIcon },
+  ];
+  return (
+    <nav
+      className="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-40"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
+      <div className="max-w-md mx-auto grid grid-cols-4">
+        {items.map((it) => {
+          const Icon = it.icon;
+          const isActive = !!it.active;
+          return (
+            <button
+              key={it.key}
+              onClick={() => onChange(it.key)}
+              className={`select-none flex flex-col items-center justify-center py-2.5 gap-1 transition ${
+                isActive ? "text-[#4338CA]" : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              <Icon className={`w-5 h-5 ${isActive ? "stroke-[2.5]" : ""}`} />
+              <span className={`text-[11px] ${isActive ? "font-bold" : "font-medium"}`}>
+                {it.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
+function EmptyState({ icon: Icon, title, subtitle }: { icon: any; title: string; subtitle: string }) {
+  return (
+    <div className="bg-white border border-dashed border-slate-200 rounded-[12px] p-8 text-center">
+      <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-50">
+        <Icon className="h-7 w-7 text-[#4338CA]" />
+      </div>
+      <p className="text-sm font-semibold text-[#172033]">{title}</p>
+      <p className="mt-1 text-xs text-slate-500">{subtitle}</p>
+    </div>
+  );
+}
+
+function AppointmentCard({
+  a,
+  onCancel,
+}: {
+  a: AgendaAppointment;
+  onCancel: (a: AgendaAppointment) => void;
+}) {
+  const url = directionsUrl(a);
+  const value = Number(a.price_charged ?? a.price ?? 0);
+  return (
+    <div className="w-full bg-white border border-slate-100 rounded-[12px] p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[11px] text-[#4338CA] font-semibold uppercase tracking-wide">
+            {a.service_name}
+          </p>
+          <p className="mt-0.5 text-sm font-semibold text-[#172033] truncate">
+            {a.barbershop_name}
+          </p>
+          <p className="mt-0.5 text-xs text-slate-500 truncate">com {a.barber_name}</p>
+        </div>
+        <div className="text-right shrink-0">
+          <p className="text-xs text-slate-500">
+            {format(new Date(a.starts_at), "dd/MM/yyyy", { locale: ptBR })}
+          </p>
+          <p className="text-sm font-bold text-[#172033]">
+            {format(new Date(a.starts_at), "HH:mm")}
+          </p>
+          <span
+            className={`inline-block mt-1 text-[10px] font-semibold border px-2 py-0.5 rounded ${statusBadgeClasses(a.status)}`}
+          >
+            {translateAppointmentStatus(a.status)}
+          </span>
+        </div>
+      </div>
+      <div className="mt-3 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
+        <span className="text-sm font-bold text-[#172033]">{money(value)}</span>
+        <div className="flex shrink-0 items-center gap-2">
+          {canCancel(a) && (
+            <button
+              type="button"
+              onClick={() => onCancel(a)}
+              className="inline-flex min-h-[40px] items-center justify-center rounded-[8px] border border-red-700 bg-red-600 px-4 text-xs font-bold text-white shadow-sm hover:bg-red-700 active:scale-95"
+            >
+              Cancelar
+            </button>
+          )}
+          {url && (
+            <a
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-[#3157D5] px-3 text-xs font-bold text-white"
+            >
+              <MapPin className="h-4 w-4" /> Como chegar
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Skeleton() {
+  return <div className="h-28 w-full animate-pulse rounded-[12px] bg-slate-200/70" />;
+}
+
+export default function ClientAgenda() {
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
+  const [items, setItems] = useState<AgendaAppointment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [tab, setTab] = useState<Bucket>("upcoming");
+  const [toCancel, setToCancel] = useState<AgendaAppointment | null>(null);
+  const [canceling, setCanceling] = useState(false);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) navigate("/login", { replace: true });
+  }, [user, authLoading, navigate]);
+
+  const load = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select(
+          "id, status, starts_at, price, price_charged, barbershop_id, services(name), barbers(name), barbershops(name, address, latitude, longitude)"
+        )
+        .eq("client_id", user.id)
+        .order("starts_at", { ascending: false });
+      if (error) throw error;
+      const mapped: AgendaAppointment[] = (data || []).map((row: any) => ({
+        id: row.id,
+        status: row.status,
+        starts_at: row.starts_at,
+        price: row.price,
+        price_charged: row.price_charged,
+        barbershop_id: row.barbershop_id,
+        service_name: row.services?.name || "Serviço",
+        barber_name: row.barbers?.name || "Profissional",
+        barbershop_name: row.barbershops?.name || "Estabelecimento",
+        barbershop_address: row.barbershops?.address ?? null,
+        barbershop_lat: row.barbershops?.latitude ?? null,
+        barbershop_lng: row.barbershops?.longitude ?? null,
+      }));
+      setItems(mapped);
+    } catch (e: any) {
+      console.error("Agenda load error", e);
+      setErrorMsg(e?.message || "Erro ao carregar agendamentos.");
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const { upcoming, history, cancelled } = useMemo(() => {
+    const up: AgendaAppointment[] = [];
+    const hi: AgendaAppointment[] = [];
+    const ca: AgendaAppointment[] = [];
+    for (const a of items) {
+      const b = bucketOf(a);
+      if (b === "upcoming") up.push(a);
+      else if (b === "history") hi.push(a);
+      else ca.push(a);
+    }
+    up.sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
+    hi.sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
+    ca.sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
+    return { upcoming: up, history: hi, cancelled: ca };
+  }, [items]);
+
+  const handleCancel = async () => {
+    if (!toCancel) return;
+    setCanceling(true);
+    try {
+      const { data, error } = await supabase.rpc("cancel_my_appointment", {
+        p_appointment_id: toCancel.id,
+      });
+      if (error) throw error;
+      if (data && typeof data === "object" && "success" in data && !(data as any).success) {
+        throw new Error((data as any).error || "Não foi possível cancelar o agendamento.");
+      }
+      setItems((curr) =>
+        curr.map((it) => (it.id === toCancel.id ? { ...it, status: "cancelled" } : it))
+      );
+      setToCancel(null);
+      toast.success("Agendamento cancelado.");
+    } catch (e: any) {
+      toast.error(e?.message || "Erro ao cancelar agendamento.");
+    } finally {
+      setCanceling(false);
+    }
+  };
+
+  const onNav = (k: string) => {
+    if (k === "home") navigate("/client-home");
+    else if (k === "search") navigate("/client-category/todos");
+    else if (k === "profile") navigate("/client-home#perfil");
+  };
+
+  if (authLoading) return <LoadingScreen />;
+
+  const renderList = (list: AgendaAppointment[], empty: { icon: any; title: string; subtitle: string }) => {
+    if (loading) {
+      return (
+        <div className="space-y-3">
+          <Skeleton />
+          <Skeleton />
+          <Skeleton />
+        </div>
+      );
+    }
+    if (errorMsg) {
+      return (
+        <div className="rounded-[12px] border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {errorMsg}
+        </div>
+      );
+    }
+    if (list.length === 0) {
+      return <EmptyState icon={empty.icon} title={empty.title} subtitle={empty.subtitle} />;
+    }
+    return (
+      <div className="space-y-3">
+        {list.map((a) => (
+          <AppointmentCard key={a.id} a={a} onCancel={setToCancel} />
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <div
+      className="min-h-screen bg-[#F7F9FC] text-[#172033] pb-28 overflow-x-hidden"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
+      <div className="max-w-md mx-auto">
+        <header className="px-4 pt-4 pb-3 bg-[#F7F9FC] sticky top-0 z-30">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate("/client-home")}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white border border-slate-200 active:scale-95"
+              aria-label="Voltar"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div className="min-w-0">
+              <h1 className="text-lg font-extrabold leading-tight">Minha agenda</h1>
+              <p className="text-xs text-slate-500">Seus agendamentos em um só lugar</p>
+            </div>
+          </div>
+        </header>
+
+        <main className="px-4 mt-2">
+          <Tabs value={tab} onValueChange={(v) => setTab(v as Bucket)}>
+            <TabsList className="grid w-full grid-cols-3 bg-white border border-slate-200 rounded-[10px] p-1 h-11">
+              <TabsTrigger value="upcoming" className="rounded-[8px] data-[state=active]:bg-[#4338CA] data-[state=active]:text-white text-xs font-semibold">
+                Próximos
+                {upcoming.length > 0 && (
+                  <span className="ml-1.5 rounded-full bg-white/20 px-1.5 text-[10px]">
+                    {upcoming.length}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="history" className="rounded-[8px] data-[state=active]:bg-[#4338CA] data-[state=active]:text-white text-xs font-semibold">
+                Histórico
+              </TabsTrigger>
+              <TabsTrigger value="cancelled" className="rounded-[8px] data-[state=active]:bg-[#4338CA] data-[state=active]:text-white text-xs font-semibold">
+                Cancelados
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="upcoming" className="mt-4">
+              {renderList(upcoming, {
+                icon: Calendar,
+                title: "Nenhum agendamento próximo",
+                subtitle: "Explore estabelecimentos e marque um horário.",
+              })}
+            </TabsContent>
+            <TabsContent value="history" className="mt-4">
+              {renderList(history, {
+                icon: CalendarCheck,
+                title: "Sem histórico por aqui",
+                subtitle: "Seus atendimentos finalizados aparecerão aqui.",
+              })}
+            </TabsContent>
+            <TabsContent value="cancelled" className="mt-4">
+              {renderList(cancelled, {
+                icon: CalendarX,
+                title: "Nenhum cancelamento",
+                subtitle: "Cancelamentos e ausências aparecerão aqui.",
+              })}
+            </TabsContent>
+          </Tabs>
+        </main>
+      </div>
+
+      <BottomNav onChange={onNav} />
+
+      <AlertDialog
+        open={Boolean(toCancel)}
+        onOpenChange={(open) => {
+          if (!open && !canceling) setToCancel(null);
+        }}
+      >
+        <AlertDialogContent className="w-[calc(100vw-32px)] max-w-sm rounded-[16px] border-0 bg-white p-5 text-[#172033]">
+          <AlertDialogHeader className="text-left">
+            <AlertDialogTitle className="text-lg font-extrabold">
+              Cancelar agendamento?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm leading-relaxed text-slate-600">
+              Seu horário será liberado para outros clientes e o estabelecimento receberá uma notificação.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:space-x-0">
+            <AlertDialogCancel
+              disabled={canceling}
+              className="mt-0 h-11 rounded-[8px] border border-slate-300 bg-white font-bold text-[#172033] hover:bg-slate-50"
+            >
+              Voltar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleCancel();
+              }}
+              disabled={canceling}
+              className="h-11 rounded-[8px] bg-red-600 font-bold text-white hover:bg-red-700"
+            >
+              {canceling ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Cancelando
+                </>
+              ) : (
+                "Confirmar cancelamento"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
