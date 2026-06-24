@@ -426,7 +426,7 @@ function AppointmentList({ appointments, onWhatsApp, emptyMessage, onRefresh }: 
               O cliente compareceu?
             </AlertDialogTitle>
             <AlertDialogDescription className="text-sm text-[#64748B] leading-relaxed">
-              Selecione se o cliente realizou o serviço ou se não compareceu ao horário agendado.
+              Informe se o atendimento foi realizado. Se o cliente não compareceu, ele irá para o histórico sem entrar no financeiro.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
