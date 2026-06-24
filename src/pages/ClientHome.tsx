@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ProfileModal } from "@/components/ProfileModal";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { PromoCarousel } from "@/components/client/PromoCarousel";
+import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -852,6 +853,9 @@ export default function ClientHome() {
             })}
           </div>
         </section>
+
+        {/* ===== INSTALL PWA BANNER ===== */}
+        <PWAInstallBanner />
 
         {/* ===== BANNER PROMO ===== */}
         <section className="mt-5">
