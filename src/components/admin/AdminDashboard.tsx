@@ -311,8 +311,11 @@ function AppointmentCard({ appt, onCancelSuccess }: { appt: Appointment, onCance
       case "completed":
       case "finalizado":
         return { label: "Finalizado", color: "text-[#3157D5] border-[#E8EEFD] bg-[#E8EEFD]" };
-      default: 
-        return { label: status, color: "text-[#475569] border-[#EEF1F6] bg-[#EEF1F6]" };
+      default: {
+        const raw = (status ?? "").toString().trim();
+        const label = raw ? raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase() : "Agendado";
+        return { label, color: "text-[#475569] border-[#EEF1F6] bg-[#EEF1F6]" };
+      }
     }
   };
 
