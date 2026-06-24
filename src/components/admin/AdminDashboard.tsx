@@ -435,7 +435,7 @@ function AppointmentCard({ appt, onCancelSuccess }: { appt: Appointment, onCance
           <AlertDialogHeader>
             <AlertDialogTitle className="text-base font-semibold text-[#172033]">O cliente compareceu?</AlertDialogTitle>
             <AlertDialogDescription className="text-sm text-[#64748B]">
-              Selecione se o cliente realizou o atendimento ou se não compareceu ao horário agendado.
+              Informe se o atendimento foi realizado. Se o cliente não compareceu, ele irá para o histórico sem entrar no financeiro.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -447,7 +447,7 @@ function AppointmentCard({ appt, onCancelSuccess }: { appt: Appointment, onCance
               onClick={() => handleFinish(false)}
               disabled={isFinishing}
               variant="outline"
-              className="h-11 rounded-[8px] border-[#DC2626]/40 text-[#DC2626] hover:bg-[#FDECEC]"
+              className="h-11 rounded-[8px] bg-white border border-[#FCA5A5] text-[#B91C1C] hover:bg-[#FEE2E2]"
             >
               Não compareceu
             </Button>
