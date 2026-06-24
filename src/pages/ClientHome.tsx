@@ -887,30 +887,30 @@ export default function ClientHome() {
                             com {appointment.barber_name}
                           </p>
                         </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-xs text-slate-500">
-                            {format(new Date(appointment.starts_at), "dd/MM", { locale: ptBR })}
-                          </p>
-                          <p className="text-sm font-bold text-[#172033]">
-                            {format(new Date(appointment.starts_at), "HH:mm")}
-                          </p>
-                          <span className="inline-block mt-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-                            {appointment.status || "Confirmado"}
-                          </span>
-                        </div>
+                         <div className="text-right shrink-0">
+                           <p className="text-xs text-slate-500">
+                             {format(new Date(appointment.starts_at), "dd/MM", { locale: ptBR })}
+                           </p>
+                           <p className="text-sm font-bold text-[#172033]">
+                             {format(new Date(appointment.starts_at), "HH:mm")}
+                           </p>
+                           <span className={`inline-block mt-1 text-[10px] font-semibold border px-2 py-0.5 rounded ${statusBadgeClasses(appointment.status)}`}>
+                             {translateAppointmentStatus(appointment.status)}
+                           </span>
+                         </div>
                       </div>
                       <div className="mt-3 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
                         <span className="text-xs font-semibold text-slate-500">
                           R$ {Number(appointment.price || 0).toFixed(2).replace(".", ",")}
                         </span>
                         <div className="flex shrink-0 items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setAppointmentToCancel(appointment)}
-                            className="inline-flex h-10 items-center justify-center rounded-[8px] border border-red-100 bg-red-50 px-3 text-xs font-bold text-red-600 active:scale-95"
-                          >
-                            Cancelar
-                          </button>
+                           <button
+                             type="button"
+                             onClick={() => setAppointmentToCancel(appointment)}
+                             className="inline-flex min-h-[40px] items-center justify-center rounded-[8px] border border-red-700 bg-red-600 px-4 text-xs font-bold text-white shadow-sm hover:bg-red-700 active:scale-95"
+                           >
+                             Cancelar
+                           </button>
                           {directionsUrl && (
                             <a
                               href={directionsUrl}
@@ -1064,7 +1064,7 @@ export default function ClientHome() {
           <AlertDialogFooter className="gap-2 sm:space-x-0">
             <AlertDialogCancel
               disabled={cancelingAppointment}
-              className="mt-0 h-11 rounded-[8px] border-slate-200 font-bold"
+              className="mt-0 h-11 rounded-[8px] border border-slate-300 bg-white font-bold text-[#172033] hover:bg-slate-50"
             >
               Voltar
             </AlertDialogCancel>
