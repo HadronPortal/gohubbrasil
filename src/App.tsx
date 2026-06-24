@@ -24,6 +24,7 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 import { PhoneGate } from "./components/PhoneGate";
 import { PushNotificationRegistrar } from "./components/PushNotificationRegistrar";
+import { registerServiceWorker } from "./lib/pwa";
 
 const router = createBrowserRouter([
   {
@@ -92,6 +93,7 @@ const queryClient = new QueryClient();
 
 function App() {
   useEffect(() => {
+    registerServiceWorker();
     let backHandler: PluginListenerHandle | null = null;
     let urlHandler: PluginListenerHandle | null = null;
 
