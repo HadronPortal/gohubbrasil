@@ -240,7 +240,7 @@ export default function ClientAgenda() {
       const mapped: AgendaAppointment[] = rows.map((row: any) => ({
         id: row.id,
         status: row.status,
-        starts_at: row.starts_at,
+        starts_at: row.starts_at || row.start_time || row.appointment_time || row.date,
         price: row.price,
         price_charged: row.price_charged,
         barbershop_id: row.barbershop_id ?? null,
@@ -251,6 +251,10 @@ export default function ClientAgenda() {
         barbershop_lat: row.barbershop_lat ?? null,
         barbershop_lng: row.barbershop_lng ?? null,
       }));
+      if (import.meta.env.DEV) {
+        console.log("Minha Agenda RPC raw:", data);
+        console.log("Minha Agenda normalizado:", mapped);
+      }
       setItems(mapped);
     } catch (e: any) {
       console.error("Agenda load error", e);
@@ -274,9 +278,16 @@ export default function ClientAgenda() {
       else if (b === "history") hi.push(a);
       else ca.push(a);
     }
-    up.sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
-    hi.sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
-    ca.sort((a, b) => new Date(b.starts_at).getTime() - new Date(a.starts_at).getTime());
+    const ts = (x: AgendaAppointment) => {
+      const d = getAppointmentDate(x);
+      return d ? d.getTime() : 0;
+    };
+    up.sort((a, b) => ts(a) - ts(b));
+    hi.sort((a, b) => ts(b) - ts(a));
+    ca.sort((a, b) => ts(b) - ts(a));
+    if (import.meta.env.DEV) {
+      console.log("Minha Agenda próximos:", up);
+    }
     return { upcoming: up, history: hi, cancelled: ca };
   }, [items]);
 
