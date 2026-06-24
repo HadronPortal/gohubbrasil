@@ -289,8 +289,11 @@ function AppointmentList({ appointments, onWhatsApp, emptyMessage, onRefresh }: 
       case "completed":
       case "finalizado":
         return { label: "Finalizado", color: "text-[#1D4ED8] border-[#93C5FD] bg-[#DBEAFE]" };
-      default: 
-        return { label: status, color: "text-[#475569] border-[#CBD5E1] bg-[#F1F5F9]" };
+      default: {
+        const raw = (status ?? "").toString().trim();
+        const label = raw ? raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase() : "Agendado";
+        return { label, color: "text-[#475569] border-[#CBD5E1] bg-[#F1F5F9]" };
+      }
     }
   };
 
