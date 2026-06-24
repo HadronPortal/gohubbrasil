@@ -404,6 +404,47 @@ export default function ClientAgenda() {
               </TabsTrigger>
             </TabsList>
 
+            {import.meta.env.DEV && (
+              <pre
+                className="mt-3 rounded-md border border-amber-300 bg-amber-50 p-2 text-[11px] text-amber-900"
+                style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+              >
+                {JSON.stringify(
+                  {
+                    rawType: Array.isArray(rawData) ? "array" : typeof rawData,
+                    rawKeys: rawData && typeof rawData === "object" && !Array.isArray(rawData)
+                      ? Object.keys(rawData)
+                      : undefined,
+                    rawData,
+                    normalizedCount: items.length,
+                    first: items[0],
+                    upcomingCount: upcoming.length,
+                    historyCount: history.length,
+                    cancelledCount: cancelled.length,
+                    user_id: user?.id,
+                    profile_id: profile?.id,
+                    profile_role: profile?.role,
+                    profile_barbershop_id: profile?.barbershop_id,
+                  },
+                  null,
+                  2,
+                )}
+              </pre>
+            )}
+
+            {import.meta.env.DEV && (
+              <div className="mt-3 rounded-md border border-slate-200 bg-white p-2">
+                <p className="mb-2 text-[11px] font-bold text-slate-600">
+                  Todos recebidos ({items.length})
+                </p>
+                <div className="space-y-2">
+                  {items.map((a) => (
+                    <AppointmentCard key={`all-${a.id}`} a={a} onCancel={setToCancel} />
+                  ))}
+                </div>
+              </div>
+            )}
+
             <TabsContent value="upcoming" className="mt-4">
               {renderList(upcoming, {
                 icon: Calendar,
