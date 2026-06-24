@@ -723,16 +723,17 @@ export default function ClientCategory() {
                 </div>
               </div>
             ) : (
-              <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pl-6 pr-4 pb-3">
+              <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pl-7 pr-5 pb-3">
                 {stores.slice(0, 8).map((item, index) => (
-                  <FeaturedStore
-                    key={item.shop.id}
-                    item={item}
-                    categoryLabel={category.label}
-                    accent={category.accent}
-                    index={index}
-                    onClick={() => openShop(item.shop.id)}
-                  />
+                  <div key={item.shop.id} className="snap-start first:ml-1">
+                    <FeaturedStore
+                      item={item}
+                      categoryLabel={category.label}
+                      accent={category.accent}
+                      index={index}
+                      onClick={() => openShop(item.shop.id)}
+                    />
+                  </div>
                 ))}
               </div>
             )}

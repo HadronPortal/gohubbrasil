@@ -953,7 +953,7 @@ export default function ClientHome() {
             </button>
           </div>
           {loadingShops ? (
-            <div className="pl-6 pr-4 flex gap-3 overflow-hidden">
+            <div className="pl-7 pr-5 flex gap-3 overflow-hidden">
               {[1, 2, 3].map((i) => (
                 <Skeleton key={i} className="h-44 w-36 flex-shrink-0 rounded-[8px]" />
               ))}
@@ -966,9 +966,9 @@ export default function ClientHome() {
               </div>
             </div>
           ) : (
-            <div className="flex gap-4 overflow-x-auto pl-6 pr-4 pb-2 snap-x snap-mandatory">
+            <div className="flex gap-4 overflow-x-auto pl-7 pr-5 pb-2 snap-x snap-mandatory">
               {shopsByDistance.map(({ shop: s, distanceKm }, i) => (
-                <div key={s.id} className="snap-start">
+                <div key={s.id} className="snap-start first:ml-1">
                   <ShopMiniCard
                     shop={s}
                     badge={distanceKm !== null ? formatDistance(distanceKm) : i === 0 ? "Ad" : undefined}
