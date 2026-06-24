@@ -530,7 +530,7 @@ export default function ClientCategory() {
                 )}
               </div>
               <div
-                className="no-scrollbar flex items-start gap-3 overflow-x-auto px-4 pb-2"
+                className="no-scrollbar flex items-start gap-3 overflow-x-auto px-4 py-1 pb-3"
                 style={{ scrollPaddingInline: 16, scrollSnapType: "x proximity" }}
               >
                 {PET_PRODUCT_FILTERS.map((filter) => {
@@ -595,7 +595,7 @@ export default function ClientCategory() {
                 )}
               </div>
               <div
-                className="no-scrollbar flex items-start gap-3 overflow-x-auto px-4 pb-2"
+                className="no-scrollbar flex items-start gap-3 overflow-x-auto px-4 py-1 pb-3"
                 style={{ scrollPaddingInline: 16, scrollSnapType: "x proximity" }}
               >
                 {catalog.map((item) => {
@@ -723,7 +723,7 @@ export default function ClientCategory() {
                 </div>
               </div>
             ) : (
-              <div className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2">
+              <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto pl-6 pr-4 pb-3">
                 {stores.slice(0, 8).map((item, index) => (
                   <FeaturedStore
                     key={item.shop.id}

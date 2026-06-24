@@ -148,7 +148,7 @@ function ShopMiniCard({ shop, badge, onClick }: { shop: Barbershop; badge?: stri
           </span>
         )}
       </div>
-      <div className="px-1 pt-2">
+      <div className="px-1.5 pt-2">
         <p className="text-sm font-semibold text-[#172033] truncate mt-0.5">{shop.name}</p>
         <p className="text-[11px] text-slate-500 truncate">{shop.address || "Sem endereço"}</p>
       </div>
@@ -953,7 +953,7 @@ export default function ClientHome() {
             </button>
           </div>
           {loadingShops ? (
-            <div className="px-4 flex gap-3 overflow-hidden">
+            <div className="pl-6 pr-4 flex gap-3 overflow-hidden">
               {[1, 2, 3].map((i) => (
                 <Skeleton key={i} className="h-44 w-36 flex-shrink-0 rounded-[8px]" />
               ))}
@@ -966,7 +966,7 @@ export default function ClientHome() {
               </div>
             </div>
           ) : (
-            <div className="flex gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory">
+            <div className="flex gap-4 overflow-x-auto pl-6 pr-4 pb-2 snap-x snap-mandatory">
               {shopsByDistance.map(({ shop: s, distanceKm }, i) => (
                 <div key={s.id} className="snap-start">
                   <ShopMiniCard
