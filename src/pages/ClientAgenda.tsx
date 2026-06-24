@@ -47,17 +47,26 @@ type AgendaAppointment = {
   barbershop_lng: number | null;
 };
 
-const CANCELLED_SET = new Set(["cancelled", "canceled", "cancelado", "no_show", "noshow"]);
-const FINISHED_SET = new Set(["completed", "finalizado", "finished"]);
+const CANCELLED_SET = new Set(["cancelled", "canceled", "cancelado", "no_show", "noshow", "nao_compareceu"]);
+const FINISHED_SET = new Set(["completed", "finalizado", "finished", "done"]);
 
 type Bucket = "upcoming" | "history" | "cancelled";
 
+function getStatus(a: any): string {
+  return String(a?.status || "").toLowerCase();
+}
+
+function getAppointmentDate(a: any): Date | null {
+  const raw = a?.starts_at || a?.start_time || a?.appointment_time || a?.date;
+  if (!raw) return null;
+  const d = new Date(raw);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 function bucketOf(a: AgendaAppointment): Bucket {
-  const s = (a.status || "").toLowerCase();
+  const s = getStatus(a);
   if (CANCELLED_SET.has(s)) return "cancelled";
   if (FINISHED_SET.has(s)) return "history";
-  const t = new Date(a.starts_at).getTime();
-  if (Number.isFinite(t) && t < Date.now()) return "history";
   return "upcoming";
 }
 
