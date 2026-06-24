@@ -559,6 +559,23 @@ export type Database = {
         }
         Returns: Json
       }
+      get_my_appointments_safe: {
+        Args: never
+        Returns: {
+          barber_name: string
+          barbershop_address: string
+          barbershop_id: string
+          barbershop_lat: number
+          barbershop_lng: number
+          barbershop_name: string
+          id: string
+          price: number
+          price_charged: number
+          service_name: string
+          starts_at: string
+          status: string
+        }[]
+      }
       get_owner_dashboard_appointments: {
         Args: { p_day: string }
         Returns: {
