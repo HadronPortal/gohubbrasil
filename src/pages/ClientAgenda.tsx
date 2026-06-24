@@ -61,6 +61,17 @@ function bucketOf(a: AgendaAppointment): Bucket {
   return "upcoming";
 }
 
+function normalizeAppointments(result: any): any[] {
+  if (Array.isArray(result)) return result;
+  if (Array.isArray(result?.appointments)) return result.appointments;
+  if (Array.isArray(result?.data)) return result.data;
+  if (Array.isArray(result?.items)) return result.items;
+  if (result && result.success === false) {
+    throw new Error(result?.error || "Erro ao carregar agendamentos");
+  }
+  return [];
+}
+
 function canCancel(a: AgendaAppointment): boolean {
   const b = bucketOf(a);
   return b === "upcoming";
@@ -213,7 +224,11 @@ export default function ClientAgenda() {
     try {
       const { data, error } = await (supabase as any).rpc("get_my_appointments_safe");
       if (error) throw error;
-      const mapped: AgendaAppointment[] = (data || []).map((row: any) => ({
+      if (import.meta.env.DEV) {
+        console.log("get_my_appointments_safe retorno:", data);
+      }
+      const rows = normalizeAppointments(data);
+      const mapped: AgendaAppointment[] = rows.map((row: any) => ({
         id: row.id,
         status: row.status,
         starts_at: row.starts_at,
