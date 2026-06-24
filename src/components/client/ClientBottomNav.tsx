@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 const items = [
   { label: "Início", icon: Home, path: "/client-home" },
   { label: "Buscar", icon: Search, path: "/client-category/todos" },
-  { label: "Agenda", icon: CalendarDays, path: "/client-home#proximos" },
+  { label: "Agenda", icon: CalendarDays, path: "/client-agenda" },
   { label: "Favoritos", icon: Heart, path: "/client-home#favoritos" },
   { label: "Perfil", icon: UserRound, path: "/client-home#perfil" },
 ];
