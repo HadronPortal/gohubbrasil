@@ -132,9 +132,9 @@ function ShopMiniCard({ shop, badge, onClick }: { shop: Barbershop; badge?: stri
   return (
     <button
       onClick={onClick}
-      className="select-none flex-shrink-0 w-36 text-left active:scale-[0.98] transition"
+      className="select-none flex-shrink-0 w-[132px] text-left active:scale-[0.98] transition"
     >
-      <div className="relative h-32 w-36 rounded-[8px] bg-white border border-slate-100 overflow-hidden flex items-center justify-center shadow-sm">
+      <div className="relative h-[126px] w-[132px] rounded-[8px] bg-white border border-slate-100 overflow-hidden flex items-center justify-center shadow-sm">
         {shop.logo_url ? (
           <img src={shop.logo_url} alt={shop.name} className="w-full h-full object-cover" />
         ) : (
@@ -953,9 +953,9 @@ export default function ClientHome() {
             </button>
           </div>
           {loadingShops ? (
-            <div className="pl-7 pr-5 flex gap-3 overflow-hidden">
+            <div className="pl-8 pr-5 flex gap-3 overflow-hidden">
               {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-44 w-36 flex-shrink-0 rounded-[8px]" />
+                <Skeleton key={i} className="h-44 w-[132px] flex-shrink-0 rounded-[8px]" />
               ))}
             </div>
           ) : barbershops.length === 0 ? (
@@ -966,9 +966,9 @@ export default function ClientHome() {
               </div>
             </div>
           ) : (
-            <div className="flex gap-4 overflow-x-auto pl-7 pr-5 pb-2 snap-x snap-mandatory">
+            <div className="flex gap-4 overflow-x-auto pl-8 pr-5 pb-2 snap-x snap-mandatory">
               {shopsByDistance.map(({ shop: s, distanceKm }, i) => (
-                <div key={s.id} className="snap-start first:ml-1">
+                <div key={s.id} className="snap-start first:ml-2">
                   <ShopMiniCard
                     shop={s}
                     badge={distanceKm !== null ? formatDistance(distanceKm) : i === 0 ? "Ad" : undefined}

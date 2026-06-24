@@ -1,6 +1,6 @@
 /* PWA helpers: guarded SW registration, install prompt, push permission */
 
-const SW_URL = "/sw.js";
+const SW_URL = "/sw.js?v=20260624-3";
 
 function isPreviewHost(): boolean {
   if (typeof window === "undefined") return true;
@@ -40,7 +40,8 @@ export async function registerServiceWorker(): Promise<void> {
   }
 
   try {
-    await navigator.serviceWorker.register(SW_URL, { scope: "/" });
+    const registration = await navigator.serviceWorker.register(SW_URL, { scope: "/" });
+    await registration.update();
   } catch (err) {
     console.warn("SW registration failed", err);
   }

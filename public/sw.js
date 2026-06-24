@@ -1,9 +1,11 @@
-/* GoHub Service Worker — basic cache + push */
-const CACHE = "gohub-shell-v1";
-const SHELL = ["/", "/manifest.webmanifest", "/favicon.ico"];
+/* GoHub Service Worker - push + safe updates */
+const CACHE = "gohub-shell-v3";
+const SHELL = ["/manifest.webmanifest", "/favicon.ico"];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => undefined));
+  event.waitUntil(
+    caches.open(CACHE).then((cache) => cache.addAll(SHELL)).catch(() => undefined),
+  );
   self.skipWaiting();
 });
 
@@ -13,8 +15,8 @@ self.addEventListener("activate", (event) => {
       const names = await caches.keys();
       await Promise.all(
         names
-          .filter((n) => n.startsWith("gohub-") && n !== CACHE)
-          .map((n) => caches.delete(n)),
+          .filter((name) => name.startsWith("gohub-") && name !== CACHE)
+          .map((name) => caches.delete(name)),
       );
       await self.clients.claim();
     })(),
@@ -24,33 +26,46 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
+
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith("/~oauth") || url.pathname.startsWith("/auth")) return;
 
-  // NetworkFirst for HTML navigations
+  // Fresh HTML on every app open. This prevents the installed PWA from keeping
+  // an old Vercel build after new deploys.
   if (req.mode === "navigate") {
+    event.respondWith(fetch(req, { cache: "no-store" }).catch(() => caches.match(req)));
+    return;
+  }
+
+  // Hashed assets usually cache safely, but NetworkFirst avoids stale bundles
+  // when the PWA is already installed on Android.
+  if (url.pathname.startsWith("/assets/")) {
     event.respondWith(
       fetch(req)
         .then((res) => {
           const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => undefined);
+          caches.open(CACHE).then((cache) => cache.put(req, copy)).catch(() => undefined);
           return res;
         })
-        .catch(() => caches.match(req).then((r) => r || caches.match("/"))),
+        .catch(() => caches.match(req)),
     );
     return;
   }
 
-  // CacheFirst for hashed assets
-  if (url.pathname.startsWith("/assets/")) {
+  if (
+    url.pathname.startsWith("/icons/") ||
+    url.pathname.endsWith(".png") ||
+    url.pathname.endsWith(".ico") ||
+    url.pathname.endsWith(".webmanifest")
+  ) {
     event.respondWith(
       caches.match(req).then(
         (cached) =>
           cached ||
           fetch(req).then((res) => {
             const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => undefined);
+            caches.open(CACHE).then((cache) => cache.put(req, copy)).catch(() => undefined);
             return res;
           }),
       ),
@@ -58,10 +73,14 @@ self.addEventListener("fetch", (event) => {
   }
 });
 
-/* ===== Push notifications ===== */
 self.addEventListener("push", (event) => {
   let data = {};
-  try { data = event.data ? event.data.json() : {}; } catch { data = { title: "GoHub", body: event.data ? event.data.text() : "" }; }
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { title: "GoHub", body: event.data ? event.data.text() : "" };
+  }
+
   const title = data.title || "GoHub";
   const options = {
     body: data.body || "",
@@ -69,12 +88,14 @@ self.addEventListener("push", (event) => {
     badge: "/icons/icon-192.png",
     data: { path: data.path || "/" },
   };
+
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const path = (event.notification.data && event.notification.data.path) || "/";
+
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
       for (const client of clients) {
