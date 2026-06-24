@@ -125,17 +125,26 @@ export default function Admin() {
         </header>
 
         {profile?.has_barber_panel && (
-          <button
-            type="button"
-            onClick={() => {
-              localStorage.setItem("force_barber_panel", "true");
-              navigate("/barber-dashboard");
-            }}
-            className="flex h-10 w-full items-center justify-center gap-2 rounded-[8px] border border-[#DDE3EE] bg-white text-xs font-medium text-[#64748B] hover:bg-[#F6F7FB] hover:text-[#172033]"
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-            Painel Profissional
-          </button>
+          <div className="grid grid-cols-2 gap-2 rounded-[8px] border border-[#DDE3EE] bg-white p-1">
+            <button
+              type="button"
+              disabled
+              className="flex h-10 items-center justify-center rounded-[6px] bg-[#3157D5] text-xs font-semibold text-white"
+            >
+              Estabelecimento
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.setItem("force_barber_panel", "true");
+                navigate("/barber-dashboard");
+              }}
+              className="flex h-10 items-center justify-center gap-2 rounded-[6px] text-xs font-medium text-[#64748B] hover:bg-[#F6F7FB] hover:text-[#172033]"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Profissional
+            </button>
+          </div>
         )}
 
         {/* Tab Content */}
