@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ProfileModal } from "@/components/ProfileModal";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { PromoCarousel } from "@/components/client/PromoCarousel";
+import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -707,7 +708,7 @@ export default function ClientHome() {
   const handleTab = (k: string) => {
     setActiveTab(k);
     if (k === "profile") setProfileOpen(true);
-    else if (k === "appts") document.getElementById("proximos")?.scrollIntoView({ behavior: "smooth" });
+    else if (k === "appts") navigate("/client-agenda");
     else if (k === "search") navigate("/client-category/todos");
     else if (k === "home") window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -852,6 +853,9 @@ export default function ClientHome() {
             })}
           </div>
         </section>
+
+        {/* ===== INSTALL PWA BANNER ===== */}
+        <PWAInstallBanner />
 
         {/* ===== BANNER PROMO ===== */}
         <section className="mt-5">

@@ -108,9 +108,6 @@ export default function Admin() {
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0 text-left">
-              <p className="text-[11px] font-medium text-[#64748B] leading-tight">
-                Painel do Estabelecimento
-              </p>
               <p className="truncate text-sm font-semibold text-[#172033] leading-tight">
                 {profile?.name || "Bem-vindo"}
               </p>
@@ -134,7 +131,7 @@ export default function Admin() {
               disabled
               className="flex h-10 items-center justify-center rounded-[6px] bg-[#3157D5] text-xs font-semibold text-white"
             >
-              Painel do Estabelecimento
+              Estabelecimento
             </button>
             <button
               type="button"
@@ -145,7 +142,7 @@ export default function Admin() {
               className="flex h-10 items-center justify-center gap-2 rounded-[6px] text-xs font-medium text-[#64748B] hover:bg-[#F6F7FB] hover:text-[#172033]"
             >
               <RefreshCw className="h-3.5 w-3.5" />
-              Painel Profissional
+              Profissional
             </button>
           </div>
         )}

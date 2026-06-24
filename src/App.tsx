@@ -15,6 +15,7 @@ import SuperAdmin from "./pages/SuperAdmin";
 import ClientHome from "./pages/ClientHome";
 import ClientCategory from "./pages/ClientCategory";
 import ClientBusiness from "./pages/ClientBusiness";
+import ClientAgenda from "./pages/ClientAgenda";
 import BarberDashboard from "./pages/BarberDashboard";
 import AuthCallback from "./pages/AuthCallback";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -23,6 +24,7 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 import { PhoneGate } from "./components/PhoneGate";
 import { PushNotificationRegistrar } from "./components/PushNotificationRegistrar";
+import { registerServiceWorker } from "./lib/pwa";
 
 const router = createBrowserRouter([
   {
@@ -66,6 +68,10 @@ const router = createBrowserRouter([
     element: <ClientBusiness />,
   },
   {
+    path: "/client-agenda",
+    element: <ClientAgenda />,
+  },
+  {
     path: "/barber-dashboard",
     element: <BarberDashboard />,
   },
@@ -87,6 +93,7 @@ const queryClient = new QueryClient();
 
 function App() {
   useEffect(() => {
+    registerServiceWorker();
     let backHandler: PluginListenerHandle | null = null;
     let urlHandler: PluginListenerHandle | null = null;
 
