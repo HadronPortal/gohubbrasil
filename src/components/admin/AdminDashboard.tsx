@@ -409,9 +409,8 @@ function AppointmentCard({ appt, onCancelSuccess }: { appt: Appointment, onCance
         <div className="grid grid-cols-2 gap-2 pt-1">
           {isCancelable ? (
             <Button
-              variant="ghost"
               onClick={() => setIsCancelModalOpen(true)}
-              className="h-10 rounded-[8px] border border-[#DDE3EE] text-sm font-medium text-[#DC2626] hover:bg-[#FDECEC] hover:text-[#B91C1C]"
+              className="min-h-[40px] rounded-[8px] bg-[#DC2626] text-sm font-semibold text-white shadow-sm hover:bg-[#B91C1C]"
             >
               <Trash2 className="w-4 h-4 mr-1.5" />
               Cancelar
@@ -480,13 +479,13 @@ function AppointmentCard({ appt, onCancelSuccess }: { appt: Appointment, onCance
           </div>
 
           <AlertDialogFooter className="gap-2">
-            <AlertDialogCancel className="h-11 rounded-[8px] border-[#DDE3EE] bg-white text-[#172033] hover:bg-[#F6F7FB]">
+            <AlertDialogCancel className="h-11 rounded-[8px] border border-[#CBD5E1] bg-white text-[#172033] font-medium hover:bg-[#F6F7FB]">
               Voltar
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleCancel}
               disabled={isCancelling}
-              className="h-11 rounded-[8px] bg-[#DC2626] text-white hover:bg-[#bf1f1f]"
+              className="h-11 rounded-[8px] bg-[#DC2626] font-semibold text-white shadow-sm hover:bg-[#B91C1C]"
             >
               {isCancelling ? "Cancelando..." : "Confirmar cancelamento"}
             </AlertDialogAction>
