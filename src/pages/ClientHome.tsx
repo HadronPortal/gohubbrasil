@@ -854,6 +854,9 @@ export default function ClientHome() {
           </div>
         </section>
 
+        {/* ===== INSTALL PWA BANNER ===== */}
+        <PWAInstallBanner />
+
         {/* ===== BANNER PROMO ===== */}
         <section className="mt-5">
           <PromoCarousel />
