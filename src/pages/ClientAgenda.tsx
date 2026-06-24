@@ -73,12 +73,20 @@ function bucketOf(a: AgendaAppointment): Bucket {
 function normalizeAppointments(result: any): any[] {
   if (Array.isArray(result)) return result;
   if (Array.isArray(result?.appointments)) return result.appointments;
+  if (Array.isArray(result?.active)) return result.active;
+  if (Array.isArray(result?.upcoming)) return result.upcoming;
   if (Array.isArray(result?.data)) return result.data;
   if (Array.isArray(result?.items)) return result.items;
   if (result && result.success === false) {
     throw new Error(result?.error || "Erro ao carregar agendamentos");
   }
-  return [];
+  const merged = [
+    ...(Array.isArray(result?.today) ? result.today : []),
+    ...(Array.isArray(result?.future) ? result.future : []),
+    ...(Array.isArray(result?.history) ? result.history : []),
+    ...(Array.isArray(result?.cancelled) ? result.cancelled : []),
+  ];
+  return merged;
 }
 
 function canCancel(a: AgendaAppointment): boolean {
@@ -213,8 +221,9 @@ function Skeleton() {
 
 export default function ClientAgenda() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const [items, setItems] = useState<AgendaAppointment[]>([]);
+  const [rawData, setRawData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [tab, setTab] = useState<Bucket>("upcoming");
@@ -233,6 +242,7 @@ export default function ClientAgenda() {
     try {
       const { data, error } = await (supabase as any).rpc("get_my_appointments_safe");
       if (error) throw error;
+      setRawData(data);
       if (import.meta.env.DEV) {
         console.log("get_my_appointments_safe retorno:", data);
       }
@@ -240,13 +250,16 @@ export default function ClientAgenda() {
       const mapped: AgendaAppointment[] = rows.map((row: any) => ({
         id: row.id,
         status: row.status,
-        starts_at: row.starts_at || row.start_time || row.appointment_time || row.date,
-        price: row.price,
+        starts_at:
+          row.starts_at || row.start_time || row.appointment_time || row.scheduled_at || row.date,
+        price: row.price ?? row.service_price ?? null,
         price_charged: row.price_charged,
         barbershop_id: row.barbershop_id ?? null,
-        service_name: row.service_name || "Serviço",
-        barber_name: row.barber_name || "Profissional",
-        barbershop_name: row.barbershop_name || "Estabelecimento",
+        service_name: row.service_name || row.service || row.service_title || "Serviço",
+        barber_name:
+          row.barber_name || row.professional_name || row.employee_name || "Profissional",
+        barbershop_name:
+          row.barbershop_name || row.business_name || row.shop_name || "Estabelecimento",
         barbershop_address: row.barbershop_address ?? null,
         barbershop_lat: row.barbershop_lat ?? null,
         barbershop_lng: row.barbershop_lng ?? null,
@@ -390,6 +403,47 @@ export default function ClientAgenda() {
                 Cancelados
               </TabsTrigger>
             </TabsList>
+
+            {import.meta.env.DEV && (
+              <pre
+                className="mt-3 rounded-md border border-amber-300 bg-amber-50 p-2 text-[11px] text-amber-900"
+                style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+              >
+                {JSON.stringify(
+                  {
+                    rawType: Array.isArray(rawData) ? "array" : typeof rawData,
+                    rawKeys: rawData && typeof rawData === "object" && !Array.isArray(rawData)
+                      ? Object.keys(rawData)
+                      : undefined,
+                    rawData,
+                    normalizedCount: items.length,
+                    first: items[0],
+                    upcomingCount: upcoming.length,
+                    historyCount: history.length,
+                    cancelledCount: cancelled.length,
+                    user_id: user?.id,
+                    profile_id: profile?.id,
+                    profile_role: profile?.role,
+                    profile_barbershop_id: profile?.barbershop_id,
+                  },
+                  null,
+                  2,
+                )}
+              </pre>
+            )}
+
+            {import.meta.env.DEV && (
+              <div className="mt-3 rounded-md border border-slate-200 bg-white p-2">
+                <p className="mb-2 text-[11px] font-bold text-slate-600">
+                  Todos recebidos ({items.length})
+                </p>
+                <div className="space-y-2">
+                  {items.map((a) => (
+                    <AppointmentCard key={`all-${a.id}`} a={a} onCancel={setToCancel} />
+                  ))}
+                </div>
+              </div>
+            )}
 
             <TabsContent value="upcoming" className="mt-4">
               {renderList(upcoming, {
