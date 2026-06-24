@@ -211,13 +211,7 @@ export default function ClientAgenda() {
     setLoading(true);
     setErrorMsg(null);
     try {
-      const { data, error } = await supabase
-        .from("appointments")
-        .select(
-          "id, status, starts_at, price, price_charged, barbershop_id, services(name), barbers(name), barbershops(name, address, latitude, longitude)"
-        )
-        .eq("client_id", user.id)
-        .order("starts_at", { ascending: false });
+      const { data, error } = await (supabase as any).rpc("get_my_appointments_safe");
       if (error) throw error;
       const mapped: AgendaAppointment[] = (data || []).map((row: any) => ({
         id: row.id,
@@ -225,13 +219,13 @@ export default function ClientAgenda() {
         starts_at: row.starts_at,
         price: row.price,
         price_charged: row.price_charged,
-        barbershop_id: row.barbershop_id,
-        service_name: row.services?.name || "Serviço",
-        barber_name: row.barbers?.name || "Profissional",
-        barbershop_name: row.barbershops?.name || "Estabelecimento",
-        barbershop_address: row.barbershops?.address ?? null,
-        barbershop_lat: row.barbershops?.latitude ?? null,
-        barbershop_lng: row.barbershops?.longitude ?? null,
+        barbershop_id: row.barbershop_id ?? null,
+        service_name: row.service_name || "Serviço",
+        barber_name: row.barber_name || "Profissional",
+        barbershop_name: row.barbershop_name || "Estabelecimento",
+        barbershop_address: row.barbershop_address ?? null,
+        barbershop_lat: row.barbershop_lat ?? null,
+        barbershop_lng: row.barbershop_lng ?? null,
       }));
       setItems(mapped);
     } catch (e: any) {
@@ -273,11 +267,9 @@ export default function ClientAgenda() {
       if (data && typeof data === "object" && "success" in data && !(data as any).success) {
         throw new Error((data as any).error || "Não foi possível cancelar o agendamento.");
       }
-      setItems((curr) =>
-        curr.map((it) => (it.id === toCancel.id ? { ...it, status: "cancelled" } : it))
-      );
       setToCancel(null);
       toast.success("Agendamento cancelado.");
+      await load();
     } catch (e: any) {
       toast.error(e?.message || "Erro ao cancelar agendamento.");
     } finally {
