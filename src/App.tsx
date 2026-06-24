@@ -15,6 +15,7 @@ import SuperAdmin from "./pages/SuperAdmin";
 import ClientHome from "./pages/ClientHome";
 import ClientCategory from "./pages/ClientCategory";
 import ClientBusiness from "./pages/ClientBusiness";
+import ClientAgenda from "./pages/ClientAgenda";
 import BarberDashboard from "./pages/BarberDashboard";
 import AuthCallback from "./pages/AuthCallback";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -64,6 +65,10 @@ const router = createBrowserRouter([
   {
     path: "/client-business/:shopId",
     element: <ClientBusiness />,
+  },
+  {
+    path: "/client-agenda",
+    element: <ClientAgenda />,
   },
   {
     path: "/barber-dashboard",

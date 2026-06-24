@@ -707,7 +707,7 @@ export default function ClientHome() {
   const handleTab = (k: string) => {
     setActiveTab(k);
     if (k === "profile") setProfileOpen(true);
-    else if (k === "appts") document.getElementById("proximos")?.scrollIntoView({ behavior: "smooth" });
+    else if (k === "appts") navigate("/client-agenda");
     else if (k === "search") navigate("/client-category/todos");
     else if (k === "home") window.scrollTo({ top: 0, behavior: "smooth" });
   };
