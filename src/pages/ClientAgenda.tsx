@@ -221,8 +221,9 @@ function Skeleton() {
 
 export default function ClientAgenda() {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const [items, setItems] = useState<AgendaAppointment[]>([]);
+  const [rawData, setRawData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [tab, setTab] = useState<Bucket>("upcoming");
@@ -241,6 +242,7 @@ export default function ClientAgenda() {
     try {
       const { data, error } = await (supabase as any).rpc("get_my_appointments_safe");
       if (error) throw error;
+      setRawData(data);
       if (import.meta.env.DEV) {
         console.log("get_my_appointments_safe retorno:", data);
       }
@@ -248,13 +250,16 @@ export default function ClientAgenda() {
       const mapped: AgendaAppointment[] = rows.map((row: any) => ({
         id: row.id,
         status: row.status,
-        starts_at: row.starts_at || row.start_time || row.appointment_time || row.date,
-        price: row.price,
+        starts_at:
+          row.starts_at || row.start_time || row.appointment_time || row.scheduled_at || row.date,
+        price: row.price ?? row.service_price ?? null,
         price_charged: row.price_charged,
         barbershop_id: row.barbershop_id ?? null,
-        service_name: row.service_name || "Serviço",
-        barber_name: row.barber_name || "Profissional",
-        barbershop_name: row.barbershop_name || "Estabelecimento",
+        service_name: row.service_name || row.service || row.service_title || "Serviço",
+        barber_name:
+          row.barber_name || row.professional_name || row.employee_name || "Profissional",
+        barbershop_name:
+          row.barbershop_name || row.business_name || row.shop_name || "Estabelecimento",
         barbershop_address: row.barbershop_address ?? null,
         barbershop_lat: row.barbershop_lat ?? null,
         barbershop_lng: row.barbershop_lng ?? null,
