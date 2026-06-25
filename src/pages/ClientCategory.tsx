@@ -547,13 +547,8 @@ export default function ClientCategory() {
                     >
                       <div
                         className={`mx-auto flex h-16 w-16 items-center justify-center rounded-[8px] border bg-white ${
-                          selected ? "ring-2 ring-offset-2" : "border-slate-100"
+                          selected ? "border-[#3157D5] ring-2 ring-[#3157D5]/20 ring-offset-2 ring-offset-[#F7F9FC]" : "border-slate-100"
                         }`}
-                        style={
-                          selected
-                            ? { borderColor: category.accent, color: category.accent }
-                            : undefined
-                        }
                       >
                         <img
                           src={filter.image}
@@ -620,9 +615,8 @@ export default function ClientCategory() {
                     >
                       <div
                         className={`mx-auto flex h-16 w-16 items-center justify-center rounded-[8px] border bg-white ${
-                          selected ? "ring-2 ring-offset-2" : "border-slate-100"
+                          selected ? "border-[#3157D5] ring-2 ring-[#3157D5]/20 ring-offset-2 ring-offset-[#F7F9FC]" : "border-slate-100"
                         }`}
-                        style={selected ? { borderColor: category.accent, color: category.accent } : undefined}
                       >
                         <img
                           src={visual.image}

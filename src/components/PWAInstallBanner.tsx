@@ -34,7 +34,7 @@ function InstallHelpDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-sm rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl [&>button]:text-slate-500 [&>button]:hover:text-slate-900">
+      <DialogContent className="max-w-sm rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-2xl [&>button]:border [&>button]:border-slate-300 [&>button]:bg-white [&>button]:text-slate-500 [&>button]:outline-none [&>button]:ring-0 [&>button]:ring-offset-0 [&>button]:hover:border-[#3157D5] [&>button]:hover:text-[#3157D5] [&>button]:focus:border-[#3157D5] [&>button]:focus:outline-none [&>button]:focus:ring-0 [&>button]:focus-visible:border-[#3157D5] [&>button]:focus-visible:outline-none [&>button]:focus-visible:ring-0">
         <DialogHeader>
           <DialogTitle className="text-slate-900">
             {ios ? "Como instalar o GoHub no iPhone" : "Como instalar o GoHub"}

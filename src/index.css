@@ -36,19 +36,19 @@
     --card-foreground: 217 33% 85%;
     --popover: 222 29% 16%;
     --popover-foreground: 217 33% 85%;
-    --primary: 44 87% 60%;
-    --primary-foreground: 222 29% 16%;
+    --primary: 224 76% 55%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 222 35% 12%;
     --secondary-foreground: 217 18% 62%;
     --muted: 222 35% 12%;
     --muted-foreground: 217 18% 62%;
-    --accent: 44 87% 60%;
-    --accent-foreground: 222 29% 16%;
+    --accent: 224 76% 55%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 100% 27%;
     --destructive-foreground: 210 40% 98%;
     --border: 222 26% 22%;
     --input: 222 35% 12%;
-    --ring: 44 87% 60%;
+    --ring: 224 76% 55%;
   }
 }
 
@@ -84,7 +84,19 @@ h1, h2, h3, h4, h5, h6, .font-oswald {
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #f0c040;
+  background: #3157D5;
+}
+
+*:focus-visible {
+  outline-color: #3157D5;
+}
+
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline-color: #3157D5 !important;
 }
 
 /* Remove Lovable badge */
@@ -196,4 +208,48 @@ input[type=number] {
   border-radius: 999px;
   background: #3157D5;
   animation: gohub-dot 1s ease-in-out infinite;
+}
+
+#gohub-boot-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: #ffffff;
+}
+
+#gohub-boot-loader img {
+  display: block;
+  width: min(240px, 68vw);
+  height: auto;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  background: transparent;
+  animation: gohub-boot-pulse 1.45s ease-in-out infinite;
+}
+
+#gohub-boot-loader .dots {
+  display: flex;
+  gap: 6px;
+}
+
+#gohub-boot-loader .dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #3157D5;
+  animation: gohub-dot 1s ease-in-out infinite;
+}
+
+#gohub-boot-loader .dots span:nth-child(2) { animation-delay: 160ms; }
+#gohub-boot-loader .dots span:nth-child(3) { animation-delay: 320ms; }
+
+@keyframes gohub-boot-pulse {
+  0%, 100% { opacity: .78; transform: scale(.985); }
+  50% { opacity: 1; transform: scale(1); }
 }
