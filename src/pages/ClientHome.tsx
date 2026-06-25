@@ -953,10 +953,12 @@ export default function ClientHome() {
             </button>
           </div>
           {loadingShops ? (
-            <div className="pl-8 pr-5 flex gap-3 overflow-hidden">
+            <div className="flex gap-3 overflow-hidden">
+              <div className="w-6 shrink-0" aria-hidden="true" />
               {[1, 2, 3].map((i) => (
                 <Skeleton key={i} className="h-44 w-[132px] flex-shrink-0 rounded-[8px]" />
               ))}
+              <div className="w-5 shrink-0" aria-hidden="true" />
             </div>
           ) : barbershops.length === 0 ? (
             <div className="px-4">
@@ -966,9 +968,10 @@ export default function ClientHome() {
               </div>
             </div>
           ) : (
-            <div className="flex gap-4 overflow-x-auto pl-8 pr-5 pb-2 snap-x snap-mandatory">
+            <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
+              <div className="w-6 shrink-0" aria-hidden="true" />
               {shopsByDistance.map(({ shop: s, distanceKm }, i) => (
-                <div key={s.id} className="snap-start first:ml-2">
+                <div key={s.id} className="snap-start">
                   <ShopMiniCard
                     shop={s}
                     badge={distanceKm !== null ? formatDistance(distanceKm) : i === 0 ? "Ad" : undefined}
@@ -976,6 +979,7 @@ export default function ClientHome() {
                   />
                 </div>
               ))}
+              <div className="w-5 shrink-0" aria-hidden="true" />
             </div>
           )}
         </section>
