@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageSquare, RefreshCw, Smartphone, CheckCircle2, AlertCircle, Loader2, Copy, Check } from "lucide-react";
+import { RefreshCw, Smartphone, CheckCircle2, AlertCircle, Loader2, Copy, Check } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -194,9 +195,7 @@ export default function AdminWhatsApp() {
     return (
       <div className="rounded-[8px] border border-[#DDE3EE] bg-white p-5 space-y-5">
         <div className="flex items-center gap-3">
-          <div className="rounded-[8px] bg-[#EAF0FF] p-2.5">
-            <MessageSquare className="h-5 w-5 text-[#3157D5]" />
-          </div>
+          <WhatsAppIcon size={40} />
           <div>
             <h3 className="text-base font-semibold text-[#172033]">Configurar WhatsApp</h3>
             <p className="text-xs text-[#64748B]">Conecte seu número para enviar avisos.</p>
