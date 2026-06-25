@@ -966,7 +966,7 @@ export default function ClientHome() {
               </div>
             </div>
           ) : (
-            <div className="flex gap-4 overflow-x-auto px-4 pb-2 snap-x snap-mandatory no-scrollbar">
+            <div className="flex gap-4 overflow-x-auto px-4 pb-2 snap-x snap-proximity scroll-pl-4 no-scrollbar">
               {shopsByDistance.map(({ shop: s, distanceKm }, i) => (
                 <div key={s.id} className="snap-start first:ml-0">
                   <ShopMiniCard
