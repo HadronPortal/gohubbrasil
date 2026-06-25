@@ -13,7 +13,7 @@ import loginBg from "@/assets/login/gohub-beauty-background.webp";
 import gohubLogo from "@/assets/login/gohub-logo.png";
 
 const GOOGLE_CLIENT_ID =
-  "457468212381-0njnuoceaumjon5o4j6j6jm7vd4oklbk.apps.googleusercontent.com";
+  "457468212381-6bnsj4nprqvopma59o4cskfsotkvt9j4.apps.googleusercontent.com";
 
 declare global {
   interface Window {
