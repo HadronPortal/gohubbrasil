@@ -28,8 +28,9 @@ export function AuthPageShell({ children, showLogo = true }: AuthPageShellProps)
           src={loginBg}
           alt=""
           aria-hidden="true"
-          className="h-full w-full object-cover object-center"
+          className="h-full w-full object-cover object-center md:hidden"
         />
+        <div className="hidden md:block absolute inset-0 bg-white" />
       </div>
 
       <div className="flex min-h-[100dvh] w-full flex-col items-center justify-center px-5 py-8">
