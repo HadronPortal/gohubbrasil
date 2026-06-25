@@ -418,7 +418,7 @@ export default function ClientCategory() {
                   className={`flex h-10 shrink-0 items-center gap-2 rounded-full px-3 text-xs font-semibold transition active:scale-[0.98] ${
                     selected ? "text-white shadow-sm" : "border border-slate-200 bg-white text-slate-700"
                   }`}
-                  style={selected ? { backgroundColor: category.accent } : undefined}
+                  style={selected ? { backgroundColor: "#3157D5" } : undefined}
                 >
                   <img src={item.image} alt="" className="h-7 w-7 object-contain" />
                   {item.label}
@@ -502,7 +502,7 @@ export default function ClientCategory() {
                           ? "border-transparent text-white shadow-sm"
                           : "border-slate-200 bg-white text-slate-700"
                       }`}
-                      style={selected ? { backgroundColor: category.accent } : undefined}
+                      style={selected ? { backgroundColor: "#3157D5" } : undefined}
                     >
                       {type}
                     </button>
