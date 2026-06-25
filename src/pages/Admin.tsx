@@ -8,9 +8,9 @@ import {
   Scissors,
   LogOut,
   RefreshCw,
-  MessageSquare,
   TrendingUp,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ProfileModal } from "@/components/ProfileModal";
 import { LogoutConfirmDialog } from "@/components/auth/LogoutConfirmDialog";
@@ -85,7 +85,7 @@ export default function Admin() {
     { id: "agenda", label: "Agenda", Icon: Calendar },
     { id: "barbeiros", label: "Equipe", Icon: Users },
     { id: "servicos", label: "Serviços", Icon: Scissors },
-    { id: "whatsapp", label: "WhatsApp", Icon: MessageSquare },
+    { id: "whatsapp", label: "WhatsApp", Icon: WhatsAppIcon as unknown as typeof Calendar },
     { id: "financeiro", label: "Financeiro", Icon: TrendingUp },
   ];
 
