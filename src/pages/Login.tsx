@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Capacitor } from "@capacitor/core";
@@ -12,15 +12,6 @@ import { getPostLoginRoute } from "@/lib/postLoginRoute";
 import loginBg from "@/assets/login/gohub-beauty-background.webp";
 import gohubLogo from "@/assets/login/gohub-logo.png";
 
-const GOOGLE_CLIENT_ID =
-  "457468212381-6bnsj4nprqvopma59o4cskfsotkvt9j4.apps.googleusercontent.com";
-
-declare global {
-  interface Window {
-    google?: any;
-  }
-}
-
 export default function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,8 +21,6 @@ export default function Login() {
   const [whatsapp, setWhatsapp] = useState("");
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
-  const googleBtnRef = useRef<HTMLDivElement | null>(null);
-  const googleInitRef = useRef(false);
 
   useEffect(() => {
     if (!loading && user && profile) {
@@ -40,63 +29,19 @@ export default function Login() {
     }
   }, [user, profile, loading, navigate]);
 
-  useEffect(() => {
-    if (Capacitor.isNativePlatform()) return;
-
-    let cancelled = false;
-
-    const setup = async () => {
-      try {
-        const google = await waitForGoogle();
-        if (cancelled || !googleBtnRef.current) return;
-
-        if (!googleInitRef.current) {
-          google.accounts.id.initialize({
-            client_id: GOOGLE_CLIENT_ID,
-            callback: async (response: any) => {
-              const credential = response?.credential;
-              if (!credential) {
-                toast.error("Não foi possível entrar com Google.");
-                return;
-              }
-              try {
-                const { error } = await supabase.auth.signInWithIdToken({
-                  provider: "google",
-                  token: credential,
-                });
-                if (error) throw error;
-                // AuthContext + redirect effect handle profile + navigation.
-              } catch (err: any) {
-                toast.error(err.message || "Erro ao entrar com Google.");
-              }
-            },
-            auto_select: false,
-            cancel_on_tap_outside: true,
-            use_fedcm_for_button: true,
-          });
-          googleInitRef.current = true;
-        }
-
-        googleBtnRef.current.innerHTML = "";
-        google.accounts.id.renderButton(googleBtnRef.current, {
-          type: "standard",
-          theme: "outline",
-          size: "large",
-          text: "signin_with",
-          shape: "pill",
-          logo_alignment: "left",
-          width: 320,
-        });
-      } catch {
-        // GIS failed to load; silent — user still has email/password.
-      }
-    };
-
-    setup();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const handleGoogleLogin = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao entrar com Google.");
+    }
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,18 +109,6 @@ export default function Login() {
       setIsLoading(false);
     }
   };
-
-  const waitForGoogle = (): Promise<any> =>
-    new Promise((resolve, reject) => {
-      const start = Date.now();
-      const tick = () => {
-        if (window.google?.accounts?.id) return resolve(window.google);
-        if (Date.now() - start > 8000)
-          return reject(new Error("Google Identity Services não carregou"));
-        setTimeout(tick, 100);
-      };
-      tick();
-    });
 
   return (
     <div
