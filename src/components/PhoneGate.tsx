@@ -29,6 +29,7 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
     Boolean(profile) &&
     Boolean(isGoogleLogin) &&
     !isSuperAdmin &&
+    phoneMissing &&
     !policyAccepted;
   const shouldShowGate =
     !authLoading &&
