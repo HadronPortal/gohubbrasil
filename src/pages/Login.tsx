@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Capacitor } from "@capacitor/core";
-import { Browser } from "@capacitor/browser";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -12,6 +11,15 @@ import { Mail, Lock, User as UserIcon, Phone } from "lucide-react";
 import { getPostLoginRoute } from "@/lib/postLoginRoute";
 import loginBg from "@/assets/login/gohub-beauty-background.webp";
 import gohubLogo from "@/assets/login/gohub-logo.png";
+
+const GOOGLE_CLIENT_ID =
+  "457468212381-0njnuoceaumjon5o4j6j6jm7vd4oklbk.apps.googleusercontent.com";
+
+declare global {
+  interface Window {
+    google?: any;
+  }
+}
 
 export default function Login() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -97,34 +105,76 @@ export default function Login() {
     }
   };
 
+  const waitForGoogle = (): Promise<any> =>
+    new Promise((resolve, reject) => {
+      const start = Date.now();
+      const tick = () => {
+        if (window.google?.accounts?.id) return resolve(window.google);
+        if (Date.now() - start > 8000)
+          return reject(new Error("Google Identity Services não carregou"));
+        setTimeout(tick, 100);
+      };
+      tick();
+    });
+
+  const signInWithGoogleCredential = async (credential: string) => {
+    const { error } = await supabase.auth.signInWithIdToken({
+      provider: "google",
+      token: credential,
+    });
+    if (error) throw error;
+    // AuthContext + useEffect handle profile load and redirect.
+  };
+
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      const isApp = Capacitor.isNativePlatform();
-      const redirectTo = isApp 
-        ? "com.gohubbrasil.app://auth/callback" 
-        : `${window.location.origin}/auth/callback`;
+      if (Capacitor.isNativePlatform()) {
+        throw new Error(
+          "Login com Google indisponível neste app. Use e-mail e senha."
+        );
+      }
 
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo,
-          skipBrowserRedirect: isApp,
+      const google = await waitForGoogle();
+
+      await new Promise<void>((resolve, reject) => {
+        try {
+          google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            ux_mode: "popup",
+            auto_select: false,
+            itp_support: true,
+            callback: async (response: any) => {
+              try {
+                if (!response?.credential)
+                  throw new Error("Credencial Google não recebida");
+                await signInWithGoogleCredential(response.credential);
+                resolve();
+              } catch (err) {
+                reject(err);
+              }
+            },
+          });
+
+          google.accounts.id.prompt((notification: any) => {
+            if (
+              notification.isNotDisplayed?.() ||
+              notification.isSkippedMoment?.()
+            ) {
+              reject(
+                new Error(
+                  "Não foi possível abrir o login com Google. Verifique se pop-ups e cookies de terceiros estão permitidos."
+                )
+              );
+            }
+          });
+        } catch (err) {
+          reject(err);
         }
       });
-
-      if (error) throw error;
-
-      if (isApp) {
-        if (!data?.url) {
-          throw new Error("Nao foi possivel iniciar o login com Google");
-        }
-
-        await Browser.open({ url: data.url, windowName: "_self" });
-        setIsLoading(false);
-      }
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(error.message || "Erro ao entrar com Google");
+    } finally {
       setIsLoading(false);
     }
   };
