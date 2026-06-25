@@ -165,7 +165,7 @@ export default function Login() {
           {/* Card */}
           <div className="rounded-[8px] bg-white/[0.88] p-5 shadow-lg shadow-slate-900/5 backdrop-blur-lg ring-1 ring-white/40">
             <h1 className="mb-1 text-center text-xl font-semibold text-[#172033]">
-              {isSignUp ? "Crie sua conta" : "Bem-vindo de volta"}
+              {isSignUp ? "Crie sua conta" : "Bem vindo"}
             </h1>
             <p className="mb-5 text-center text-sm text-[#475569]">
               {isSignUp ? "Cadastre-se para começar" : "Entre para continuar"}
