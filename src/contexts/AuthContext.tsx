@@ -34,6 +34,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         phone: userData?.phone,
         avatar_url: userData?.avatar_url,
         barbershop_id: userData?.barbershop_id || null,
+        whatsapp_policy_accepted: Boolean(userData?.whatsapp_policy_accepted),
+        whatsapp_policy_accepted_at: userData?.whatsapp_policy_accepted_at || null,
         isOwner: role === 'owner',
         isAdmin: role === 'superadmin' || role === 'owner' || role === 'admin',
         isSuperAdmin: role === 'superadmin',
