@@ -132,9 +132,9 @@ function ShopMiniCard({ shop, badge, onClick }: { shop: Barbershop; badge?: stri
   return (
     <button
       onClick={onClick}
-      className="select-none flex-shrink-0 w-[120px] text-left active:scale-[0.98] transition"
+      className="select-none flex-shrink-0 w-[108px] text-left active:scale-[0.98] transition"
     >
-      <div className="relative h-[116px] w-[120px] rounded-[8px] bg-white border border-slate-100 overflow-hidden flex items-center justify-center shadow-sm">
+      <div className="relative h-[104px] w-[108px] rounded-[8px] bg-white border border-slate-100 overflow-hidden flex items-center justify-center shadow-sm">
         {shop.logo_url ? (
           <img src={shop.logo_url} alt={shop.name} className="w-full h-full object-cover" />
         ) : (
@@ -149,7 +149,7 @@ function ShopMiniCard({ shop, badge, onClick }: { shop: Barbershop; badge?: stri
         )}
       </div>
       <div className="px-1.5 pt-2">
-        <p className="text-[13px] font-semibold text-[#172033] truncate mt-0.5">{shop.name}</p>
+        <p className="text-[12px] font-semibold text-[#172033] truncate mt-0.5">{shop.name}</p>
         <p className="text-[11px] text-slate-500 truncate">{shop.address || "Sem endereço"}</p>
       </div>
     </button>
@@ -953,12 +953,10 @@ export default function ClientHome() {
             </button>
           </div>
           {loadingShops ? (
-            <div className="flex gap-3 overflow-hidden">
-              <div className="w-9 shrink-0" aria-hidden="true" />
+            <div className="flex gap-3 overflow-hidden px-4">
               {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-40 w-[120px] flex-shrink-0 rounded-[8px]" />
+                <Skeleton key={i} className="h-36 w-[108px] flex-shrink-0 rounded-[8px]" />
               ))}
-              <div className="w-6 shrink-0" aria-hidden="true" />
             </div>
           ) : barbershops.length === 0 ? (
             <div className="px-4">
@@ -968,8 +966,7 @@ export default function ClientHome() {
               </div>
             </div>
           ) : (
-            <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory">
-              <div className="w-9 shrink-0" aria-hidden="true" />
+            <div className="flex gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory scroll-px-4">
               {shopsByDistance.map(({ shop: s, distanceKm }, i) => (
                 <div key={s.id} className="snap-start">
                   <ShopMiniCard
@@ -979,7 +976,6 @@ export default function ClientHome() {
                   />
                 </div>
               ))}
-              <div className="w-6 shrink-0" aria-hidden="true" />
             </div>
           )}
         </section>

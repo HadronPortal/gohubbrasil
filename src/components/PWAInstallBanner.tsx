@@ -14,25 +14,12 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
-const DISMISS_KEY = "gohub_install_dismissed_at";
 const LEGACY_DISMISS_KEYS = [
   "gohub:pwa-install-dismissed",
   "gohub_install_dismissed",
   "pwa-install-dismissed",
+  "gohub_install_dismissed_at",
 ];
-const DISMISS_HOURS = 6;
-
-function wasRecentlyDismissed(): boolean {
-  try {
-    const v = localStorage.getItem(DISMISS_KEY);
-    if (!v) return false;
-    const ts = Number(v);
-    if (!Number.isFinite(ts)) return false;
-    return Date.now() - ts < DISMISS_HOURS * 60 * 60 * 1000;
-  } catch {
-    return false;
-  }
-}
 
 function InstallHelpDialog({
   platform,
@@ -104,7 +91,7 @@ export function PWAInstallBanner() {
 
     if (isStandalone()) {
       try {
-        localStorage.removeItem(DISMISS_KEY);
+        LEGACY_DISMISS_KEYS.forEach((key) => localStorage.removeItem(key));
       } catch {
         /* noop */
       }
@@ -116,8 +103,6 @@ export function PWAInstallBanner() {
     } catch {
       /* noop */
     }
-
-    if (wasRecentlyDismissed()) return;
 
     if (ios) {
       setVisible(true);
@@ -132,7 +117,7 @@ export function PWAInstallBanner() {
 
     const installed = () => {
       try {
-        localStorage.removeItem(DISMISS_KEY);
+        LEGACY_DISMISS_KEYS.forEach((key) => localStorage.removeItem(key));
       } catch {
         /* noop */
       }
@@ -144,7 +129,7 @@ export function PWAInstallBanner() {
     window.addEventListener("appinstalled", installed);
 
     const fallbackTimer = window.setTimeout(() => {
-      if (!isStandalone() && !wasRecentlyDismissed()) setVisible(true);
+      if (!isStandalone()) setVisible(true);
     }, 1200);
 
     return () => {
@@ -155,11 +140,6 @@ export function PWAInstallBanner() {
   }, [ios]);
 
   const dismiss = () => {
-    try {
-      localStorage.setItem(DISMISS_KEY, String(Date.now()));
-    } catch {
-      /* noop */
-    }
     setVisible(false);
   };
 
