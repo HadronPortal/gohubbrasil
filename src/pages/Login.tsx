@@ -184,8 +184,8 @@ export default function Login() {
       </div>
 
       {/* Scrollable content */}
-      <div className="flex min-h-[100dvh] w-full flex-col items-center justify-center px-5 py-8">
-        <div className="w-full max-w-[400px]">
+      <div className="flex min-h-[100dvh] w-full flex-col items-center justify-center px-5 py-8 md:px-8 md:py-12">
+        <div className="w-full max-w-[400px] md:max-w-[420px] mx-auto">
           {/* Logo */}
           <div className="mb-6 flex justify-center">
             <img
