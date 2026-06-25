@@ -14,6 +14,7 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [phoneSaved, setPhoneSaved] = useState(false);
   const [policyLoading, setPolicyLoading] = useState(false);
+  const [policyScrolledToEnd, setPolicyScrolledToEnd] = useState(false);
 
   const isGoogleLogin =
     user?.app_metadata?.provider === "google" ||
@@ -183,7 +184,20 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
               Política de uso do WhatsApp
             </h1>
 
-            <div className="mt-5 max-h-[55vh] space-y-4 overflow-y-auto pr-1 text-sm leading-relaxed text-[#475569]">
+            <div
+              className="no-scrollbar mt-5 max-h-[55vh] space-y-4 overflow-y-auto pr-1 text-sm leading-relaxed text-[#475569]"
+              onScroll={(e) => {
+                const el = e.currentTarget;
+                if (el.scrollHeight - el.scrollTop - el.clientHeight <= 8) {
+                  setPolicyScrolledToEnd(true);
+                }
+              }}
+              ref={(el) => {
+                if (el && el.scrollHeight <= el.clientHeight + 8) {
+                  setPolicyScrolledToEnd(true);
+                }
+              }}
+            >
               <p>
                 Para melhorar sua experiência no GoHub, usamos o seu número de WhatsApp para enviar mensagens relacionadas aos seus agendamentos e atendimentos.
               </p>
@@ -226,8 +240,8 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
             <div className="mt-6 space-y-3">
               <Button
                 onClick={handleAcceptPolicy}
-                disabled={policyLoading}
-                className="h-14 w-full rounded-2xl bg-[#3157D5] text-base font-bold text-white shadow-[0_14px_28px_rgba(49,87,213,0.24)] hover:bg-[#284AC0] disabled:bg-[#9DADEB]"
+                disabled={policyLoading || !policyScrolledToEnd}
+                className="h-14 w-full rounded-2xl bg-[#3157D5] text-base font-bold text-white shadow-[0_14px_28px_rgba(49,87,213,0.24)] hover:bg-[#284AC0] disabled:cursor-default disabled:bg-[#E5EAF3] disabled:text-[#9DADEB] disabled:shadow-none disabled:opacity-100"
               >
                 {policyLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Concordo"}
               </Button>
