@@ -55,7 +55,11 @@
         border: 0;
         outline: 0;
         box-shadow: none;
-        background: transparent;
+        background: transparent !important;
+        background-color: transparent !important;
+        padding: 0;
+        margin: 0;
+        object-fit: contain;
         animation: gohub-boot-pulse 1.45s ease-in-out infinite;
       }
 
@@ -108,7 +112,7 @@
 
   <body>
     <div id="gohub-boot-loader" role="status" aria-label="Carregando GoHub">
-      <img src="/logo-gohub-loading.png" alt="GoHub" />
+      <img src="/logo-gohub-loading.png?v=20260625-5" alt="GoHub" />
       <div class="dots" aria-hidden="true">
         <span></span>
         <span></span>
