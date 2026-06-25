@@ -362,6 +362,8 @@ export type Database = {
           phone: string | null
           role: string | null
           updated_at: string | null
+          whatsapp_policy_accepted: boolean
+          whatsapp_policy_accepted_at: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -372,6 +374,8 @@ export type Database = {
           phone?: string | null
           role?: string | null
           updated_at?: string | null
+          whatsapp_policy_accepted?: boolean
+          whatsapp_policy_accepted_at?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -382,6 +386,8 @@ export type Database = {
           phone?: string | null
           role?: string | null
           updated_at?: string | null
+          whatsapp_policy_accepted?: boolean
+          whatsapp_policy_accepted_at?: string | null
         }
         Relationships: [
           {
