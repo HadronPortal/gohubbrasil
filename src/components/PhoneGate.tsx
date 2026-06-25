@@ -4,7 +4,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, LogOut, Phone as PhoneIcon, MessageCircle } from "lucide-react";
+import { Loader2, LogOut } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function PhoneGate({ children }: { children: React.ReactNode }) {
@@ -141,16 +142,22 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
     if (!user) return;
     setPolicyLoading(true);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("users")
         .update({
           whatsapp_policy_accepted: true,
           whatsapp_policy_accepted_at: new Date().toISOString(),
         } as any)
-        .eq("id", user.id);
+        .eq("id", user.id)
+        .select("whatsapp_policy_accepted, whatsapp_policy_accepted_at")
+        .maybeSingle();
       if (error) throw error;
+      if (!data?.whatsapp_policy_accepted) {
+        throw new Error("Não foi possível registrar o consentimento. Tente novamente.");
+      }
       await refreshProfile();
     } catch (error: any) {
+      console.error("Erro ao registrar consentimento WhatsApp:", error);
       toast.error(error.message || "Erro ao registrar consentimento");
     } finally {
       setPolicyLoading(false);
@@ -168,8 +175,8 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
       <main className="min-h-screen bg-white px-6 py-10 text-[#172033]">
         <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-[480px] flex-col justify-center">
           <section className="rounded-[28px] border border-[#E5EAF3] bg-white p-7 shadow-[0_20px_60px_rgba(23,32,51,0.14)]">
-            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEF3FF] text-[#3157D5]">
-              <MessageCircle className="h-7 w-7" />
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center">
+              <WhatsAppIcon size={64} />
             </div>
 
             <h1 className="text-center text-2xl font-extrabold leading-tight tracking-[-0.02em] text-[#172033]">
@@ -248,8 +255,8 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
       <main className="min-h-screen bg-white px-6 py-10 text-[#172033]">
         <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-[430px] flex-col justify-center">
           <section className="rounded-[28px] border border-[#E5EAF3] bg-white p-7 shadow-[0_20px_60px_rgba(23,32,51,0.14)]">
-            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEF3FF] text-[#3157D5]">
-              <PhoneIcon className="h-7 w-7" />
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center">
+              <WhatsAppIcon size={64} />
             </div>
 
             <h1 className="text-center text-2xl font-extrabold leading-tight tracking-[-0.02em] text-[#172033]">
@@ -262,14 +269,14 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
             <div className="mt-7 space-y-2">
               <Label className="text-sm font-semibold text-[#172033]">WhatsApp</Label>
               <div className="relative">
-                <PhoneIcon className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8A9AB5]" />
+                <WhatsAppIcon className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2" size={22} />
                 <Input
                   type="tel"
                   inputMode="tel"
                   value={formatPhone(phone)}
                   onChange={(event) => setPhone(event.target.value.replace(/\D/g, "").slice(0, 11))}
                   placeholder="(00) 00000-0000"
-                  className="h-14 rounded-2xl border-[#DDE6F4] bg-white pl-12 text-lg text-[#172033] shadow-sm focus-visible:border-[#3157D5] focus-visible:ring-[#3157D5]/20"
+                  className="h-14 rounded-2xl border-[#DDE6F4] bg-white pl-14 text-lg text-[#172033] shadow-sm focus-visible:border-[#3157D5] focus-visible:ring-[#3157D5]/20"
                 />
               </div>
             </div>

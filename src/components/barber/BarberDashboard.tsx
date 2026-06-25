@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { MessageCircle, Calendar as CalendarIcon, DollarSign, Percent, TrendingUp, Lock, ChevronRight } from "lucide-react";
+import { Calendar as CalendarIcon, DollarSign, Percent, TrendingUp, Lock, ChevronRight } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -410,7 +411,7 @@ function AppointmentList({ appointments, onWhatsApp, emptyMessage, onRefresh }: 
                   className="w-full h-10 border-[#25d366]/40 text-[#15803D] hover:bg-[#25d366]/10 rounded-[8px] text-xs font-medium flex items-center justify-center gap-2"
                   onClick={() => onWhatsApp(appt.client_phone)}
                 >
-                  <MessageCircle className="w-4 h-4" />
+                  <WhatsAppIcon size={16} />
                   WhatsApp
                 </Button>
               )}
