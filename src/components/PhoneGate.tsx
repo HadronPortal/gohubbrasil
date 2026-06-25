@@ -20,6 +20,15 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
   const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const formatPhoneBR = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 11);
+    if (digits.length <= 2) return digits.length ? `(${digits}` : "";
+    if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    if (digits.length <= 10)
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  };
+
   useEffect(() => {
     if (!authLoading && user && profile) {
       const isGoogleLogin =
@@ -110,36 +119,44 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
     <>
       {children}
       <Dialog open={isOpen} onOpenChange={() => {}}>
-        <DialogContent className="bg-[#141b2a] border-[#2a3347] text-[#c8d4e8] p-6 rounded-[8px] [&>button]:hidden">
+        <DialogContent className="gohub-client max-w-[420px] w-[calc(100vw-32px)] sm:w-full bg-white border-0 text-slate-900 p-6 rounded-[16px] shadow-xl [&>button]:hidden">
           <DialogHeader>
-            <DialogTitle className="font-oswald uppercase text-[#f0c040] tracking-widest text-lg">
+            <DialogTitle className="text-xl font-bold text-slate-900 tracking-normal normal-case">
               Precisamos do seu WhatsApp
             </DialogTitle>
           </DialogHeader>
-          <div className="py-4 space-y-4">
-            <p className="text-sm text-[#8a9ab5]">
-              Para continuar, precisamos confirmar seu numero de contato.
+          <div className="pt-1 pb-2 space-y-5">
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Informe seu número para receber confirmações e avisos sobre seus agendamentos.
             </p>
-            <div className="space-y-1.5">
-              <Label className="text-[10px] uppercase text-[#8a9ab5] tracking-widest font-bold flex items-center gap-2">
-                <PhoneIcon className="w-3 h-3 text-[#f0c040]" /> WHATSAPP
+            <div className="space-y-2">
+              <Label htmlFor="phonegate-whatsapp" className="text-sm font-medium text-slate-700">
+                WhatsApp
               </Label>
-              <Input
-                type="tel"
-                value={phone}
-                onChange={(event) => setPhone(event.target.value.replace(/\D/g, ""))}
-                placeholder="(00) 00000-0000"
-                className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8] h-12 focus-visible:ring-[#3157D5] rounded-none"
-              />
+              <div className="relative">
+                <PhoneIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  id="phonegate-whatsapp"
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel"
+                  value={formatPhoneBR(phone)}
+                  onChange={(event) =>
+                    setPhone(event.target.value.replace(/\D/g, "").slice(0, 11))
+                  }
+                  placeholder="(00) 00000-0000"
+                  className="h-12 pl-10 rounded-[10px] border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:border-[#3157D5] focus-visible:ring-2 focus-visible:ring-[#3157D5]/20 focus-visible:ring-offset-0"
+                />
+              </div>
             </div>
           </div>
           <DialogFooter>
             <Button
               onClick={handleSavePhone}
               disabled={isLoading || !phone}
-              className="w-full bg-[#f0c040] hover:bg-[#d4a935] text-[#1c2333] font-bold h-12 rounded-none"
+              className="w-full bg-[#3157D5] hover:bg-[#2747b8] text-white font-semibold h-12 rounded-[10px] shadow-sm"
             >
-              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "SALVAR E CONTINUAR"}
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar e continuar"}
             </Button>
           </DialogFooter>
         </DialogContent>
