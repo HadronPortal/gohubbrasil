@@ -129,7 +129,7 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
                 value={phone}
                 onChange={(event) => setPhone(event.target.value.replace(/\D/g, ""))}
                 placeholder="(00) 00000-0000"
-                className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8] h-12 focus-visible:ring-[#f0c040] rounded-none"
+                className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8] h-12 focus-visible:ring-[#3157D5] rounded-none"
               />
             </div>
           </div>
