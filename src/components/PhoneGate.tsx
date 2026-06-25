@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, LogOut, Phone as PhoneIcon } from "lucide-react";
+import { Loader2, LogOut, Phone as PhoneIcon, MessageCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function PhoneGate({ children }: { children: React.ReactNode }) {
@@ -12,6 +12,7 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
   const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [phoneSaved, setPhoneSaved] = useState(false);
+  const [policyLoading, setPolicyLoading] = useState(false);
 
   const isGoogleLogin =
     user?.app_metadata?.provider === "google" ||
@@ -19,12 +20,21 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
 
   const phoneMissing = !profile?.phone || String(profile.phone).trim() === "";
   const isSuperAdmin = profile?.role?.toLowerCase() === "superadmin";
+  const policyAccepted = Boolean(profile?.whatsapp_policy_accepted);
+  const shouldShowPolicyGate =
+    !authLoading &&
+    Boolean(user) &&
+    Boolean(profile) &&
+    Boolean(isGoogleLogin) &&
+    !isSuperAdmin &&
+    !policyAccepted;
   const shouldShowGate =
     !authLoading &&
     Boolean(user) &&
     Boolean(profile) &&
     Boolean(isGoogleLogin) &&
     !isSuperAdmin &&
+    policyAccepted &&
     phoneMissing &&
     !phoneSaved;
 
@@ -126,6 +136,112 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
     setPhone("");
     window.location.replace("/login");
   };
+
+  const handleAcceptPolicy = async () => {
+    if (!user) return;
+    setPolicyLoading(true);
+    try {
+      const { error } = await supabase
+        .from("users")
+        .update({
+          whatsapp_policy_accepted: true,
+          whatsapp_policy_accepted_at: new Date().toISOString(),
+        } as any)
+        .eq("id", user.id);
+      if (error) throw error;
+      await refreshProfile();
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao registrar consentimento");
+    } finally {
+      setPolicyLoading(false);
+    }
+  };
+
+  const handleRejectPolicy = async () => {
+    setPolicyLoading(true);
+    await supabase.auth.signOut().catch(() => undefined);
+    window.location.replace("/login");
+  };
+
+  if (shouldShowPolicyGate) {
+    return (
+      <main className="min-h-screen bg-white px-6 py-10 text-[#172033]">
+        <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-[480px] flex-col justify-center">
+          <section className="rounded-[28px] border border-[#E5EAF3] bg-white p-7 shadow-[0_20px_60px_rgba(23,32,51,0.14)]">
+            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEF3FF] text-[#3157D5]">
+              <MessageCircle className="h-7 w-7" />
+            </div>
+
+            <h1 className="text-center text-2xl font-extrabold leading-tight tracking-[-0.02em] text-[#172033]">
+              Política de uso do WhatsApp
+            </h1>
+
+            <div className="mt-5 max-h-[55vh] space-y-4 overflow-y-auto pr-1 text-sm leading-relaxed text-[#475569]">
+              <p>
+                Para melhorar sua experiência no GoHub, usamos o seu número de WhatsApp para enviar mensagens relacionadas aos seus agendamentos e atendimentos.
+              </p>
+              <p>
+                Ao concordar, você autoriza o GoHub e os estabelecimentos nos quais você realizar agendamentos a utilizarem seu número de WhatsApp para enviar:
+              </p>
+              <ul className="list-disc space-y-1 pl-5">
+                <li>confirmação de agendamento;</li>
+                <li>lembretes de horário;</li>
+                <li>avisos de cancelamento ou alteração;</li>
+                <li>mensagens importantes sobre o atendimento solicitado;</li>
+                <li>comunicações relacionadas ao serviço contratado ou agendado.</li>
+              </ul>
+              <div>
+                <p className="font-semibold text-[#172033]">Dados utilizados:</p>
+                <p>
+                  Podemos tratar dados como nome, telefone, estabelecimento escolhido, serviço agendado, profissional, data e horário do atendimento. Esses dados serão usados apenas para funcionamento do agendamento, comunicação com o cliente, segurança e melhoria do serviço.
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-[#172033]">Compartilhamento:</p>
+                <p>
+                  Seu número e dados do agendamento poderão ser compartilhados somente com o estabelecimento e profissional envolvidos no atendimento. As mensagens são enviadas pelo WhatsApp, serviço pertencente à Meta, sujeito também aos termos e políticas da própria plataforma.
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-[#172033]">Privacidade:</p>
+                <p>
+                  Não vendemos seus dados pessoais. Você pode solicitar a atualização ou remoção dos seus dados conforme previsto na Lei Geral de Proteção de Dados (LGPD).
+                </p>
+              </div>
+              <div>
+                <p className="font-semibold text-[#172033]">Consentimento:</p>
+                <p>
+                  Ao clicar em "Concordo", você confirma que leu e aceita receber comunicações pelo WhatsApp relacionadas aos seus agendamentos no GoHub.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-3">
+              <Button
+                onClick={handleAcceptPolicy}
+                disabled={policyLoading}
+                className="h-14 w-full rounded-2xl bg-[#3157D5] text-base font-bold text-white shadow-[0_14px_28px_rgba(49,87,213,0.24)] hover:bg-[#284AC0] disabled:bg-[#9DADEB]"
+              >
+                {policyLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Concordo"}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleRejectPolicy}
+                disabled={policyLoading}
+                className="h-12 w-full rounded-2xl text-sm font-semibold text-[#66748A] hover:bg-[#F5F7FB] hover:text-[#172033]"
+              >
+                Não concordo
+              </Button>
+              <p className="pt-1 text-center text-xs text-[#8A9AB5]">
+                Você pode alterar seus dados de contato posteriormente na área de Perfil.
+              </p>
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  }
 
   if (shouldShowGate) {
     return (
