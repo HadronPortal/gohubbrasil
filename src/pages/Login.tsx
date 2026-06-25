@@ -177,9 +177,10 @@ export default function Login() {
           src={loginBg}
           alt=""
           aria-hidden="true"
-          className="h-full w-full object-cover object-center"
+          className="h-full w-full object-cover object-center md:hidden"
         />
-        {/* overlay removed for full image visibility */}
+        {/* Tablet/desktop: clean white GoHub background, no legacy collage */}
+        <div className="hidden md:block absolute inset-0 bg-white" />
       </div>
 
       {/* Scrollable content */}
