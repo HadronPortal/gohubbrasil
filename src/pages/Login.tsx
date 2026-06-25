@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Capacitor } from "@capacitor/core";
@@ -30,6 +30,8 @@ export default function Login() {
   const [whatsapp, setWhatsapp] = useState("");
   const navigate = useNavigate();
   const { user, profile, loading } = useAuth();
+  const googleBtnRef = useRef<HTMLDivElement | null>(null);
+  const googleInitRef = useRef(false);
 
   useEffect(() => {
     if (!loading && user && profile) {
@@ -37,6 +39,64 @@ export default function Login() {
       navigate(getPostLoginRoute(profile), { replace: true });
     }
   }, [user, profile, loading, navigate]);
+
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) return;
+
+    let cancelled = false;
+
+    const setup = async () => {
+      try {
+        const google = await waitForGoogle();
+        if (cancelled || !googleBtnRef.current) return;
+
+        if (!googleInitRef.current) {
+          google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: async (response: any) => {
+              const credential = response?.credential;
+              if (!credential) {
+                toast.error("Não foi possível entrar com Google.");
+                return;
+              }
+              try {
+                const { error } = await supabase.auth.signInWithIdToken({
+                  provider: "google",
+                  token: credential,
+                });
+                if (error) throw error;
+                // AuthContext + redirect effect handle profile + navigation.
+              } catch (err: any) {
+                toast.error(err.message || "Erro ao entrar com Google.");
+              }
+            },
+            auto_select: false,
+            cancel_on_tap_outside: true,
+            use_fedcm_for_button: true,
+          });
+          googleInitRef.current = true;
+        }
+
+        googleBtnRef.current.innerHTML = "";
+        google.accounts.id.renderButton(googleBtnRef.current, {
+          type: "standard",
+          theme: "outline",
+          size: "large",
+          text: "signin_with",
+          shape: "pill",
+          logo_alignment: "left",
+          width: 320,
+        });
+      } catch {
+        // GIS failed to load; silent — user still has email/password.
+      }
+    };
+
+    setup();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,68 +176,6 @@ export default function Login() {
       };
       tick();
     });
-
-  const signInWithGoogleCredential = async (credential: string) => {
-    const { error } = await supabase.auth.signInWithIdToken({
-      provider: "google",
-      token: credential,
-    });
-    if (error) throw error;
-    // AuthContext + useEffect handle profile load and redirect.
-  };
-
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    try {
-      if (Capacitor.isNativePlatform()) {
-        throw new Error(
-          "Login com Google indisponível neste app. Use e-mail e senha."
-        );
-      }
-
-      const google = await waitForGoogle();
-
-      await new Promise<void>((resolve, reject) => {
-        try {
-          google.accounts.id.initialize({
-            client_id: GOOGLE_CLIENT_ID,
-            ux_mode: "popup",
-            auto_select: false,
-            itp_support: true,
-            callback: async (response: any) => {
-              try {
-                if (!response?.credential)
-                  throw new Error("Credencial Google não recebida");
-                await signInWithGoogleCredential(response.credential);
-                resolve();
-              } catch (err) {
-                reject(err);
-              }
-            },
-          });
-
-          google.accounts.id.prompt((notification: any) => {
-            if (
-              notification.isNotDisplayed?.() ||
-              notification.isSkippedMoment?.()
-            ) {
-              reject(
-                new Error(
-                  "Não foi possível abrir o login com Google. Verifique se pop-ups e cookies de terceiros estão permitidos."
-                )
-              );
-            }
-          });
-        } catch (err) {
-          reject(err);
-        }
-      });
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao entrar com Google");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div
