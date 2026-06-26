@@ -11,6 +11,7 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 import BarberDashboardContent from "@/components/barber/BarberDashboard";
 import { LogoutConfirmDialog } from "@/components/auth/LogoutConfirmDialog";
 import { toast } from "sonner";
+import { NotificationsBell } from "@/components/notifications/NotificationsBell";
 
 export default function BarberDashboard() {
   const { user, profile, isBarber, loading: authLoading } = useAuth();
@@ -112,6 +113,8 @@ export default function BarberDashboard() {
             </div>
           </button>
 
+          <div className="flex items-center gap-2">
+          <NotificationsBell />
           <Button
             type="button"
             onClick={() => setLogoutOpen(true)}
@@ -120,6 +123,7 @@ export default function BarberDashboard() {
             <LogOut className="h-4 w-4" />
             Sair
           </Button>
+          </div>
         </header>
 
         {profile?.role === 'owner' && (
