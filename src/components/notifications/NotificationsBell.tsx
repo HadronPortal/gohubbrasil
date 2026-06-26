@@ -129,7 +129,7 @@ export function NotificationsBell({ variant = "light", className }: Props) {
       clearInterval(t);
       window.removeEventListener("gohub:push", onPush as EventListener);
     };
-  }, [loadUnreadCount]);
+  }, [loadUnreadCount, load, open]);
 
   useEffect(() => {
     if (!open) return;
