@@ -6,6 +6,7 @@ import { ProfileModal } from "@/components/ProfileModal";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { PromoCarousel } from "@/components/client/PromoCarousel";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
+import { NotificationsBell } from "@/components/notifications/NotificationsBell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -772,18 +773,7 @@ export default function ClientHome() {
               >
                 <Gem className="w-5 h-5 text-[#4338CA]" />
               </button>
-              <button
-                onClick={() => toast.info("Notificações em breve")}
-                className="select-none relative w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center active:scale-95 transition"
-                aria-label="Notificações"
-              >
-                <Bell className="w-5 h-5 text-[#172033]" />
-                {notifCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 bg-[#FF6B6B] text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center border-2 border-[#F7F9FC]">
-                    {notifCount}
-                  </span>
-                )}
-              </button>
+              <NotificationsBell />
             </div>
           </div>
           <div className="flex items-start justify-between gap-3 min-w-0">
