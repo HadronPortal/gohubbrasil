@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, Calendar, AlertTriangle, Star, X, Store, UserRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +15,9 @@ export type NotificationItem = {
   read_at?: string | null;
   action_url?: string | null;
   created_at: string;
+  barbershop_id?: string | null;
+  appointment_id?: string | null;
+  data?: any;
 };
 
 type Variant = "light" | "dark";
@@ -76,6 +79,21 @@ export function NotificationsBell({ variant = "light", className }: Props) {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const loadUnreadCount = useCallback(async () => {
+    if (!user?.id) {
+      setUnreadCount(0);
+      return;
+    }
+    try {
+      const { data, error } = await (supabase as any).rpc("get_my_unread_notifications_count");
+      if (error) return;
+      setUnreadCount(Number(data ?? 0));
+    } catch {
+      /* silent */
+    }
+  }, [user?.id]);
 
   const load = useCallback(async () => {
     if (!user?.id) {
@@ -84,12 +102,9 @@ export function NotificationsBell({ variant = "light", className }: Props) {
     }
     setLoading(true);
     try {
-      const { data, error } = await (supabase as any)
-        .from("notifications")
-        .select("id,user_id,title,body,type,read_at,action_url,created_at")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(50);
+      const { data, error } = await (supabase as any).rpc("get_my_notifications", {
+        p_limit: 50,
+      });
       if (error) {
         setItems([]);
       } else {
@@ -103,8 +118,10 @@ export function NotificationsBell({ variant = "light", className }: Props) {
   }, [user?.id]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    loadUnreadCount();
+    const t = setInterval(loadUnreadCount, 60000);
+    return () => clearInterval(t);
+  }, [loadUnreadCount]);
 
   useEffect(() => {
     if (!open) return;
@@ -121,29 +138,26 @@ export function NotificationsBell({ variant = "light", className }: Props) {
     };
   }, [open, load]);
 
-  const unreadCount = useMemo(() => items.filter((n) => !n.read_at).length, [items]);
-
   const markAllRead = async () => {
     if (!user?.id) return;
     const now = new Date().toISOString();
     setItems((prev) => prev.map((n) => ({ ...n, read_at: n.read_at || now })));
+    setUnreadCount(0);
     try {
-      await (supabase as any)
-        .from("notifications")
-        .update({ read_at: now })
-        .is("read_at", null)
-        .eq("user_id", user.id);
+      await (supabase as any).rpc("mark_my_notifications_read", { p_ids: null });
     } catch {
-      /* silent — backend may not exist yet */
+      /* silent */
     }
+    loadUnreadCount();
   };
 
   const onItemClick = async (n: NotificationItem) => {
     if (!n.read_at) {
       const now = new Date().toISOString();
       setItems((prev) => prev.map((x) => (x.id === n.id ? { ...x, read_at: now } : x)));
+      setUnreadCount((c) => Math.max(0, c - 1));
       try {
-        await (supabase as any).from("notifications").update({ read_at: now }).eq("id", n.id);
+        await (supabase as any).rpc("mark_my_notifications_read", { p_ids: [n.id] });
       } catch {
         /* silent */
       }
