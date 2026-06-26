@@ -114,6 +114,8 @@ export default function Admin() {
             </div>
           </button>
 
+          <div className="flex items-center gap-2">
+          <NotificationsBellMount />
           <Button
             type="button"
             onClick={() => setLogoutOpen(true)}
@@ -122,6 +124,7 @@ export default function Admin() {
             <LogOut className="h-4 w-4" />
             Sair
           </Button>
+          </div>
         </header>
 
         {profile?.has_barber_panel && (
