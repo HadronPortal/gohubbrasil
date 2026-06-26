@@ -120,8 +120,16 @@ export function NotificationsBell({ variant = "light", className }: Props) {
   useEffect(() => {
     loadUnreadCount();
     const t = setInterval(loadUnreadCount, 60000);
-    return () => clearInterval(t);
-  }, [loadUnreadCount]);
+    const onPush = () => {
+      loadUnreadCount();
+      if (open) load();
+    };
+    window.addEventListener("gohub:push", onPush as EventListener);
+    return () => {
+      clearInterval(t);
+      window.removeEventListener("gohub:push", onPush as EventListener);
+    };
+  }, [loadUnreadCount, load, open]);
 
   useEffect(() => {
     if (!open) return;
