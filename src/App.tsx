@@ -24,6 +24,7 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 import { PhoneGate } from "./components/PhoneGate";
 import { PushNotificationRegistrar } from "./components/PushNotificationRegistrar";
+import { FcmRegistrar } from "./components/FcmRegistrar";
 import { registerServiceWorker } from "./lib/pwa";
 
 const router = createBrowserRouter([
@@ -192,6 +193,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <PushNotificationRegistrar />
+        <FcmRegistrar />
         <PhoneGate>
           <RouterProvider router={router} />
         </PhoneGate>
