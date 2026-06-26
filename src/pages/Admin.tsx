@@ -23,6 +23,7 @@ import AdminWhatsApp from "@/components/admin/AdminWhatsApp";
 import AdminFinancial from "@/components/admin/AdminFinancial";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { NotificationsBell } from "@/components/notifications/NotificationsBell";
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState<"agenda" | "barbeiros" | "servicos" | "whatsapp" | "financeiro">("agenda");
@@ -115,7 +116,7 @@ export default function Admin() {
           </button>
 
           <div className="flex items-center gap-2">
-          <NotificationsBellMount />
+          <NotificationsBell />
           <Button
             type="button"
             onClick={() => setLogoutOpen(true)}
