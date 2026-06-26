@@ -67,9 +67,10 @@ async function getMessagingSafe(): Promise<Messaging | null> {
 async function registerFcmServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (!("serviceWorker" in navigator)) return null;
   try {
-    const existing = await navigator.serviceWorker.getRegistration(FCM_SW_URL);
-    if (existing) return existing;
-    return await navigator.serviceWorker.register(FCM_SW_URL, { scope: "/" });
+    const scope = "/firebase-cloud-messaging-push-scope";
+    const existing = await navigator.serviceWorker.getRegistration(scope);
+    if (existing && existing.active?.scriptURL.endsWith(FCM_SW_URL)) return existing;
+    return await navigator.serviceWorker.register(FCM_SW_URL, { scope });
   } catch (err) {
     console.warn("FCM SW registration failed", err);
     return null;
