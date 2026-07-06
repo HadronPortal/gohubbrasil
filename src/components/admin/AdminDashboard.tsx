@@ -92,9 +92,6 @@ export default function AdminDashboard({
     try {
       setIsLoading(true);
 
-      // Auto complete past appointments before fetching data
-      await supabase.rpc('auto_complete_past_appointments');
-
       const { data, error } = await supabase.rpc("get_owner_dashboard_appointments", {
         p_day: null
       }) as { data: RPCResponse | null, error: any };
