@@ -28,6 +28,12 @@ export default function BarberDashboard() {
         return;
       }
 
+      // Superadmin não deve carregar dados de barbeiro
+      if (profile?.isSuperAdmin) {
+        setIsCheckingBarber(false);
+        return;
+      }
+
       try {
         const { data, error } = await supabase
           .from('barbers')
@@ -44,12 +50,12 @@ export default function BarberDashboard() {
       }
     }
 
-    if (!authLoading && user) {
+    if (!authLoading && user && profile) {
       checkBarberRecord();
     } else if (!authLoading && !user) {
       setIsCheckingBarber(false);
     }
-  }, [authLoading, user]);
+  }, [authLoading, user, profile]);
 
   useEffect(() => {
     // Only run redirection logic when all loading is finished
@@ -61,6 +67,12 @@ export default function BarberDashboard() {
       
       if (!profile) {
         // Fallback if profile didn't load for some reason but session exists
+        return;
+      }
+
+      // Superadmin sempre vai para o painel do app
+      if (profile.isSuperAdmin) {
+        navigate("/super-admin", { replace: true });
         return;
       }
 
