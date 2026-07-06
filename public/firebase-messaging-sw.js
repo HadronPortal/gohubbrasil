@@ -1,6 +1,7 @@
 /* GoHub Firebase Cloud Messaging Service Worker
  * Handles background web push for the PWA.
  * Lives at the origin root so FCM uses it automatically.
+ * Version: 2026-07-06-2
  */
 /* eslint-disable */
 importScripts("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js");
@@ -16,6 +17,14 @@ firebase.initializeApp({
 });
 
 const messaging = firebase.messaging();
+
+// Force this SW to take control ASAP so icon/badge updates apply immediately.
+self.addEventListener("install", (event) => {
+  event.waitUntil(self.skipWaiting());
+});
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim());
+});
 
 // Background messages.
 // If payload.notification is present, the browser/FCM already shows the
@@ -34,10 +43,11 @@ if (!self.__gohubOnBgBound) {
 
     self.registration.showNotification(title, {
       body,
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
+      icon: "/icons/notification-icon-192.png",
+      badge: "/icons/notification-badge-72.png",
       tag: data.type || "gohub",
       data: { path },
+      vibrate: [120, 60, 120],
     });
   });
 }
