@@ -17,22 +17,30 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Background messages (data-only or notification+data).
-messaging.onBackgroundMessage((payload) => {
-  const data = payload.data || {};
-  const n = payload.notification || {};
-  const title = n.title || data.title || "GoHub";
-  const body = n.body || data.body || "";
-  const path = data.path || "/";
+// Background messages.
+// If payload.notification is present, the browser/FCM already shows the
+// system notification automatically — do NOT call showNotification again,
+// otherwise Android displays two identical notifications.
+// Only render manually for data-only messages.
+if (!self.__gohubOnBgBound) {
+  self.__gohubOnBgBound = true;
+  messaging.onBackgroundMessage((payload) => {
+    if (payload && payload.notification) return;
 
-  self.registration.showNotification(title, {
-    body,
-    icon: "/icons/icon-192.png",
-    badge: "/icons/icon-192.png",
-    tag: data.type || "gohub",
-    data: { path },
+    const data = (payload && payload.data) || {};
+    const title = data.title || "GoHub";
+    const body = data.body || "";
+    const path = data.path || "/";
+
+    self.registration.showNotification(title, {
+      body,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      tag: data.type || "gohub",
+      data: { path },
+    });
   });
-});
+}
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
