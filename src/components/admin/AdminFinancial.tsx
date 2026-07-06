@@ -27,17 +27,21 @@ interface FinancialSummary {
 }
 
 interface BarberRanking {
+  id?: string;
   name: string;
   completed_count: number;
   gross_revenue: number;
   commission_total: number;
   net_revenue: number;
+  average_ticket?: number;
 }
 
 interface ServiceRanking {
+  id?: string;
   name: string;
   quantity: number;
   total_revenue: number;
+  percentage_of_total?: number;
 }
 
 interface FinancialData {
@@ -105,52 +109,118 @@ export default function AdminFinancial({ barbershopId }: { barbershopId: string 
     setIsLoading(true);
     try {
       const { start, end } = getPeriodDates();
-      
-      // Conforme solicitado pelo usuário, usamos a RPC get_owner_financial_report
-      // p_start_date e p_end_date no formato YYYY-MM-DD
-      const formattedStart = format(new Date(start), "yyyy-MM-dd");
-      const formattedEnd = format(new Date(end), "yyyy-MM-dd");
+      const isDev = import.meta.env.DEV;
 
-      const { data: res, error } = await supabase.rpc("get_owner_financial_report", {
-        p_start_date: formattedStart,
-        p_end_date: formattedEnd,
-        p_barbershop_id: null // nulo para pegar a barbearia do dono logado (conforme política/função)
-      });
-
-      if (error) throw error;
-      
-      if (res && res.success === false) {
-        toast.error(res.error || "Erro ao carregar dados financeiros");
+      if (!barbershopId) {
+        setData(null);
         return;
       }
 
-      // Adaptando os dados retornados pela nova RPC para o estado local
-      // A RPC retorna summary.gross, summary.commission, summary.net etc.
-      if (res && res.summary) {
-        const adaptedData: FinancialData = {
-          summary: {
-            gross_revenue: Number(res.summary.gross || 0),
-            total_commission: Number(res.summary.commission || 0),
-            net_revenue: Number(res.summary.net || 0),
-            completed_count: Number(res.summary.completed_count || 0),
-            cancelled_count: Number(res.summary.cancelled_count || 0),
-            average_ticket: Number(res.summary.average_ticket || 0)
-          },
-          barber_ranking: (res.barbers || []).map((b: any) => ({
-            name: b.name,
-            completed_count: Number(b.completed_count || 0),
-            gross_revenue: Number(b.gross || 0),
-            commission_total: Number(b.commission || 0),
-            net_revenue: Number(b.net || 0)
-          })),
-          service_ranking: (res.services || []).map((s: any) => ({
-            name: s.name,
-            quantity: Number(s.quantity || 0),
-            total_revenue: Number(s.total_revenue || 0)
-          }))
-        };
-        setData(adaptedData);
+      // Buscar agendamentos considerados no financeiro:
+      // status completed/finalizado + client_attended != false
+      const { data: appts, error: apptErr } = await supabase
+        .from("appointments")
+        .select(`
+          id, status, starts_at, price, price_charged, commission_amount,
+          client_attended, barber_id, service_id,
+          barber:barbers!appointments_barber_id_fkey ( id, commission_pct, user_id, users:user_id ( name ) ),
+          service:services!appointments_service_id_fkey ( id, name, price )
+        `)
+        .eq("barbershop_id", barbershopId)
+        .gte("starts_at", start)
+        .lte("starts_at", end)
+        .in("status", ["completed", "finalizado"]);
+
+      if (apptErr) {
+        console.error("FINANCIAL fetch error", apptErr);
+        toast.error("Erro ao carregar dados financeiros");
+        return;
       }
+
+      const valid = (appts || []).filter((a: any) => a.client_attended !== false);
+
+      // Contagem de cancelados/no_show no período
+      const { count: cancelledCount } = await supabase
+        .from("appointments")
+        .select("id", { count: "exact", head: true })
+        .eq("barbershop_id", barbershopId)
+        .gte("starts_at", start)
+        .lte("starts_at", end)
+        .in("status", ["cancelled", "canceled", "cancelado", "no_show", "nao_compareceu"]);
+
+      const barberMap = new Map<string, BarberRanking>();
+      const serviceMap = new Map<string, ServiceRanking>();
+
+      let gross = 0;
+      let commission = 0;
+
+      for (const a of valid as any[]) {
+        const price = Number(
+          a.price_charged ?? a.price ?? a.service?.price ?? 0
+        ) || 0;
+        const commissionPct = Number(a.barber?.commission_pct ?? 0) || 0;
+        const commissionVal = Number(
+          a.commission_amount ?? (price * commissionPct) / 100
+        ) || 0;
+
+        gross += price;
+        commission += commissionVal;
+
+        // Profissional
+        const bId = a.barber?.id || a.barber_id || "unknown";
+        const bName = a.barber?.users?.name || "Profissional";
+        const b = barberMap.get(bId) || {
+          id: bId, name: bName, completed_count: 0,
+          gross_revenue: 0, commission_total: 0, net_revenue: 0, average_ticket: 0,
+        };
+        b.completed_count += 1;
+        b.gross_revenue += price;
+        b.commission_total += commissionVal;
+        b.net_revenue = b.gross_revenue - b.commission_total;
+        b.average_ticket = b.completed_count > 0 ? b.gross_revenue / b.completed_count : 0;
+        barberMap.set(bId, b);
+
+        // Serviço
+        const sId = a.service?.id || a.service_id || "unknown";
+        const sName = a.service?.name || "Serviço";
+        const s = serviceMap.get(sId) || {
+          id: sId, name: sName, quantity: 0, total_revenue: 0, percentage_of_total: 0,
+        };
+        s.quantity += 1;
+        s.total_revenue += price;
+        serviceMap.set(sId, s);
+      }
+
+      const barberRanking = Array.from(barberMap.values())
+        .sort((a, b) => b.gross_revenue - a.gross_revenue);
+
+      const serviceRanking = Array.from(serviceMap.values())
+        .map((s) => ({ ...s, percentage_of_total: gross > 0 ? (s.total_revenue / gross) * 100 : 0 }))
+        .sort((a, b) => b.total_revenue - a.total_revenue);
+
+      const completedCount = valid.length;
+      const adapted: FinancialData = {
+        summary: {
+          gross_revenue: gross,
+          total_commission: commission,
+          net_revenue: gross - commission,
+          completed_count: completedCount,
+          cancelled_count: Number(cancelledCount || 0),
+          average_ticket: completedCount > 0 ? gross / completedCount : 0,
+        },
+        barber_ranking: barberRanking,
+        service_ranking: serviceRanking,
+      };
+
+      if (isDev) {
+        console.log("[FINANCIAL] barbershopId:", barbershopId);
+        console.log("[FINANCIAL] period:", { start, end, period });
+        console.log("[FINANCIAL] appointments found:", valid.length);
+        console.log("[FINANCIAL] barbers:", barberRanking);
+        console.log("[FINANCIAL] services:", serviceRanking);
+      }
+
+      setData(adapted);
     } catch (err: any) {
       console.error("FINANCIAL ERROR", err);
       toast.error("Erro ao carregar relatório financeiro");
