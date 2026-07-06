@@ -457,43 +457,24 @@ export default function SuperAdmin() {
         },
       );
 
-      if (error) {
+      if (error && !(response && response.success === true)) {
         toast.error(error.message || "Erro de conexão com o servidor.");
         return;
       }
-      if (response && response.success === false) {
-        toast.error(response.error || "Erro ao cadastrar estabelecimento.");
+      if (!response || response.success !== true) {
+        toast.error((response && response.error) || "Erro ao cadastrar estabelecimento.");
         return;
       }
 
       const createdShopId = response?.barbershop_id as string | undefined;
-      if (!createdShopId) throw new Error("Cadastro concluído sem identificar o estabelecimento.");
 
-      const selectedCategoryIds = Array.from(
-        new Set([createCategoryId, ...createAdditionalCategoryIds]),
-      );
-      const { error: createdShopUpdateError } = await supabase
-        .from("barbershops")
-        .update({
-          category_id: createCategoryId,
-          subscription_status: subscriptionStatus,
-          monthly_price: monthlyPriceValue,
-          paid_until: paidUntilValue || null,
-          pet_types: createIncludesPet ? createPetTypes : null,
-        })
-        .eq("id", createdShopId);
-      if (createdShopUpdateError) throw createdShopUpdateError;
-
-      const { error: categoryLinkError } = await (supabase as any)
-        .from("barbershop_categories")
-        .upsert(
-          selectedCategoryIds.map((categoryId) => ({
-            barbershop_id: createdShopId,
-            category_id: categoryId,
-          })),
-          { onConflict: "barbershop_id,category_id" },
-        );
-      if (categoryLinkError) throw categoryLinkError;
+      // Somente pet_types não é tratado pela Edge Function; atualizamos se necessário.
+      if (createdShopId && createIncludesPet && createPetTypes.length > 0) {
+        await supabase
+          .from("barbershops")
+          .update({ pet_types: createPetTypes })
+          .eq("id", createdShopId);
+      }
 
       toast.success("Estabelecimento cadastrado com sucesso");
       setIsCreateModalOpen(false);
