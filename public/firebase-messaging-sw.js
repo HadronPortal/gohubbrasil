@@ -1,7 +1,7 @@
 /* GoHub Firebase Cloud Messaging Service Worker
  * Handles background web push for the PWA.
  * Lives at the origin root so FCM uses it automatically.
- * Version: 2026-07-06-4
+ * Version: 2026-07-06-5
  */
 /* eslint-disable */
 importScripts("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js");
@@ -26,16 +26,11 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(self.clients.claim());
 });
 
-// Background messages.
-// If payload.notification is present, the browser/FCM already shows the
-// system notification automatically — do NOT call showNotification again,
-// otherwise Android displays two identical notifications.
-// Only render manually for data-only messages.
+// Background messages — backend sends DATA-ONLY payloads, so the SW must
+// always render the notification manually. Guard against double-binding.
 if (!self.__gohubOnBgBound) {
   self.__gohubOnBgBound = true;
   messaging.onBackgroundMessage((payload) => {
-    if (payload && payload.notification) return;
-
     const data = (payload && payload.data) || {};
     const title = data.title || "GoHub";
     const body = data.body || "";
@@ -45,7 +40,6 @@ if (!self.__gohubOnBgBound) {
       body,
       icon: "/icons/notification-icon-192.png",
       badge: "/icons/notification-badge-96.png",
-      tag: data.type || "gohub",
       data: { path },
       vibrate: [120, 60, 120],
     });
