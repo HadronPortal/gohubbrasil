@@ -22,6 +22,7 @@ import {
   Pencil,
   Check,
   X,
+  Camera,
 } from "lucide-react";
 import { LogoutSection } from "@/components/LogoutSection";
 
@@ -45,6 +46,9 @@ export function ProfileModal({ isOpen, onOpenChange }: ProfileModalProps) {
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -64,8 +68,63 @@ export function ProfileModal({ isOpen, onOpenChange }: ProfileModalProps) {
       setConfirmPassword("");
       setEditing(false);
       setShowPassword(false);
+      setAvatarUrl(profile?.avatar_url || null);
     }
   }, [isOpen, profile, user]);
+
+  useEffect(() => {
+    setAvatarUrl(profile?.avatar_url || null);
+  }, [profile?.avatar_url]);
+
+  const handleAvatarClick = () => {
+    if (uploadingAvatar) return;
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !user) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Selecione um arquivo de imagem.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Imagem muito grande. Máximo 5MB.");
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `${user.id}/${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { cacheControl: "3600", upsert: true, contentType: file.type });
+      if (uploadError) throw uploadError;
+
+      const { data: publicData } = supabase.storage.from("avatars").getPublicUrl(path);
+      const publicUrl = publicData.publicUrl;
+      if (!publicUrl) throw new Error("Não foi possível obter a URL da imagem.");
+
+      const { error: updateError } = await supabase
+        .from("users")
+        .update({ avatar_url: publicUrl })
+        .eq("id", user.id);
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      await refreshProfile();
+      toast.success("Foto atualizada");
+    } catch (err: any) {
+      console.error("Avatar upload error:", err);
+      toast.error(err.message || "Erro ao atualizar foto");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   // Focus the first editable field only after the user explicitly enters edit mode.
   useEffect(() => {
@@ -200,16 +259,42 @@ export function ProfileModal({ isOpen, onOpenChange }: ProfileModalProps) {
         <div className="px-5 py-5">
           {/* Avatar */}
           <div className="mb-5 flex flex-col items-center gap-2">
-            <Avatar className="h-20 w-20 border border-[#DDE3EE] bg-white">
-              <AvatarImage
-                src={profile?.avatar_url || undefined}
-                className="object-cover"
-              />
-              <AvatarFallback className="bg-[#EEF2FB] text-lg font-semibold text-[#3157D5]">
-                {getInitial(profile?.name, user?.email)}
-              </AvatarFallback>
-            </Avatar>
-            <span className="text-xs text-[#64748B]">Sua foto de perfil</span>
+            <button
+              type="button"
+              onClick={handleAvatarClick}
+              disabled={uploadingAvatar}
+              className="relative h-20 w-20 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[#3157D5]/40"
+              aria-label="Alterar foto de perfil"
+            >
+              <Avatar className="h-20 w-20 border border-[#DDE3EE] bg-white">
+                <AvatarImage src={avatarUrl || undefined} className="object-cover" />
+                <AvatarFallback className="bg-[#EEF2FB] text-lg font-semibold text-[#3157D5]">
+                  {getInitial(profile?.name, user?.email)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border border-[#DDE3EE] bg-white text-[#3157D5] shadow-sm">
+                {uploadingAvatar ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Camera className="h-3.5 w-3.5" />
+                )}
+              </span>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+            <button
+              type="button"
+              onClick={handleAvatarClick}
+              disabled={uploadingAvatar}
+              className="text-xs text-[#3157D5] hover:underline disabled:opacity-60"
+            >
+              {uploadingAvatar ? "Enviando..." : "Alterar foto"}
+            </button>
           </div>
 
           {/* Fields card */}
