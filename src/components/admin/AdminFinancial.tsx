@@ -50,6 +50,24 @@ interface FinancialData {
   service_ranking: ServiceRanking[];
 }
 
+interface RpcBarber {
+  id?: string;
+  name?: string;
+  completed_count?: number;
+  gross?: number;
+  commission?: number;
+  net?: number;
+  average_ticket?: number;
+}
+
+interface RpcService {
+  id?: string;
+  name?: string;
+  quantity?: number;
+  total?: number;
+  percentage?: number;
+}
+
 export default function AdminFinancial({ barbershopId }: { barbershopId: string | null }) {
   const [period, setPeriod] = useState<Period>("this_month");
   const [customDates, setCustomDates] = useState<{ start: string; end: string }>({
@@ -58,6 +76,7 @@ export default function AdminFinancial({ barbershopId }: { barbershopId: string 
   });
   const [data, setData] = useState<FinancialData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (barbershopId) {
@@ -107,122 +126,90 @@ export default function AdminFinancial({ barbershopId }: { barbershopId: string 
 
   const fetchFinancialData = async () => {
     setIsLoading(true);
+    setErrorMessage(null);
     try {
       const { start, end } = getPeriodDates();
       const isDev = import.meta.env.DEV;
 
       if (!barbershopId) {
+        setErrorMessage("Estabelecimento não encontrado para este usuário");
         setData(null);
         return;
       }
 
-      // Buscar agendamentos considerados no financeiro:
-      // status completed/finalizado + client_attended != false
-      const { data: appts, error: apptErr } = await supabase
-        .from("appointments")
-        .select(`
-          id, status, starts_at, price, price_charged, commission_amount,
-          client_attended, barber_id, service_id,
-          barber:barbers!appointments_barber_id_fkey ( id, commission_pct, user_id, users:user_id ( name ) ),
-          service:services!appointments_service_id_fkey ( id, name, price )
-        `)
-        .eq("barbershop_id", barbershopId)
-        .gte("starts_at", start)
-        .lte("starts_at", end)
-        .in("status", ["completed", "finalizado"]);
+      const formattedStart = format(new Date(start), "yyyy-MM-dd");
+      const formattedEnd = format(new Date(end), "yyyy-MM-dd");
 
-      if (apptErr) {
-        console.error("FINANCIAL fetch error", apptErr);
+      if (isDev) {
+        console.log("[FINANCIAL] calling RPC", {
+          p_barbershop_id: barbershopId,
+          p_start_date: formattedStart,
+          p_end_date: formattedEnd,
+        });
+      }
+
+      const { data: rpcData, error: rpcErr } = await supabase.rpc(
+        "get_owner_financial_report" as any,
+        {
+          p_start_date: formattedStart,
+          p_end_date: formattedEnd,
+          p_barbershop_id: barbershopId,
+        } as any
+      );
+
+      if (rpcErr) {
+        console.error("FINANCIAL rpc error", rpcErr);
+        setErrorMessage("Erro ao carregar dados financeiros");
         toast.error("Erro ao carregar dados financeiros");
         return;
       }
 
-      const valid = (appts || []).filter((a: any) => a.client_attended !== false);
-
-      // Contagem de cancelados/no_show no período
-      const { count: cancelledCount } = await supabase
-        .from("appointments")
-        .select("id", { count: "exact", head: true })
-        .eq("barbershop_id", barbershopId)
-        .gte("starts_at", start)
-        .lte("starts_at", end)
-        .in("status", ["cancelled", "canceled", "cancelado", "no_show", "nao_compareceu"]);
-
-      const barberMap = new Map<string, BarberRanking>();
-      const serviceMap = new Map<string, ServiceRanking>();
-
-      let gross = 0;
-      let commission = 0;
-
-      for (const a of valid as any[]) {
-        const price = Number(
-          a.price_charged ?? a.price ?? a.service?.price ?? 0
-        ) || 0;
-        const commissionPct = Number(a.barber?.commission_pct ?? 0) || 0;
-        const commissionVal = Number(
-          a.commission_amount ?? (price * commissionPct) / 100
-        ) || 0;
-
-        gross += price;
-        commission += commissionVal;
-
-        // Profissional
-        const bId = a.barber?.id || a.barber_id || "unknown";
-        const bName = a.barber?.users?.name || "Profissional";
-        const b = barberMap.get(bId) || {
-          id: bId, name: bName, completed_count: 0,
-          gross_revenue: 0, commission_total: 0, net_revenue: 0, average_ticket: 0,
-        };
-        b.completed_count += 1;
-        b.gross_revenue += price;
-        b.commission_total += commissionVal;
-        b.net_revenue = b.gross_revenue - b.commission_total;
-        b.average_ticket = b.completed_count > 0 ? b.gross_revenue / b.completed_count : 0;
-        barberMap.set(bId, b);
-
-        // Serviço
-        const sId = a.service?.id || a.service_id || "unknown";
-        const sName = a.service?.name || "Serviço";
-        const s = serviceMap.get(sId) || {
-          id: sId, name: sName, quantity: 0, total_revenue: 0, percentage_of_total: 0,
-        };
-        s.quantity += 1;
-        s.total_revenue += price;
-        serviceMap.set(sId, s);
+      const r: any = rpcData || {};
+      if (r.success === false) {
+        setErrorMessage(r.message || "Erro ao carregar dados financeiros");
+        return;
       }
 
-      const barberRanking = Array.from(barberMap.values())
-        .sort((a, b) => b.gross_revenue - a.gross_revenue);
+      const s = r.summary || {};
+      const barbers: RpcBarber[] = Array.isArray(r.barbers) ? r.barbers : [];
+      const services: RpcService[] = Array.isArray(r.services) ? r.services : [];
 
-      const serviceRanking = Array.from(serviceMap.values())
-        .map((s) => ({ ...s, percentage_of_total: gross > 0 ? (s.total_revenue / gross) * 100 : 0 }))
-        .sort((a, b) => b.total_revenue - a.total_revenue);
-
-      const completedCount = valid.length;
       const adapted: FinancialData = {
         summary: {
-          gross_revenue: gross,
-          total_commission: commission,
-          net_revenue: gross - commission,
-          completed_count: completedCount,
-          cancelled_count: Number(cancelledCount || 0),
-          average_ticket: completedCount > 0 ? gross / completedCount : 0,
+          gross_revenue: Number(s.gross || 0),
+          total_commission: Number(s.commission || 0),
+          net_revenue: Number(s.net || 0),
+          completed_count: Number(s.completed_count || 0),
+          cancelled_count: Number(s.cancelled_count || 0),
+          average_ticket: Number(s.average_ticket || 0),
         },
-        barber_ranking: barberRanking,
-        service_ranking: serviceRanking,
+        barber_ranking: barbers.map((b) => ({
+          id: b.id,
+          name: b.name || "Profissional",
+          completed_count: Number(b.completed_count || 0),
+          gross_revenue: Number(b.gross || 0),
+          commission_total: Number(b.commission || 0),
+          net_revenue: Number(b.net || 0),
+          average_ticket: Number(b.average_ticket || 0),
+        })),
+        service_ranking: services.map((sv) => ({
+          id: sv.id,
+          name: sv.name || "Serviço",
+          quantity: Number(sv.quantity || 0),
+          total_revenue: Number(sv.total || 0),
+          percentage_of_total: Number(sv.percentage || 0),
+        })),
       };
 
       if (isDev) {
-        console.log("[FINANCIAL] barbershopId:", barbershopId);
-        console.log("[FINANCIAL] period:", { start, end, period });
-        console.log("[FINANCIAL] appointments found:", valid.length);
-        console.log("[FINANCIAL] barbers:", barberRanking);
-        console.log("[FINANCIAL] services:", serviceRanking);
+        console.log("[FINANCIAL] rpc result", r);
+        console.log("[FINANCIAL] adapted", adapted);
       }
 
       setData(adapted);
     } catch (err: any) {
       console.error("FINANCIAL ERROR", err);
+      setErrorMessage("Erro ao carregar relatório financeiro");
       toast.error("Erro ao carregar relatório financeiro");
     } finally {
       setIsLoading(false);
@@ -234,6 +221,15 @@ export default function AdminFinancial({ barbershopId }: { barbershopId: string 
       <div className="flex flex-col items-center justify-center py-16 gap-3" style={{ fontFamily: "Poppins, sans-serif" }}>
         <TrendingUp className="h-7 w-7 text-[#3157D5] animate-pulse" />
         <p className="text-sm text-[#64748B]">Carregando financeiro...</p>
+      </div>
+    );
+  }
+
+  if (errorMessage && !data) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-3 px-6 text-center" style={{ fontFamily: "Poppins, sans-serif" }}>
+        <XCircle className="h-7 w-7 text-[#B45309]" />
+        <p className="text-sm text-[#64748B]">{errorMessage}</p>
       </div>
     );
   }
