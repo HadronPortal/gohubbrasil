@@ -1,7 +1,7 @@
 /* GoHub Firebase Cloud Messaging Service Worker
  * Handles background web push for the PWA.
  * Lives at the origin root so FCM uses it automatically.
- * Version: 2026-07-06-3
+ * Version: 2026-07-06-4
  */
 /* eslint-disable */
 importScripts("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js");
@@ -44,6 +44,7 @@ if (!self.__gohubOnBgBound) {
     self.registration.showNotification(title, {
       body,
       icon: "/icons/notification-icon-192.png",
+      badge: "/icons/notification-badge-96.png",
       tag: data.type || "gohub",
       data: { path },
       vibrate: [120, 60, 120],
