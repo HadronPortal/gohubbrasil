@@ -64,7 +64,7 @@ interface RpcService {
   id?: string;
   name?: string;
   quantity?: number;
-  total?: number;
+  total_revenue?: number;
   percentage?: number;
 }
 
@@ -196,7 +196,7 @@ export default function AdminFinancial({ barbershopId }: { barbershopId: string 
           id: sv.id,
           name: sv.name || "Serviço",
           quantity: Number(sv.quantity || 0),
-          total_revenue: Number(sv.total || 0),
+          total_revenue: Number(sv.total_revenue ?? 0),
           percentage_of_total: Number(sv.percentage || 0),
         })),
       };
