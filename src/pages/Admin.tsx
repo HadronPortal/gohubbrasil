@@ -40,8 +40,14 @@ export default function Admin() {
         navigate("/login", { replace: true });
         return;
       }
-      
-      if (profile && !isAdmin && profile.role !== "owner") {
+
+      // Superadmin never uses o painel de estabelecimento
+      if (profile?.isSuperAdmin) {
+        navigate("/super-admin", { replace: true });
+        return;
+      }
+
+      if (profile && profile.role !== "owner" && profile.role !== "admin") {
         toast.error("Acesso restrito");
         navigate("/", { replace: true });
         return;
@@ -60,14 +66,6 @@ export default function Admin() {
           return;
         }
 
-        if (profile?.isSuperAdmin) {
-          // Fallback for superadmin who doesn't have a barbershop_id linked
-          const { data } = await supabase.from("barbershops").select("id").limit(1).maybeSingle();
-          if (data) {
-            setBarbershopId(data.id);
-          }
-        }
-        
         setLoadingBarbershop(false);
       };
 
