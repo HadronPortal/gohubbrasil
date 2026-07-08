@@ -96,7 +96,7 @@ export default function Booking() {
       if (blockError) {
         console.error("Error checking payment block:", blockError);
       } else if (isBlocked) {
-        toast.error("Barbearia bloqueada por falta de pagamento. Agendamento não permitido.");
+        toast.error("Estabelecimento bloqueado por falta de pagamento. Agendamento não permitido.");
         setIsLoadingSlots(false);
         return;
       }
@@ -140,7 +140,7 @@ export default function Booking() {
     }
 
     if (!selectedBarberId || !selectedDate) {
-      toast.error("Por favor, selecione um barbeiro e data");
+      toast.error("Por favor, selecione um profissional e data");
       return;
     }
 
