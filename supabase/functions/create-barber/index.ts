@@ -34,7 +34,7 @@ serve(async (req) => {
       .single()
 
     if (profileError || (callerProfile?.role !== 'owner' && callerProfile?.role !== 'superadmin')) {
-      throw new Error('Permissão negada. Apenas donos podem cadastrar barbeiros.')
+      throw new Error('Permissão negada. Apenas donos podem cadastrar profissionais.')
     }
 
     const body = await req.json()
@@ -56,7 +56,7 @@ serve(async (req) => {
     const targetBarbershopId = callerProfile.role === 'superadmin' ? barbershopId : callerProfile.barbershop_id
 
     if (!targetBarbershopId) {
-      throw new Error('ID da barbearia não fornecido.')
+      throw new Error('ID do estabelecimento não fornecido.')
     }
 
     // 3. Determine userId and current role
@@ -71,7 +71,7 @@ serve(async (req) => {
         .eq('id', barberId)
         .single()
       
-      if (barberError || !barber) throw new Error('Barbeiro não encontrado.')
+      if (barberError || !barber) throw new Error('Profissional não encontrado.')
       userId = barber.user_id
       currentRole = barber.users?.role || 'barber'
     } else if (email) {
@@ -91,7 +91,7 @@ serve(async (req) => {
     const finalRole = (preserveRole && currentRole === 'owner') ? 'owner' : 'barber'
 
     if (!userId) {
-      if (!email || !password) throw new Error('E-mail e senha são obrigatórios para novo barbeiro.')
+      if (!email || !password) throw new Error('E-mail e senha são obrigatórios para novo profissional.')
       // 4. Create Auth User
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email: email,
@@ -152,7 +152,7 @@ serve(async (req) => {
       .select()
       .single()
 
-    if (barberEntryError) throw new Error(`Erro ao atualizar registro de barbeiro: ${barberEntryError.message}`)
+    if (barberEntryError) throw new Error(`Erro ao atualizar registro de profissional: ${barberEntryError.message}`)
 
     return new Response(JSON.stringify({ 
       success: true, 
