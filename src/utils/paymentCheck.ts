@@ -25,7 +25,7 @@ export const checkBarbershopAccess = async (barbershopId: string, role: string, 
         // We'll handle this in the component by showing a blocked state
         return true; 
       } else if (role === 'client') {
-        toast.error("Barbearia bloqueada por pagamento. Por favor, escolha outro estabelecimento.");
+        toast.error("Estabelecimento bloqueado por pagamento. Por favor, escolha outro estabelecimento.");
         if (clearBarbershop) {
           await clearBarbershop();
         }

@@ -34,7 +34,7 @@ serve(async (req) => {
       .single()
 
     if (profileError || callerProfile?.role !== 'superadmin') {
-      return new Response(JSON.stringify({ success: false, error: 'Apenas superadmins podem criar barbearias.' }), {
+      return new Response(JSON.stringify({ success: false, error: 'Apenas superadmins podem criar estabelecimentos.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200, // Returning 200 as requested
       })

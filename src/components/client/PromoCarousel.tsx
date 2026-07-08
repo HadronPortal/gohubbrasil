@@ -23,7 +23,7 @@ const SLIDES: Slide[] = [
     text: "Encontre barbearias perto de você",
     cta: "Agendar corte",
     to: "/client-category/barbearias",
-    alt: "Barbeiro realizando corte em barbearia moderna",
+    alt: "Profissional realizando corte em estabelecimento moderno",
   },
   {
     image: bannerCabelos,
