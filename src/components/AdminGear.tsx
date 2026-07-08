@@ -18,7 +18,7 @@ export const AdminGear: React.FC = () => {
       <button 
         onClick={() => navigate('/barber-dashboard')}
         className="p-2 bg-[#141b2a] border border-[#2a3347] rounded-full hover:border-[#f0c040] transition-all group"
-        aria-label="Painel Barbeiro"
+        aria-label="Painel Profissional"
       >
         <Settings size={20} className="text-[#8a9ab5] group-hover:text-[#f0c040]" />
       </button>
@@ -61,7 +61,7 @@ export const AdminGear: React.FC = () => {
                 className="w-full text-left px-4 py-2 text-sm text-[#c8d4e8] hover:bg-[#1c2333] hover:text-[#f0c040] flex items-center gap-2"
               >
                 <Settings size={14} />
-                Gerenciar Barbearia
+                Gerenciar Estabelecimento
               </button>
             )}
             {isSuperAdmin && (
@@ -73,7 +73,7 @@ export const AdminGear: React.FC = () => {
                 className="w-full text-left px-4 py-2 text-sm text-[#c8d4e8] hover:bg-[#1c2333] hover:text-[#f0c040] flex items-center gap-2 border-t border-[#2a3347]"
               >
                 <PlusCircle size={14} />
-                Cadastrar Barbearia
+                Cadastrar Estabelecimento
               </button>
             )}
           </div>
