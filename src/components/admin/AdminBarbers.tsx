@@ -71,7 +71,7 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
     }
 
     if (data && data.success === false) {
-      toast.error(data.error || "Erro ao carregar barbeiros");
+      toast.error(data.error || "Erro ao carregar profissionais");
       setIsLoading(false);
       return;
     }
@@ -237,12 +237,12 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
       }
 
       if (resultData && resultData.success === false) {
-        toast.error(resultData.error || "Erro ao salvar barbeiro.");
+        toast.error(resultData.error || "Erro ao salvar profissional.");
         setIsLoading(false);
         return;
       }
 
-      toast.success(editingBarber ? "Barbeiro atualizado!" : "Barbeiro cadastrado com sucesso!");
+      toast.success(editingBarber ? "Profissional atualizado!" : "Profissional cadastrado com sucesso!");
       resetForm();
       fetchBarbers();
     } catch (error: any) {
@@ -266,10 +266,10 @@ export default function AdminBarbers({ barbershopId }: { barbershopId: string | 
 
       const result = data as { success: boolean; error?: string };
       if (result.success) {
-        toast.success("Barbeiro excluído");
+        toast.success("Profissional excluído");
         fetchBarbers();
       } else {
-        toast.error(result.error || "Erro ao excluir barbeiro.");
+        toast.error(result.error || "Erro ao excluir profissional.");
       }
     } catch (error: any) {
       console.error("Delete error:", error);
