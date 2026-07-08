@@ -103,12 +103,12 @@ export default function SelectBarbershop() {
 
         if (error) {
           console.error("Error setting barbershop:", error);
-          toast.error(error.message || "Erro ao salvar barbearia selecionada");
+          toast.error(error.message || "Erro ao salvar estabelecimento selecionado");
           return;
         }
 
         if (data?.success === false) {
-          toast.error(data.error || "Erro ao salvar barbearia selecionada");
+          toast.error(data.error || "Erro ao salvar estabelecimento selecionado");
           return;
         }
 
@@ -167,7 +167,7 @@ export default function SelectBarbershop() {
         {/* Section Label */}
         <div className="pt-2">
           <h3 className="text-xs font-bold tracking-[0.25em] text-[#f0c040] font-oswald uppercase">
-            ESCOLHA UMA BARBEARIA
+            ESCOLHA UM ESTABELECIMENTO
           </h3>
         </div>
 
@@ -206,7 +206,7 @@ export default function SelectBarbershop() {
           ))}
           {barbershops.length === 0 && (
             <div className="text-center py-10 text-[#8a9ab5]">
-              Nenhuma barbearia cadastrada.
+              Nenhum estabelecimento cadastrado.
             </div>
           )}
         </div>
