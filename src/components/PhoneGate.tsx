@@ -21,25 +21,25 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
     user?.identities?.some((identity: any) => identity.provider === "google");
 
   const phoneMissing = !profile?.phone || String(profile.phone).trim() === "";
-  const isSuperAdmin = profile?.role?.toLowerCase() === "superadmin";
+  const role = String(profile?.role || "client").toLowerCase();
+  const isSuperAdmin = role === "superadmin" || Boolean((profile as any)?.isSuperAdmin);
+  const isStaff =
+    isSuperAdmin ||
+    role === "owner" ||
+    role === "admin" ||
+    role === "barber" ||
+    role === "professional";
   const policyAccepted = Boolean(profile?.whatsapp_policy_accepted);
-  const shouldShowPolicyGate =
+  // Só mostrar qualquer gate para cliente novo (Google) que ainda não tem telefone.
+  const gateEligible =
     !authLoading &&
     Boolean(user) &&
     Boolean(profile) &&
     Boolean(isGoogleLogin) &&
-    !isSuperAdmin &&
-    phoneMissing &&
-    !policyAccepted;
-  const shouldShowGate =
-    !authLoading &&
-    Boolean(user) &&
-    Boolean(profile) &&
-    Boolean(isGoogleLogin) &&
-    !isSuperAdmin &&
-    policyAccepted &&
-    phoneMissing &&
-    !phoneSaved;
+    !isStaff &&
+    phoneMissing;
+  const shouldShowPolicyGate = gateEligible && !policyAccepted;
+  const shouldShowGate = gateEligible && policyAccepted && !phoneSaved;
 
   const formatPhone = (value: string) => {
     const digits = value.replace(/\D/g, "").slice(0, 11);
