@@ -180,7 +180,8 @@ export default function Booking() {
             const slotEndDate = new Date(slot.ends_at);
             const slotEndHM = `${String(slotEndDate.getHours()).padStart(2, "0")}:${String(slotEndDate.getMinutes()).padStart(2, "0")}`;
             for (const b of blocks) {
-              if (b.barber_id && b.barber_id !== slot.barber_id) continue;
+              const slotBarberId = slot.barber_id ?? selectedBarberId;
+              if (b.barber_id && b.barber_id !== slotBarberId) continue;
               if (dayStr < b.start_date || dayStr > b.end_date) continue;
               const bStart = String(b.start_time || "").substring(0, 5);
               const bEnd = String(b.end_time || "").substring(0, 5);
@@ -239,7 +240,8 @@ export default function Booking() {
         const slotEndDate = new Date(selectedSlot.ends_at);
         const slotEndHM = `${String(slotEndDate.getHours()).padStart(2, "0")}:${String(slotEndDate.getMinutes()).padStart(2, "0")}`;
         const conflict = (blocksData as any[]).some((b) => {
-          if (b.barber_id && b.barber_id !== selectedSlot.barber_id) return false;
+          const slotBarberId = selectedSlot.barber_id ?? selectedBarberId;
+          if (b.barber_id && b.barber_id !== slotBarberId) return false;
           if (dayStr < b.start_date || dayStr > b.end_date) return false;
           const bStart = String(b.start_time || "").substring(0, 5);
           const bEnd = String(b.end_time || "").substring(0, 5);
