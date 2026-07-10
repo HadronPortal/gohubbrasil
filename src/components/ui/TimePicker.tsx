@@ -68,17 +68,17 @@ export function TimePicker({ value, onChange, label, minutesStep = 15 }: TimePic
             </button>
           </DialogHeader>
 
-          <div className="p-4 flex gap-4 justify-center items-center h-[260px]">
+          <div className="p-4 grid grid-cols-[1fr_auto_1fr] gap-3 items-start">
             {/* Hours Column */}
-            <div className="flex-1 flex flex-col items-center min-w-0">
-              <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-2">Hora</span>
-              <div className="w-full overflow-y-auto h-[200px] no-scrollbar flex flex-col gap-1 pr-1">
+            <div className="flex flex-col items-center min-w-0">
+              <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-2 h-4 leading-4">Hora</span>
+              <div className="w-full overflow-y-auto h-[220px] no-scrollbar flex flex-col gap-1 px-1 scroll-smooth">
                 {hours.map((h) => (
                   <button
                     key={h}
                     onClick={() => setTempHour(h)}
                     className={cn(
-                      "py-2 px-3 text-center rounded-[8px] text-base transition-all",
+                      "h-10 w-full flex items-center justify-center rounded-[8px] text-base tabular-nums transition-all shrink-0",
                       tempHour === h
                         ? "bg-[#3157D5] text-white font-bold"
                         : "text-[#172033] hover:bg-[#EAF0FF] hover:text-[#3157D5]"
@@ -90,18 +90,23 @@ export function TimePicker({ value, onChange, label, minutesStep = 15 }: TimePic
               </div>
             </div>
 
-            <span className="text-2xl text-[#3157D5] font-bold mb-[-20px]">:</span>
+            <div className="flex flex-col items-center">
+              <span className="text-[10px] mb-2 h-4 leading-4 opacity-0">:</span>
+              <div className="h-[220px] flex items-center">
+                <span className="text-2xl text-[#3157D5] font-bold">:</span>
+              </div>
+            </div>
 
             {/* Minutes Column */}
-            <div className="flex-1 flex flex-col items-center min-w-0">
-              <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-2">Min</span>
-              <div className="w-full overflow-y-auto h-[200px] no-scrollbar flex flex-col gap-1 pl-1">
+            <div className="flex flex-col items-center min-w-0">
+              <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-2 h-4 leading-4">Min</span>
+              <div className="w-full overflow-y-auto h-[220px] no-scrollbar flex flex-col gap-1 px-1 scroll-smooth">
                 {minutes.map((m) => (
                   <button
                     key={m}
                     onClick={() => setTempMinute(m)}
                     className={cn(
-                      "py-2 px-3 text-center rounded-[8px] text-base transition-all",
+                      "h-10 w-full flex items-center justify-center rounded-[8px] text-base tabular-nums transition-all shrink-0",
                       tempMinute === m
                         ? "bg-[#3157D5] text-white font-bold"
                         : "text-[#172033] hover:bg-[#EAF0FF] hover:text-[#3157D5]"
