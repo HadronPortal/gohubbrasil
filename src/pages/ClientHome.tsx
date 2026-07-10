@@ -628,27 +628,53 @@ export default function ClientHome() {
   }, [user, profile, loadAppointments]);
 
   const handleCancelAppointment = async () => {
-    if (!appointmentToCancel) return;
+    if (!appointmentToCancel || cancelingAppointment) return;
 
     setCancelingAppointment(true);
+    const targetId = appointmentToCancel.id;
+    const isQueueNoise = (msg?: string | null) => {
+      const m = String(msg || "").toLowerCase();
+      return m.includes("whatsapp_queue") || m.includes("duplicate key");
+    };
+    const finishAsCancelled = async (soft = false) => {
+      setAppointments((current) => current.filter((a) => a.id !== targetId));
+      setAppointmentToCancel(null);
+      if (soft) {
+        toast.success("Agendamento cancelado. A notificação será processada em instantes.");
+      } else {
+        toast.success("Agendamento cancelado. O estabelecimento sera avisado.");
+      }
+      await loadAppointments();
+    };
     try {
       const { data, error } = await supabase.rpc("cancel_my_appointment", {
-        p_appointment_id: appointmentToCancel.id,
+        p_appointment_id: targetId,
       });
 
-      if (error) throw error;
+      if (error) {
+        if (isQueueNoise(error.message)) {
+          await finishAsCancelled(true);
+          return;
+        }
+        throw error;
+      }
       if (data && typeof data === "object" && "success" in data && !(data as any).success) {
-        throw new Error((data as any).error || "Nao foi possivel cancelar o agendamento.");
+        const errMsg = (data as any).error;
+        if (isQueueNoise(errMsg)) {
+          await finishAsCancelled(true);
+          return;
+        }
+        throw new Error(errMsg || "Nao foi possivel cancelar o agendamento.");
       }
 
-      setAppointments((current) =>
-        current.filter((appointment) => appointment.id !== appointmentToCancel.id),
-      );
-      setAppointmentToCancel(null);
-      toast.success("Agendamento cancelado. O estabelecimento sera avisado.");
-      await loadAppointments();
+      await finishAsCancelled(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Erro ao cancelar agendamento.");
+      const msg = error instanceof Error ? error.message : "";
+      if (isQueueNoise(msg)) {
+        await finishAsCancelled(true);
+      } else {
+        toast.error(msg || "Erro ao cancelar agendamento.");
+      }
     } finally {
       setCancelingAppointment(false);
     }
