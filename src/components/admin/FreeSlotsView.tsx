@@ -5,7 +5,7 @@ import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TimePicker } from "@/components/ui/TimePicker";
-import { Calendar as CalendarIcon, Clock, Lock, Settings, Trash2, ArrowLeft, User } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Lock, Trash2, ArrowLeft, User } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -62,12 +62,7 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
   const [availableSlots, setAvailableSlots] = useState<AvailableSlot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  const canManageSchedule = 
-    profile?.role === 'owner' || 
-    profile?.role === 'superadmin';
-
   // Modals state
-  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
   
   // Config form state
@@ -134,23 +129,6 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
       toast.error("Erro ao carregar horários: " + error.message);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleSaveConfig = async () => {
-    try {
-      const { error } = await supabase.rpc('update_barbershop_schedule_settings', {
-        p_opening_time: openingTime,
-        p_closing_time: closingTime,
-        p_slot_interval_minutes: parseInt(slotInterval)
-      });
-
-      if (error) throw error;
-      toast.success("Configurações salvas!");
-      setIsConfigModalOpen(false);
-      fetchSlotsAndBlocks();
-    } catch (error: any) {
-      toast.error("Erro ao salvar: " + error.message);
     }
   };
 
@@ -299,32 +277,20 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-3">
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              setBlockStartDate(selectedDate);
-              setBlockEndDate(selectedDate);
-              setBlockStartTime("");
-              setBlockEndTime("");
-              setIsBlockModalOpen(true);
-            }}
-            className="bg-white border-[#DDE3EE] border-dashed text-[#64748B] hover:text-[#3157D5] hover:border-[#3157D5]/40"
-          >
-            <Lock className="w-4 h-4 mr-2" />
-            Bloquear
-          </Button>
-          {canManageSchedule && (
-            <Button 
-              variant="outline" 
-              onClick={() => setIsConfigModalOpen(true)}
-              className="bg-white border-[#DDE3EE] border-dashed text-[#64748B] hover:text-[#3157D5] hover:border-[#3157D5]/40"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Configurar
-            </Button>
-          )}
-        </div>
+        <Button 
+          variant="outline" 
+          onClick={() => {
+            setBlockStartDate(selectedDate);
+            setBlockEndDate(selectedDate);
+            setBlockStartTime("");
+            setBlockEndTime("");
+            setIsBlockModalOpen(true);
+          }}
+          className="bg-white border-[#DDE3EE] border-dashed text-[#64748B] hover:text-[#3157D5] hover:border-[#3157D5]/40"
+        >
+          <Lock className="w-4 h-4 mr-2" />
+          Bloquear horário
+        </Button>
       </div>
 
       {/* Available Slots List */}
