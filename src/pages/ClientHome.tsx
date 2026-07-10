@@ -639,6 +639,13 @@ export default function ClientHome() {
     const finishAsCancelled = async (soft = false) => {
       setAppointments((current) => current.filter((a) => a.id !== targetId));
       setAppointmentToCancel(null);
+      try {
+        await supabase.rpc("enqueue_appointment_cancelled_by_client" as any, {
+          p_appointment_id: targetId,
+        });
+      } catch (queueErr) {
+        console.warn("enqueue_appointment_cancelled_by_client failed:", queueErr);
+      }
       if (soft) {
         toast.success("Agendamento cancelado. A notificação será processada em instantes.");
       } else {
