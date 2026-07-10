@@ -19,10 +19,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import { Lock, Trash2 } from "lucide-react";
+import { Lock, Trash2, Clock } from "lucide-react";
 
 import { UserAvatar } from "@/components/UserAvatar";
 import FreeSlotsView from "./FreeSlotsView";
+import BusinessHoursView from "./BusinessHoursView";
 
 
 interface Stats {
@@ -82,6 +83,7 @@ export default function AdminDashboard({
   });
   const [isLoading, setIsLoading] = useState(true);
   const [showFreeSlots, setShowFreeSlots] = useState(false);
+  const [showBusinessHours, setShowBusinessHours] = useState(false);
   const [activeTab, setActiveTab] = useState<"today" | "upcoming" | "history">("today");
 
   useEffect(() => {
@@ -178,6 +180,9 @@ export default function AdminDashboard({
   if (showFreeSlots && barbershopId) {
     return <FreeSlotsView barbershopId={barbershopId} onBack={() => setShowFreeSlots(false)} profile={profile} />;
   }
+  if (showBusinessHours && barbershopId) {
+    return <BusinessHoursView barbershopId={barbershopId} onBack={() => setShowBusinessHours(false)} />;
+  }
 
   return (
     <div className="space-y-5" style={{ fontFamily: "Poppins, sans-serif" }}>
@@ -197,6 +202,24 @@ export default function AdminDashboard({
           </div>
         </div>
       </button>
+
+      {(profile?.role === "owner" || profile?.role === "superadmin") && (
+        <button
+          type="button"
+          onClick={() => setShowBusinessHours(true)}
+          className="w-full flex items-center justify-between gap-3 rounded-[8px] border border-[#DDE3EE] bg-white p-4 text-left hover:border-[#3157D5]/40 hover:shadow-sm transition"
+        >
+          <div className="flex items-center gap-3">
+            <div className="rounded-[8px] bg-[#EAF0FF] p-2.5">
+              <Clock className="w-5 h-5 text-[#3157D5]" />
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-[#172033]">Horários de funcionamento</h4>
+              <p className="text-xs text-[#64748B]">Definir dias e horários do estabelecimento</p>
+            </div>
+          </div>
+        </button>
+      )}
 
       {/* Summary Grid */}
       <div className="grid grid-cols-2 gap-3">
