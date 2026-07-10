@@ -775,6 +775,10 @@ export type Database = {
         Args: { p_barbershop_id: string }
         Returns: Json
       }
+      get_barbershop_time_blocks: {
+        Args: { p_barbershop_id: string; p_day?: string }
+        Returns: Json
+      }
       get_barbershops_by_category_service:
         | {
             Args: { p_catalog_service_id?: string; p_category_slug: string }
