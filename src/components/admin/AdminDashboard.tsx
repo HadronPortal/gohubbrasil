@@ -19,11 +19,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import { Lock, Trash2, Clock } from "lucide-react";
+import { Lock, Trash2, Clock, CalendarPlus } from "lucide-react";
 
 import { UserAvatar } from "@/components/UserAvatar";
 import FreeSlotsView from "./FreeSlotsView";
 import BusinessHoursView from "./BusinessHoursView";
+import ManualBookingModal from "./ManualBookingModal";
 
 
 interface Stats {
@@ -84,6 +85,7 @@ export default function AdminDashboard({
   const [isLoading, setIsLoading] = useState(true);
   const [showFreeSlots, setShowFreeSlots] = useState(false);
   const [showBusinessHours, setShowBusinessHours] = useState(false);
+  const [showManualBooking, setShowManualBooking] = useState(false);
   const [activeTab, setActiveTab] = useState<"today" | "upcoming" | "history">("today");
 
   useEffect(() => {
@@ -203,6 +205,24 @@ export default function AdminDashboard({
         </div>
       </button>
 
+      {barbershopId && (
+        <button
+          type="button"
+          onClick={() => setShowManualBooking(true)}
+          className="w-full flex items-center justify-between gap-3 rounded-[8px] border border-[#3157D5] bg-[#3157D5] p-4 text-left hover:bg-[#274ac0] transition"
+        >
+          <div className="flex items-center gap-3">
+            <div className="rounded-[8px] bg-white/15 p-2.5">
+              <CalendarPlus className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-white">Novo agendamento</h4>
+              <p className="text-xs text-white/80">Agendar cliente manualmente</p>
+            </div>
+          </div>
+        </button>
+      )}
+
       {(profile?.role === "owner" || profile?.role === "superadmin") && (
         <button
           type="button"
@@ -295,6 +315,15 @@ export default function AdminDashboard({
           )}
         </TabsContent>
       </Tabs>
+
+      {barbershopId && (
+        <ManualBookingModal
+          open={showManualBooking}
+          onOpenChange={setShowManualBooking}
+          barbershopId={barbershopId}
+          onCreated={fetchDashboardData}
+        />
+      )}
     </div>
   );
 }

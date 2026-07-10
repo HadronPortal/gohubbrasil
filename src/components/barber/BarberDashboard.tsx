@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Calendar as CalendarIcon, DollarSign, Percent, TrendingUp, Lock, ChevronRight } from "lucide-react";
+import { Calendar as CalendarIcon, DollarSign, Percent, TrendingUp, Lock, ChevronRight, CalendarPlus } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +11,7 @@ import { money } from "@/utils/format";
 import { UserAvatar } from "@/components/UserAvatar";
 import { getDateKeyBR, isTodayBR, isAfterTodayBR, isFinished, isCanceled } from "@/lib/utils";
 import FreeSlotsView from "../admin/FreeSlotsView";
+import ManualBookingModal from "../admin/ManualBookingModal";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -60,6 +61,7 @@ export default function BarberDashboard({ profile }: { profile: any }) {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
 
   const [showFreeSlots, setShowFreeSlots] = useState(false);
+  const [showManualBooking, setShowManualBooking] = useState(false);
 
   useEffect(() => {
 
@@ -170,6 +172,25 @@ export default function BarberDashboard({ profile }: { profile: any }) {
         <ChevronRight className="w-4 h-4 text-[#94A3B8] shrink-0" />
       </button>
 
+      {profile?.barbershop_id && (
+        <button
+          type="button"
+          onClick={() => setShowManualBooking(true)}
+          className="w-full flex items-center justify-between gap-3 rounded-[8px] border border-[#3157D5] bg-[#3157D5] p-4 text-left hover:bg-[#274ac0] transition-colors"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="rounded-[8px] bg-white/15 p-2">
+              <CalendarPlus className="w-5 h-5 text-white" />
+            </div>
+            <div className="min-w-0">
+              <h4 className="text-sm font-semibold text-white truncate">Novo agendamento</h4>
+              <p className="text-xs text-white/80 truncate">Agendar cliente manualmente</p>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-white/80 shrink-0" />
+        </button>
+      )}
+
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-3">
         <Card className="bg-white border border-[#DDE3EE] rounded-[8px] shadow-none">
@@ -268,6 +289,15 @@ export default function BarberDashboard({ profile }: { profile: any }) {
           />
         </TabsContent>
       </Tabs>
+
+      {profile?.barbershop_id && (
+        <ManualBookingModal
+          open={showManualBooking}
+          onOpenChange={setShowManualBooking}
+          barbershopId={profile.barbershop_id}
+          onCreated={fetchDashboardData}
+        />
+      )}
     </div>
   );
 }

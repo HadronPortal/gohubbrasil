@@ -5,7 +5,7 @@ import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TimePicker } from "@/components/ui/TimePicker";
-import { Calendar as CalendarIcon, Clock, Lock, Settings, Trash2, ArrowLeft, User } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Lock, Trash2, ArrowLeft, User } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -62,12 +62,7 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
   const [availableSlots, setAvailableSlots] = useState<AvailableSlot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  const canManageSchedule = 
-    profile?.role === 'owner' || 
-    profile?.role === 'superadmin';
-
   // Modals state
-  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
   
   // Config form state
@@ -134,23 +129,6 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
       toast.error("Erro ao carregar horários: " + error.message);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleSaveConfig = async () => {
-    try {
-      const { error } = await supabase.rpc('update_barbershop_schedule_settings', {
-        p_opening_time: openingTime,
-        p_closing_time: closingTime,
-        p_slot_interval_minutes: parseInt(slotInterval)
-      });
-
-      if (error) throw error;
-      toast.success("Configurações salvas!");
-      setIsConfigModalOpen(false);
-      fetchSlotsAndBlocks();
-    } catch (error: any) {
-      toast.error("Erro ao salvar: " + error.message);
     }
   };
 
@@ -299,32 +277,20 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-3">
-          <Button 
-            variant="outline" 
-            onClick={() => {
-              setBlockStartDate(selectedDate);
-              setBlockEndDate(selectedDate);
-              setBlockStartTime("");
-              setBlockEndTime("");
-              setIsBlockModalOpen(true);
-            }}
-            className="bg-white border-[#DDE3EE] border-dashed text-[#64748B] hover:text-[#3157D5] hover:border-[#3157D5]/40"
-          >
-            <Lock className="w-4 h-4 mr-2" />
-            Bloquear
-          </Button>
-          {canManageSchedule && (
-            <Button 
-              variant="outline" 
-              onClick={() => setIsConfigModalOpen(true)}
-              className="bg-white border-[#DDE3EE] border-dashed text-[#64748B] hover:text-[#3157D5] hover:border-[#3157D5]/40"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Configurar
-            </Button>
-          )}
-        </div>
+        <Button 
+          variant="outline" 
+          onClick={() => {
+            setBlockStartDate(selectedDate);
+            setBlockEndDate(selectedDate);
+            setBlockStartTime("");
+            setBlockEndTime("");
+            setIsBlockModalOpen(true);
+          }}
+          className="bg-white border-[#DDE3EE] border-dashed text-[#64748B] hover:text-[#3157D5] hover:border-[#3157D5]/40"
+        >
+          <Lock className="w-4 h-4 mr-2" />
+          Bloquear horário
+        </Button>
       </div>
 
       {/* Available Slots List */}
@@ -412,45 +378,6 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
           </div>
         </div>
       )}
-
-      {/* Config Modal */}
-      <Dialog open={isConfigModalOpen} onOpenChange={setIsConfigModalOpen}>
-        <DialogContent className="bg-white border-[#DDE3EE] text-[#172033] max-w-[350px]">
-          <DialogHeader>
-            <DialogTitle className="  text-[#3157D5]">Configurar HORÁRIOS</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <TimePicker 
-              label="Abertura" 
-              value={openingTime} 
-              onChange={setOpeningTime} 
-            />
-            <TimePicker 
-              label="Fechamento" 
-              value={closingTime} 
-              onChange={setClosingTime} 
-            />
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-[#64748B] ">Intervalo (minutos)</label>
-              <Select value={slotInterval} onValueChange={setSlotInterval}>
-                <SelectTrigger className="bg-white border-[#DDE3EE]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-[#DDE3EE] text-[#172033]">
-                  {[10, 15, 20, 30, 45, 60, 90, 120].map(val => (
-                    <SelectItem key={val} value={val.toString()}>{val} min</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button onClick={handleSaveConfig} className="w-full bg-[#3157D5] text-white hover:bg-[#274ac0] font-semibold rounded-[8px]">
-              Salvar configurações
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Block Modal */}
       <Dialog open={isBlockModalOpen} onOpenChange={setIsBlockModalOpen}>
