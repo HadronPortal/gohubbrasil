@@ -27,6 +27,7 @@ export default function Booking() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [service, setService] = useState<any>(null);
   const [isLoadingService, setIsLoadingService] = useState(true);
+  const [scheduleSettings, setScheduleSettings] = useState<any | null>(null);
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(startOfDay(new Date()), i));
 
@@ -50,10 +51,26 @@ export default function Booking() {
   }, [serviceId, barbershopId]);
 
   useEffect(() => {
-    if (selectedBarberId && selectedDate && serviceId && service) {
+    if (!barbershopId) return;
+    (async () => {
+      const { data, error } = await supabase.rpc(
+        "get_barbershop_schedule_settings" as any,
+        { p_barbershop_id: barbershopId }
+      );
+      if (error) {
+        toast.error("Erro ao carregar horários: " + error.message);
+        setScheduleSettings(null);
+        return;
+      }
+      setScheduleSettings(data || null);
+    })();
+  }, [barbershopId]);
+
+  useEffect(() => {
+    if (selectedBarberId && selectedDate && serviceId && service && scheduleSettings) {
       fetchAvailableSlots();
     }
-  }, [selectedBarberId, selectedDate, serviceId, service]);
+  }, [selectedBarberId, selectedDate, serviceId, service, scheduleSettings]);
 
   const fetchServiceDetails = async () => {
     setIsLoadingService(true);
@@ -86,6 +103,34 @@ export default function Booking() {
   const fetchAvailableSlots = async () => {
     setIsLoadingSlots(true);
     try {
+      if (!scheduleSettings) {
+        setAvailableSlots([]);
+        setDayClosed(false);
+        toast.error("Horários do estabelecimento indisponíveis. Tente novamente.");
+        return;
+      }
+
+      const dow = selectedDate.getDay();
+      const s: any = scheduleSettings;
+      let dayOpen: string | null = null;
+      let dayClose: string | null = null;
+      let dayEnabled = true;
+      switch (dow) {
+        case 0: dayEnabled = Boolean(s.sun_enabled); dayOpen = s.sun_open; dayClose = s.sun_close; break;
+        case 1: dayOpen = s.mon_open; dayClose = s.mon_close; break;
+        case 2: dayOpen = s.tue_open; dayClose = s.tue_close; break;
+        case 3: dayOpen = s.wed_open; dayClose = s.wed_close; break;
+        case 4: dayOpen = s.thu_open; dayClose = s.thu_close; break;
+        case 5: dayOpen = s.fri_open; dayClose = s.fri_close; break;
+        case 6: dayOpen = s.sat_open; dayClose = s.sat_close; break;
+      }
+
+      if (!dayEnabled || !dayOpen || !dayClose) {
+        setAvailableSlots([]);
+        setDayClosed(true);
+        return;
+      }
+
       // Auto complete past appointments
       await supabase.rpc('auto_complete_past_appointments');
 
@@ -115,8 +160,14 @@ export default function Booking() {
       }
 
       if (data.success) {
-        setAvailableSlots(data.slots || []);
-        setDayClosed(data.settings && data.settings.enabled === false);
+        const openHM = String(dayOpen).substring(0, 5);
+        const closeHM = String(dayClose).substring(0, 5);
+        const filtered = (data.slots || []).filter((slot: any) => {
+          const label = String(slot.time_label || "").substring(0, 5);
+          return label >= openHM && label < closeHM;
+        });
+        setAvailableSlots(filtered);
+        setDayClosed(false);
       } else {
         toast.error(data.error);
       }
