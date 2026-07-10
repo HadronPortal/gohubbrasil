@@ -707,6 +707,18 @@ export type Database = {
         }
         Returns: Json
       }
+      create_manual_appointment: {
+        Args: {
+          p_barber_id: string
+          p_barbershop_id: string
+          p_client_id?: string
+          p_client_name?: string
+          p_client_phone?: string
+          p_service_id: string
+          p_starts_at: string
+        }
+        Returns: Json
+      }
       delete_barber: { Args: { p_barber_id: string }; Returns: Json }
       delete_barber_safe: { Args: { p_barber_id: string }; Returns: Json }
       delete_barbershop_safe: {
@@ -885,6 +897,10 @@ export type Database = {
       normalize_service_slug: { Args: { p_name: string }; Returns: string }
       refresh_barbershop_payment_status: {
         Args: { p_barbershop_id: string }
+        Returns: Json
+      }
+      search_clients_for_manual_booking: {
+        Args: { p_query: string }
         Returns: Json
       }
       unaccent: { Args: { "": string }; Returns: string }
