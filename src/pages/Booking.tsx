@@ -227,7 +227,33 @@ export default function Booking() {
     setIsSubmitting(true);
     try {
       if (!user) throw new Error("Usuário não autenticado");
-      
+
+      // Revalidate against time blocks before inserting
+      const dayStr = format(selectedDate, "yyyy-MM-dd");
+      const { data: blocksData } = await supabase.rpc(
+        "get_barbershop_time_blocks" as any,
+        { p_barbershop_id: barbershopId, p_day: dayStr }
+      );
+      if (Array.isArray(blocksData)) {
+        const slotStartHM = String(selectedSlot.time_label || "").substring(0, 5);
+        const slotEndDate = new Date(selectedSlot.ends_at);
+        const slotEndHM = `${String(slotEndDate.getHours()).padStart(2, "0")}:${String(slotEndDate.getMinutes()).padStart(2, "0")}`;
+        const conflict = (blocksData as any[]).some((b) => {
+          if (b.barber_id && b.barber_id !== selectedSlot.barber_id) return false;
+          if (dayStr < b.start_date || dayStr > b.end_date) return false;
+          const bStart = String(b.start_time || "").substring(0, 5);
+          const bEnd = String(b.end_time || "").substring(0, 5);
+          return slotStartHM < bEnd && slotEndHM > bStart;
+        });
+        if (conflict) {
+          toast.error("Esse horário acabou de ficar indisponível. Escolha outro horário.");
+          setSelectedSlot(null);
+          await fetchAvailableSlots();
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const { data: appointment, error: insertError } = await supabase
         .from("appointments")
         .insert({
@@ -243,7 +269,17 @@ export default function Booking() {
         .select("id")
         .single();
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        const msg = String(insertError.message || "");
+        if (msg.includes("bloqueado pelo estabelecimento") || msg.toLowerCase().includes("time block")) {
+          toast.error("Esse horário acabou de ficar indisponível. Escolha outro horário.");
+          setSelectedSlot(null);
+          await fetchAvailableSlots();
+          setIsSubmitting(false);
+          return;
+        }
+        throw insertError;
+      }
 
       if (appointment) {
         await supabase.rpc('enqueue_whatsapp_for_appointment', {
