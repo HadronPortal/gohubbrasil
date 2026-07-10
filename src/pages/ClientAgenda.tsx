@@ -333,6 +333,13 @@ export default function ClientAgenda() {
       }
       setToCancel(null);
       toast.success("Agendamento cancelado.");
+      try {
+        await supabase.rpc("enqueue_appointment_cancelled_by_client" as any, {
+          p_appointment_id: toCancel.id,
+        });
+      } catch (queueErr) {
+        console.warn("enqueue_appointment_cancelled_by_client failed:", queueErr);
+      }
       await load();
     } catch (e: any) {
       const msg = String(e?.message || "").toLowerCase();
