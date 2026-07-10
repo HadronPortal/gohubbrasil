@@ -5,7 +5,7 @@ import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TimePicker } from "@/components/ui/TimePicker";
-import { Calendar as CalendarIcon, Clock, Lock, Trash2, ArrowLeft, User } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Lock, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -149,6 +149,12 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
 
   const handleCreateBlock = async () => {
     try {
+      const currentBarbershopId =
+        barbershopId || profile?.barbershop_id || null;
+      if (!currentBarbershopId) {
+        toast.error("Não foi possível identificar o estabelecimento atual");
+        return;
+      }
       if (!blockStartDate || !blockEndDate) {
         toast.error("Selecione a data inicial e final");
         return;
@@ -182,7 +188,7 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
         p_end_date: endStr,
         p_start_time: blockStartTime,
         p_end_time: blockEndTime,
-        p_barbershop_id: null,
+        p_barbershop_id: currentBarbershopId,
         p_barber_id: blockBarberId === "all" ? null : blockBarberId,
         p_repeat_daily: repeatDaily,
         p_only_open_days: onlyOpenDays,
@@ -226,16 +232,6 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
 
   return (
     <div className="space-y-5 pb-10" style={{ fontFamily: "Poppins, sans-serif" }}>
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={onBack} className="text-[#64748B] hover:text-[#3157D5]">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Voltar
-        </Button>
-        <h3 className="text-xs font-bold  text-[#3157D5]  ">
-          Horários livres
-        </h3>
-      </div>
-
       <div className="flex flex-col gap-4">
         {/* Selectors */}
         <div className="grid grid-cols-2 gap-3">
