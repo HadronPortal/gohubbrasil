@@ -1,123 +1,168 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { QRCodeSVG } from "qrcode.react";
 import { RefreshCw, Smartphone, CheckCircle2, AlertCircle, Loader2, Copy, Check, QrCode, Trash2 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+type Status =
+  | 'disconnected'
+  | 'qr_requested'
+  | 'qr_ready'
+  | 'pairing_requested'
+  | 'pairing'
+  | 'connected'
+  | 'reset_requested'
+  | 'error';
+
 interface WhatsAppConnection {
-  status: 'disconnected' | 'pairing_requested' | 'pairing' | 'connected' | 'error';
-  pairing_code?: string;
-  qr_code?: string;
-  qr_code_image?: string;
-  last_error?: string;
-  phone?: string;
-  connected_at?: string;
-  code_expires_at?: string;
+  id?: string;
+  barbershop_id?: string;
+  status: Status;
+  phone_number?: string | null;
+  pairing_code?: string | null;
+  code_expires_at?: string | null;
+  qr_code?: string | null;
+  qr_expires_at?: string | null;
+  last_error?: string | null;
 }
 
-const CONNECT_TIMEOUT_MS = 90_000;
-type ConnectMethod = 'qr' | 'code';
+type Method = 'qr' | 'code';
+
+const ACTIVE_STATUSES: Status[] = ['qr_requested', 'qr_ready', 'pairing_requested', 'pairing'];
+
+function useCountdown(iso?: string | null) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!iso) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [iso]);
+  if (!iso) return null;
+  const diff = Math.max(0, Math.floor((new Date(iso).getTime() - now) / 1000));
+  const m = Math.floor(diff / 60);
+  const s = diff % 60;
+  return { seconds: diff, label: `${m}:${s.toString().padStart(2, '0')}` };
+}
 
 export default function AdminWhatsApp() {
+  const { profile } = useAuth();
+  const barbershopId: string | undefined = profile?.barbershop_id ?? undefined;
   const [connection, setConnection] = useState<WhatsAppConnection | null>(null);
   const [phone, setPhone] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [method, setMethod] = useState<ConnectMethod>('qr');
-  const [pairingStartedAt, setPairingStartedAt] = useState<number | null>(null);
-  const [timedOut, setTimedOut] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [method, setMethod] = useState<Method>('qr');
 
   const fetchConnection = useCallback(async (silent = false) => {
+    if (!barbershopId) { setIsLoading(false); return; }
     if (!silent) setIsLoading(true);
     try {
-      const { data, error } = await supabase.rpc('get_my_whatsapp_connection');
+      const { data, error } = await (supabase as any)
+        .from('whatsapp_connections')
+        .select('*')
+        .eq('barbershop_id', barbershopId)
+        .maybeSingle();
       if (error) {
         console.error("Error fetching WhatsApp connection:", error);
-        return;
+      } else {
+        setConnection(data ?? { status: 'disconnected' });
+        if (data?.phone_number && !phone) setPhone(data.phone_number);
       }
-      const connectionData = (data as any)?.connection;
-      setConnection(connectionData ?? { status: 'disconnected' });
-    } catch (err) {
-      console.error("Fatal error fetching WhatsApp connection:", err);
     } finally {
       if (!silent) setIsLoading(false);
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [barbershopId]);
 
-  useEffect(() => {
-    fetchConnection();
-  }, [fetchConnection]);
+  useEffect(() => { fetchConnection(); }, [fetchConnection]);
 
-  // Polling while pairing
+  // Poll every 2s while pending states
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | undefined;
-    if (!timedOut && (connection?.status === 'pairing' || connection?.status === 'pairing_requested')) {
-      interval = setInterval(() => fetchConnection(true), 2000);
+    if (!connection?.status || !ACTIVE_STATUSES.includes(connection.status)) return;
+    const i = setInterval(() => fetchConnection(true), 2000);
+    return () => clearInterval(i);
+  }, [connection?.status, fetchConnection]);
+
+  const upsertConnection = async (patch: Partial<WhatsAppConnection>) => {
+    if (!barbershopId) {
+      toast.error("Estabelecimento não identificado");
+      return null;
     }
-    return () => { if (interval) clearInterval(interval); };
-  }, [connection?.status, fetchConnection, timedOut]);
-
-  // 90s timeout guard
-  useEffect(() => {
-    if (!pairingStartedAt) return;
-    if (connection?.status === 'connected') {
-      setPairingStartedAt(null);
-      setTimedOut(false);
-      return;
+    const payload = { barbershop_id: barbershopId, ...patch };
+    const { data, error } = await (supabase as any)
+      .from('whatsapp_connections')
+      .upsert(payload, { onConflict: 'barbershop_id' })
+      .select()
+      .single();
+    if (error) {
+      toast.error(error.message || "Erro ao salvar conexão");
+      return null;
     }
-    const timer = setTimeout(() => {
-      if (connection?.status === 'pairing' || connection?.status === 'pairing_requested') {
-        setTimedOut(true);
-      }
-    }, CONNECT_TIMEOUT_MS);
-    return () => clearTimeout(timer);
-  }, [pairingStartedAt, connection?.status]);
+    setConnection(data);
+    return data;
+  };
 
-  const handleRequestPairing = async () => {
-    if (!phone || phone.length < 10) {
+  const handleGenerateQr = async () => {
+    setIsSubmitting(true);
+    try {
+      const cleanPhone = phone.replace(/\D/g, '') || null;
+      const data = await upsertConnection({
+        status: 'qr_requested',
+        qr_code: null,
+        qr_expires_at: null,
+        pairing_code: null,
+        code_expires_at: null,
+        last_error: null,
+        phone_number: cleanPhone,
+      });
+      if (data) toast.success("Solicitação enviada!");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGeneratePairing = async () => {
+    if (!phone || phone.replace(/\D/g, '').length < 10) {
       toast.error("Informe um telefone válido com DDD (ex: 16994089563)");
       return;
     }
-    setIsGenerating(true);
-    setTimedOut(false);
+    setIsSubmitting(true);
     try {
       const cleanPhone = phone.replace(/\D/g, '');
-      const { error } = await supabase.rpc('request_my_whatsapp_pairing', {
-        p_phone: cleanPhone,
-        p_method: method,
-      } as any);
-      if (error) {
-        toast.error(error.message || "Erro ao gerar conexão");
-        return;
-      }
-      const { data: connectionResult } = await supabase.rpc('get_my_whatsapp_connection');
-      const connectionData = (connectionResult as any)?.connection;
-      if (connectionData) setConnection(connectionData);
-      setPairingStartedAt(Date.now());
-      toast.success("Solicitação enviada!");
-    } catch (err) {
-      toast.error("Erro ao processar solicitação");
+      const data = await upsertConnection({
+        status: 'pairing_requested',
+        qr_code: null,
+        qr_expires_at: null,
+        pairing_code: null,
+        code_expires_at: null,
+        last_error: null,
+        phone_number: cleanPhone,
+      });
+      if (data) toast.success("Solicitação enviada!");
     } finally {
-      setIsGenerating(false);
+      setIsSubmitting(false);
     }
   };
 
   const handleClearConnection = async () => {
     setIsClearing(true);
     try {
-      const { error } = await supabase.rpc('clear_my_whatsapp_connection' as any);
-      if (error) console.warn("clear_my_whatsapp_connection indisponível:", error.message);
-      setConnection({ status: 'disconnected' });
-      setPairingStartedAt(null);
-      setTimedOut(false);
-      toast.success("Conexão anterior limpa");
-    } catch (err) {
-      toast.error("Erro ao limpar conexão");
+      const data = await upsertConnection({
+        status: 'reset_requested',
+        qr_code: null,
+        qr_expires_at: null,
+        pairing_code: null,
+        code_expires_at: null,
+        last_error: null,
+      });
+      if (data) toast.success("Conexão limpa");
     } finally {
       setIsClearing(false);
     }
@@ -135,6 +180,9 @@ export default function AdminWhatsApp() {
     }
   };
 
+  const qrCountdown = useCountdown(connection?.qr_expires_at);
+  const codeCountdown = useCountdown(connection?.code_expires_at);
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-16 space-y-3" style={{ fontFamily: "Poppins, sans-serif" }}>
@@ -144,14 +192,16 @@ export default function AdminWhatsApp() {
     );
   }
 
-  const StatusBadge = ({ status }: { status: WhatsAppConnection['status'] | 'timeout' }) => {
-    const map: Record<string, { label: string; cls: string }> = {
-      disconnected: { label: 'Desconectado', cls: 'bg-[#F1F5F9] text-[#475569]' },
-      pairing_requested: { label: 'Aguardando conexão', cls: 'bg-[#FEF3C7] text-[#92400E]' },
-      pairing: { label: 'Conectando', cls: 'bg-[#EAF0FF] text-[#3157D5]' },
-      connected: { label: 'Conectado', cls: 'bg-[#E7F7EE] text-[#15803D]' },
+  const StatusBadge = ({ status }: { status: Status }) => {
+    const map: Record<Status, { label: string; cls: string }> = {
+      disconnected: { label: 'WhatsApp desconectado', cls: 'bg-[#F1F5F9] text-[#475569]' },
+      qr_requested: { label: 'Gerando QR Code...', cls: 'bg-[#FEF3C7] text-[#92400E]' },
+      qr_ready: { label: 'Escaneie o QR Code no WhatsApp', cls: 'bg-[#EAF0FF] text-[#3157D5]' },
+      pairing_requested: { label: 'Gerando código...', cls: 'bg-[#FEF3C7] text-[#92400E]' },
+      pairing: { label: 'Digite este código no WhatsApp', cls: 'bg-[#EAF0FF] text-[#3157D5]' },
+      connected: { label: 'WhatsApp conectado', cls: 'bg-[#E7F7EE] text-[#15803D]' },
+      reset_requested: { label: 'Limpando conexão...', cls: 'bg-[#F1F5F9] text-[#475569]' },
       error: { label: 'Falha ao conectar', cls: 'bg-[#FDECEC] text-[#B91C1C]' },
-      timeout: { label: 'Precisa reconectar', cls: 'bg-[#FDECEC] text-[#B91C1C]' },
     };
     const item = map[status] ?? map.disconnected;
     return (
@@ -162,7 +212,9 @@ export default function AdminWhatsApp() {
   };
 
   const renderContent = () => {
-    if (connection?.status === 'connected') {
+    const status: Status = (connection?.status as Status) ?? 'disconnected';
+
+    if (status === 'connected') {
       return (
         <div className="rounded-[8px] border border-[#DDE3EE] bg-white p-6 flex flex-col items-center text-center gap-4">
           <div className="rounded-full bg-[#E7F7EE] p-3">
@@ -170,8 +222,8 @@ export default function AdminWhatsApp() {
           </div>
           <div>
             <h3 className="text-base font-semibold text-[#172033]">WhatsApp do estabelecimento conectado</h3>
-            {connection.phone && (
-              <p className="text-sm font-medium text-[#64748B] mt-1">{connection.phone}</p>
+            {connection?.phone_number && (
+              <p className="text-sm font-medium text-[#64748B] mt-1">{connection.phone_number}</p>
             )}
             <p className="text-xs text-[#64748B] mt-2">O WhatsApp do estabelecimento já está enviando notificações automáticas.</p>
           </div>
@@ -182,39 +234,69 @@ export default function AdminWhatsApp() {
             className="h-10 gap-2 rounded-[8px] border-[#DC2626]/30 text-sm text-[#DC2626] hover:bg-[#FDECEC]"
           >
             {isClearing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-            Limpar conexão anterior
+            Limpar conexão
           </Button>
         </div>
       );
     }
 
-    if ((connection?.status === 'pairing' || connection?.status === 'pairing_requested') && !timedOut) {
-      const qr = connection.qr_code_image || connection.qr_code;
-      const showQr = method === 'qr' && !!qr;
-      const showCode = method === 'code' && connection.status === 'pairing' && connection.pairing_code;
-
+    // QR flow states
+    if (status === 'qr_requested' || status === 'qr_ready') {
       return (
         <div className="rounded-[8px] border border-[#DDE3EE] bg-white p-6 flex flex-col items-center text-center gap-5">
           <div className="w-full flex items-center justify-between">
-            <h3 className="text-base font-semibold text-[#172033]">
-              {method === 'qr' ? 'QR Code de conexão' : 'Código de pareamento'}
-            </h3>
-            <StatusBadge status={connection.status} />
+            <h3 className="text-base font-semibold text-[#172033]">QR Code de conexão</h3>
+            <StatusBadge status={status} />
           </div>
           <p className="text-sm text-[#64748B] -mt-2">
-            {method === 'qr'
-              ? 'Abra o WhatsApp > Aparelhos conectados > Conectar um aparelho e escaneie o QR Code abaixo.'
-              : 'Abra o WhatsApp > Aparelhos conectados > Conectar com número de telefone, e digite o código abaixo.'}
+            Abra o WhatsApp {'>'} Dispositivos conectados {'>'} Conectar dispositivo e escaneie o QR Code.
           </p>
 
           <div className="w-full max-w-[280px] rounded-[8px] border-2 border-dashed border-[#3157D5]/40 bg-[#F6F7FB] p-5 flex flex-col items-center justify-center min-h-[220px] gap-3">
-            {showQr ? (
-              <img
-                src={qr!.startsWith('data:') || qr!.startsWith('http') ? qr! : `data:image/png;base64,${qr}`}
-                alt="QR Code do WhatsApp"
-                className="h-[200px] w-[200px] object-contain"
-              />
-            ) : showCode ? (
+            {status === 'qr_ready' && connection?.qr_code ? (
+              <QRCodeSVG value={connection.qr_code} size={200} includeMargin={false} />
+            ) : (
+              <div className="flex flex-col items-center gap-2 text-[#64748B]">
+                <Loader2 className="h-6 w-6 animate-spin text-[#3157D5]" />
+                <span className="text-xs">Gerando QR Code...</span>
+              </div>
+            )}
+          </div>
+
+          {status === 'qr_ready' && qrCountdown && (
+            qrCountdown.seconds > 0 ? (
+              <p className="text-xs text-[#64748B]">Expira em <span className="font-semibold text-[#172033]">{qrCountdown.label}</span></p>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-xs text-[#B91C1C]">QR Code expirado. Gere outro para continuar.</p>
+                <Button size="sm" onClick={handleGenerateQr} disabled={isSubmitting} className="h-9 rounded-[8px] bg-[#3157D5] text-xs text-white hover:bg-[#274ac0]">
+                  Gerar novo QR Code
+                </Button>
+              </div>
+            )
+          )}
+
+          <Button variant="ghost" size="sm" onClick={handleClearConnection} disabled={isClearing} className="h-9 text-xs text-[#DC2626] hover:bg-[#FDECEC]">
+            Cancelar e limpar conexão
+          </Button>
+        </div>
+      );
+    }
+
+    // Pairing code flow states
+    if (status === 'pairing_requested' || status === 'pairing') {
+      return (
+        <div className="rounded-[8px] border border-[#DDE3EE] bg-white p-6 flex flex-col items-center text-center gap-5">
+          <div className="w-full flex items-center justify-between">
+            <h3 className="text-base font-semibold text-[#172033]">Código de pareamento</h3>
+            <StatusBadge status={status} />
+          </div>
+          <p className="text-sm text-[#64748B] -mt-2">
+            Abra o WhatsApp {'>'} Dispositivos conectados {'>'} Conectar com número de telefone, e digite o código abaixo.
+          </p>
+
+          <div className="w-full max-w-[280px] rounded-[8px] border-2 border-dashed border-[#3157D5]/40 bg-[#F6F7FB] p-5 flex flex-col items-center justify-center min-h-[160px] gap-3">
+            {status === 'pairing' && connection?.pairing_code ? (
               <>
                 <span className="text-4xl font-semibold text-[#3157D5] tracking-[0.2em]">
                   {connection.pairing_code}
@@ -226,27 +308,27 @@ export default function AdminWhatsApp() {
             ) : (
               <div className="flex flex-col items-center gap-2 text-[#64748B]">
                 <Loader2 className="h-6 w-6 animate-spin text-[#3157D5]" />
-                <span className="text-xs">{method === 'qr' ? 'Gerando QR Code...' : 'Gerando código...'}</span>
+                <span className="text-xs">Gerando código...</span>
               </div>
             )}
           </div>
 
-          <div className="flex flex-col items-center gap-1 text-[#3157D5]">
-            <div className="flex items-center gap-2">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              <span className="text-xs font-medium">Aguardando conexão no celular...</span>
-            </div>
-            <p className="text-xs text-[#64748B]">Não feche esta tela até concluir (até 90s)</p>
-          </div>
+          {status === 'pairing' && codeCountdown && (
+            codeCountdown.seconds > 0 ? (
+              <p className="text-xs text-[#64748B]">Expira em <span className="font-semibold text-[#172033]">{codeCountdown.label}</span></p>
+            ) : (
+              <p className="text-xs text-[#B91C1C]">Código expirado. Gere outro para continuar.</p>
+            )
+          )}
 
-          <Button variant="ghost" size="sm" onClick={handleClearConnection} className="h-9 text-xs text-[#DC2626] hover:bg-[#FDECEC]">
-            Cancelar e tentar novamente
+          <Button variant="ghost" size="sm" onClick={handleClearConnection} disabled={isClearing} className="h-9 text-xs text-[#DC2626] hover:bg-[#FDECEC]">
+            Cancelar e limpar conexão
           </Button>
         </div>
       );
     }
 
-    const errored = connection?.status === 'error' || timedOut;
+    const errored = status === 'error';
     return (
       <div className="rounded-[8px] border border-[#DDE3EE] bg-white p-5 space-y-5">
         <div className="flex items-center justify-between gap-3">
@@ -257,15 +339,14 @@ export default function AdminWhatsApp() {
               <p className="text-xs text-[#64748B]">Conecte seu número para enviar avisos.</p>
             </div>
           </div>
-          <StatusBadge status={timedOut ? 'timeout' : (connection?.status ?? 'disconnected')} />
+          <StatusBadge status={status} />
         </div>
 
         {errored && (
           <div className="rounded-[8px] border border-[#FDECEC] bg-[#FDECEC] p-3 flex items-start gap-2">
             <AlertCircle className="h-4 w-4 text-[#DC2626] mt-0.5 flex-shrink-0" />
             <div className="text-xs text-[#B91C1C] leading-relaxed space-y-1">
-              {connection?.last_error && <p>Erro na última tentativa: {connection.last_error}</p>}
-              {timedOut && <p>Tempo esgotado (90s) sem conectar.</p>}
+              {connection?.last_error && <p>{connection.last_error}</p>}
               <p className="font-medium">Remova dispositivos antigos no WhatsApp e tente conectar por QR Code.</p>
             </div>
           </div>
@@ -281,7 +362,7 @@ export default function AdminWhatsApp() {
             )}
           >
             <QrCode className="h-4 w-4" />
-            Conectar por QR Code
+            QR Code (recomendado)
           </button>
           <button
             type="button"
@@ -292,48 +373,58 @@ export default function AdminWhatsApp() {
             )}
           >
             <Smartphone className="h-4 w-4" />
-            Conectar por código
+            Código de pareamento
           </button>
         </div>
         {method === 'qr' && (
           <p className="text-[11px] text-[#64748B] -mt-3 text-center">
-            Recomendado — mais estável para WhatsApp Business no iPhone.
+            Mais estável para WhatsApp Business no iPhone. Sem necessidade de telefone.
           </p>
         )}
 
-        <Button
-          variant="outline"
-          onClick={handleClearConnection}
-          disabled={isClearing}
-          className="w-full h-10 gap-2 rounded-[8px] border-[#DC2626]/30 text-xs text-[#DC2626] hover:bg-[#FDECEC]"
-        >
-          {isClearing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
-          Limpar conexão anterior
-        </Button>
-
         <div className="space-y-3">
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-[#172033]">Telefone (com DDD)</label>
-            <div className="relative">
-              <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#94A3B8]" />
-              <Input
-                placeholder="Ex: 16994089563"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                className="h-11 pl-10 rounded-[8px] border-[#DDE3EE]"
-                maxLength={11}
-              />
+          {method === 'code' && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-[#172033]">Telefone (com DDD)</label>
+              <div className="relative">
+                <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#94A3B8]" />
+                <Input
+                  placeholder="Ex: 16994089563"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                  className="h-11 pl-10 rounded-[8px] border-[#DDE3EE]"
+                  maxLength={11}
+                />
+              </div>
             </div>
-          </div>
+          )}
+
+          {method === 'qr' ? (
+            <Button
+              onClick={handleGenerateQr}
+              disabled={isSubmitting}
+              className="w-full h-12 rounded-[8px] bg-[#3157D5] text-sm font-semibold text-white hover:bg-[#274ac0] disabled:opacity-60"
+            >
+              {isSubmitting ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Gerando...</>) : "Gerar QR Code"}
+            </Button>
+          ) : (
+            <Button
+              onClick={handleGeneratePairing}
+              disabled={isSubmitting || !phone || phone.length < 10}
+              className="w-full h-12 rounded-[8px] bg-[#3157D5] text-sm font-semibold text-white hover:bg-[#274ac0] disabled:opacity-60"
+            >
+              {isSubmitting ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Gerando...</>) : "Usar código de pareamento"}
+            </Button>
+          )}
 
           <Button
-            onClick={handleRequestPairing}
-            disabled={isGenerating || !phone || phone.length < 10}
-            className="w-full h-12 rounded-[8px] bg-[#3157D5] text-sm font-semibold text-white hover:bg-[#274ac0] disabled:opacity-60"
+            variant="outline"
+            onClick={handleClearConnection}
+            disabled={isClearing}
+            className="w-full h-11 gap-2 rounded-[8px] border-[#DC2626]/30 text-xs text-[#DC2626] hover:bg-[#FDECEC]"
           >
-            {isGenerating
-              ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Gerando...</>)
-              : method === 'qr' ? "Gerar QR Code" : "Gerar código de pareamento"}
+            {isClearing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+            Limpar conexão
           </Button>
 
           <p className="text-xs text-[#64748B] text-center leading-relaxed px-4">
@@ -348,12 +439,10 @@ export default function AdminWhatsApp() {
     <div className="space-y-4" style={{ fontFamily: "Poppins, sans-serif" }}>
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-[#172033]">WhatsApp do estabelecimento</h2>
-        {(connection?.status === 'error' || timedOut) && (
-          <Button variant="ghost" size="sm" onClick={() => fetchConnection()} className="h-9 text-xs text-[#64748B] hover:text-[#172033] hover:bg-[#F6F7FB]">
-            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-            Tentar novamente
-          </Button>
-        )}
+        <Button variant="ghost" size="sm" onClick={() => fetchConnection()} className="h-9 text-xs text-[#64748B] hover:text-[#172033] hover:bg-[#F6F7FB]">
+          <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+          Atualizar
+        </Button>
       </div>
       {renderContent()}
     </div>

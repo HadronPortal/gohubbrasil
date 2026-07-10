@@ -399,6 +399,56 @@ export type Database = {
           },
         ]
       }
+      whatsapp_connections: {
+        Row: {
+          barbershop_id: string
+          code_expires_at: string | null
+          created_at: string
+          id: string
+          last_error: string | null
+          pairing_code: string | null
+          phone_number: string | null
+          qr_code: string | null
+          qr_expires_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          barbershop_id: string
+          code_expires_at?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          pairing_code?: string | null
+          phone_number?: string | null
+          qr_code?: string | null
+          qr_expires_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          barbershop_id?: string
+          code_expires_at?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          pairing_code?: string | null
+          phone_number?: string | null
+          qr_code?: string | null
+          qr_expires_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_connections_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: true
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       owner_appointments_view: {
