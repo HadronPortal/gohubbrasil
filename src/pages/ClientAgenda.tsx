@@ -305,21 +305,44 @@ export default function ClientAgenda() {
   }, [items]);
 
   const handleCancel = async () => {
-    if (!toCancel) return;
+    if (!toCancel || canceling) return;
     setCanceling(true);
     try {
       const { data, error } = await supabase.rpc("cancel_my_appointment", {
         p_appointment_id: toCancel.id,
       });
-      if (error) throw error;
+      if (error) {
+        const msg = String(error.message || "").toLowerCase();
+        if (msg.includes("whatsapp_queue") || msg.includes("duplicate key")) {
+          setToCancel(null);
+          toast.success("Agendamento cancelado. A notificação será processada em instantes.");
+          await load();
+          return;
+        }
+        throw error;
+      }
       if (data && typeof data === "object" && "success" in data && !(data as any).success) {
+        const errMsg = String((data as any).error || "").toLowerCase();
+        if (errMsg.includes("whatsapp_queue") || errMsg.includes("duplicate key")) {
+          setToCancel(null);
+          toast.success("Agendamento cancelado. A notificação será processada em instantes.");
+          await load();
+          return;
+        }
         throw new Error((data as any).error || "Não foi possível cancelar o agendamento.");
       }
       setToCancel(null);
       toast.success("Agendamento cancelado.");
       await load();
     } catch (e: any) {
-      toast.error(e?.message || "Erro ao cancelar agendamento.");
+      const msg = String(e?.message || "").toLowerCase();
+      if (msg.includes("whatsapp_queue") || msg.includes("duplicate key")) {
+        setToCancel(null);
+        toast.success("Agendamento cancelado. A notificação será processada em instantes.");
+        await load();
+      } else {
+        toast.error(e?.message || "Erro ao cancelar agendamento.");
+      }
     } finally {
       setCanceling(false);
     }
