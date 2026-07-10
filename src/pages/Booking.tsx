@@ -162,10 +162,37 @@ export default function Booking() {
       if (data.success) {
         const openHM = String(dayOpen).substring(0, 5);
         const closeHM = String(dayClose).substring(0, 5);
-        const filtered = (data.slots || []).filter((slot: any) => {
+        let filtered = (data.slots || []).filter((slot: any) => {
           const label = String(slot.time_label || "").substring(0, 5);
           return label >= openHM && label < closeHM;
         });
+
+        // Fetch and apply time blocks
+        const dayStr = format(selectedDate, "yyyy-MM-dd");
+        const { data: blocksData, error: blocksErr } = await supabase.rpc(
+          "get_barbershop_time_blocks" as any,
+          { p_barbershop_id: barbershopId, p_day: dayStr }
+        );
+        if (!blocksErr && Array.isArray(blocksData)) {
+          const blocks = blocksData as any[];
+          filtered = filtered.filter((slot: any) => {
+            const label = String(slot.time_label || "").substring(0, 5);
+            const slotEndDate = new Date(slot.ends_at);
+            const slotEndHM = `${String(slotEndDate.getHours()).padStart(2, "0")}:${String(slotEndDate.getMinutes()).padStart(2, "0")}`;
+            for (const b of blocks) {
+              if (b.barber_id && b.barber_id !== slot.barber_id) continue;
+              if (dayStr < b.start_date || dayStr > b.end_date) continue;
+              const bStart = String(b.start_time || "").substring(0, 5);
+              const bEnd = String(b.end_time || "").substring(0, 5);
+              // overlap: slot [label, slotEndHM) overlaps [bStart, bEnd)
+              if (label < bEnd && slotEndHM > bStart) {
+                return false;
+              }
+            }
+            return true;
+          });
+        }
+
         setAvailableSlots(filtered);
         setDayClosed(false);
       } else {
