@@ -233,45 +233,6 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
   return (
     <div className="space-y-5 pb-10" style={{ fontFamily: "Poppins, sans-serif" }}>
       <div className="flex flex-col gap-4">
-        {/* Selectors */}
-        <div className="grid grid-cols-2 gap-3">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal bg-white border-[#DDE3EE] h-12 text-[#172033]",
-                  !selectedDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {selectedDate ? format(selectedDate, "dd/MM/yyyy") : <span>Selecione a data</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[310px] p-4 bg-white border-[#DDE3EE] shadow-2xl rounded-lg" align="start">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => date && setSelectedDate(date)}
-                className="p-0"
-                locale={ptBR}
-              />
-            </PopoverContent>
-          </Popover>
-
-          <Select value={selectedBarberId} onValueChange={setSelectedBarberId}>
-            <SelectTrigger className="bg-white border-[#DDE3EE] h-12 text-[#172033]">
-              <SelectValue placeholder="Profissional" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border-[#DDE3EE] text-[#172033]">
-              <SelectItem value="all">Todos os profissionais</SelectItem>
-              {barbers.map(b => (
-                <SelectItem key={b.barber_id} value={b.barber_id}>{b.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         {/* Action Buttons */}
         <Button 
           variant="outline" 
