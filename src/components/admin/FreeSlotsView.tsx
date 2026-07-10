@@ -475,31 +475,63 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
               </Select>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-[#64748B] ">Data</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal bg-white border-[#DDE3EE] h-11 text-xs text-[#172033]",
-                      !blockDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4 text-[#3157D5]" />
-                    {blockDate ? format(blockDate, "dd/MM/yyyy") : <span>Selecione a data</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[310px] p-4 bg-white border-[#DDE3EE] shadow-2xl rounded-lg" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={blockDate}
-                    onSelect={(date) => date && setBlockDate(date)}
-                    className="p-0"
-                    locale={ptBR}
-                  />
-                </PopoverContent>
-              </Popover>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-[#64748B]">Data inicial</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal bg-white border-[#DDE3EE] h-11 text-xs text-[#172033]",
+                        !blockStartDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4 text-[#3157D5]" />
+                      {blockStartDate ? format(blockStartDate, "dd/MM/yyyy") : <span>Início</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[310px] p-4 bg-white border-[#DDE3EE] shadow-2xl rounded-lg" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={blockStartDate}
+                      onSelect={(date) => {
+                        if (!date) return;
+                        setBlockStartDate(date);
+                        if (!blockEndDate || blockEndDate < date) setBlockEndDate(date);
+                      }}
+                      className="p-0 pointer-events-auto"
+                      locale={ptBR}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-[#64748B]">Data final</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal bg-white border-[#DDE3EE] h-11 text-xs text-[#172033]",
+                        !blockEndDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4 text-[#3157D5]" />
+                      {blockEndDate ? format(blockEndDate, "dd/MM/yyyy") : <span>Fim</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[310px] p-4 bg-white border-[#DDE3EE] shadow-2xl rounded-lg" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={blockEndDate}
+                      onSelect={(date) => date && setBlockEndDate(date)}
+                      className="p-0 pointer-events-auto"
+                      locale={ptBR}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -526,6 +558,25 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
                 className="bg-white border-[#DDE3EE] h-11 text-xs focus-visible:ring-[#3157D5]/15" 
               />
             </div>
+
+            <label className="flex items-start gap-2 text-xs text-[#172033] cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={repeatDaily}
+                onChange={(e) => setRepeatDaily(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-[#DDE3EE] text-[#3157D5] focus:ring-[#3157D5]"
+              />
+              <span>Bloquear este mesmo horário durante todo o período</span>
+            </label>
+            <label className="flex items-start gap-2 text-xs text-[#172033] cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={onlyOpenDays}
+                onChange={(e) => setOnlyOpenDays(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-[#DDE3EE] text-[#3157D5] focus:ring-[#3157D5]"
+              />
+              <span>Aplicar somente nos dias em que o estabelecimento abre</span>
+            </label>
 
             <div className="grid grid-cols-2 gap-3 pt-2">
               <Button 
