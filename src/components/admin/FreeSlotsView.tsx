@@ -5,7 +5,7 @@ import { ptBR } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TimePicker } from "@/components/ui/TimePicker";
-import { Calendar as CalendarIcon, Clock, Lock, Trash2, User } from "lucide-react";
+import { ArrowLeft, Calendar as CalendarIcon, Clock, Lock, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -38,8 +38,10 @@ interface Barber {
 
 interface TimeBlock {
   id: string;
-  starts_at: string;
-  ends_at: string;
+  start_date: string;
+  end_date: string;
+  start_time: string;
+  end_time: string;
   reason: string | null;
   barber_id: string | null;
   barber_name?: string;
@@ -117,19 +119,45 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
 
       setBarbers(data.barbers || []);
       setAvailableSlots((data.slots || []).sort((a: any, b: any) => a.starts_at.localeCompare(b.starts_at)));
-      
-      const enrichedBlocks = (data.blocks || []).map((block: any) => ({
-        ...block,
-        barber_name: block.barber_id 
-          ? data.barbers?.find((b: any) => b.barber_id === block.barber_id)?.name || "Profissional" 
-          : "Todos"
-      }));
-      setTimeBlocks(enrichedBlocks);
+
+      await fetchTimeBlocks(data.barbers || []);
     } catch (error: any) {
       toast.error("Erro ao carregar horários: " + error.message);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const fetchTimeBlocks = async (barbersList?: Barber[]) => {
+    const currentBarbershopId = barbershopId || profile?.barbershop_id || null;
+    if (!currentBarbershopId) {
+      setTimeBlocks([]);
+      return;
+    }
+    const { data, error } = await supabase.rpc('get_barbershop_time_blocks' as any, {
+      p_barbershop_id: currentBarbershopId,
+      p_day: null,
+    });
+    if (error) {
+      console.error("Erro ao carregar bloqueios:", error);
+      setTimeBlocks([]);
+      return;
+    }
+    const list: any[] = Array.isArray(data) ? data : [];
+    const source = barbersList && barbersList.length ? barbersList : barbers;
+    const enriched = list.map((b: any) => ({
+      id: b.id,
+      start_date: b.start_date,
+      end_date: b.end_date,
+      start_time: String(b.start_time || "").substring(0, 5),
+      end_time: String(b.end_time || "").substring(0, 5),
+      reason: b.reason,
+      barber_id: b.barber_id,
+      barber_name: b.barber_id
+        ? (b.barber_name || source.find(x => x.barber_id === b.barber_id)?.name || "Profissional")
+        : "Todos os profissionais",
+    }));
+    setTimeBlocks(enriched);
   };
 
   const generateTimeOptions = () => {
@@ -201,7 +229,8 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
       toast.success("Horário bloqueado!");
       setIsBlockModalOpen(false);
       setBlockReason("");
-      fetchSlotsAndBlocks();
+      await fetchSlotsAndBlocks();
+      await fetchTimeBlocks();
     } catch (error: any) {
       toast.error("Erro ao bloquear: " + error.message);
     }
@@ -224,7 +253,8 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
 
       if (error) throw error;
       toast.success("Bloqueio removido");
-      fetchSlotsAndBlocks();
+      await fetchSlotsAndBlocks();
+      await fetchTimeBlocks();
     } catch (error: any) {
       toast.error("Erro ao remover: " + error.message);
     }
@@ -232,6 +262,14 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
 
   return (
     <div className="space-y-5 pb-10" style={{ fontFamily: "Poppins, sans-serif" }}>
+      <button
+        type="button"
+        onClick={onBack}
+        className="flex items-center gap-2 text-sm font-medium text-[#3157D5] hover:underline"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Voltar
+      </button>
       <div className="flex flex-col gap-4">
         {/* Action Buttons */}
         <Button 
