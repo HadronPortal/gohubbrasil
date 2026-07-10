@@ -54,7 +54,7 @@ function iconFor(type?: string | null) {
   if (t.includes("cancel") || t.includes("alert") || t.includes("warn"))
     return { node: <AlertTriangle className="w-5 h-5 text-[#DC2626]" />, bg: "bg-red-50" };
   if (t.includes("promo") || t.includes("offer") || t.includes("oferta") || t.includes("favorite") || t.includes("fav"))
-    return { node: <Star className="w-5 h-5 text-[#F59E0B]" />, bg: "bg-amber-50" };
+    return { node: <Star className="w-5 h-5 text-[#3157D5]" />, bg: "bg-[#EAF0FF]" };
   if (t.includes("shop") || t.includes("business") || t.includes("estab"))
     return { node: <Store className="w-5 h-5 text-[#3157D5]" />, bg: "bg-[#EAF0FF]" };
   if (t.includes("profile") || t.includes("perfil") || t.includes("user"))
