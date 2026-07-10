@@ -1015,7 +1015,7 @@ export default function ClientHome() {
                     </p>
                     <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-600">
                       <span className="flex items-center gap-0.5">
-                        <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                        <Star className="w-3 h-3 fill-[#3157D5] text-[#3157D5]" />
                         <span className="font-medium">Novo</span>
                       </span>
                       <span className="text-slate-300">•</span>
