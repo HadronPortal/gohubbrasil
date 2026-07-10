@@ -162,6 +162,143 @@ export type Database = {
           },
         ]
       }
+      barbershop_schedule_settings: {
+        Row: {
+          barbershop_id: string
+          created_at: string
+          fri_close: string
+          fri_open: string
+          mon_close: string
+          mon_open: string
+          sat_close: string
+          sat_open: string
+          slot_interval_minutes: number
+          sun_close: string
+          sun_enabled: boolean
+          sun_open: string
+          thu_close: string
+          thu_open: string
+          tue_close: string
+          tue_open: string
+          updated_at: string
+          wed_close: string
+          wed_open: string
+        }
+        Insert: {
+          barbershop_id: string
+          created_at?: string
+          fri_close?: string
+          fri_open?: string
+          mon_close?: string
+          mon_open?: string
+          sat_close?: string
+          sat_open?: string
+          slot_interval_minutes?: number
+          sun_close?: string
+          sun_enabled?: boolean
+          sun_open?: string
+          thu_close?: string
+          thu_open?: string
+          tue_close?: string
+          tue_open?: string
+          updated_at?: string
+          wed_close?: string
+          wed_open?: string
+        }
+        Update: {
+          barbershop_id?: string
+          created_at?: string
+          fri_close?: string
+          fri_open?: string
+          mon_close?: string
+          mon_open?: string
+          sat_close?: string
+          sat_open?: string
+          slot_interval_minutes?: number
+          sun_close?: string
+          sun_enabled?: boolean
+          sun_open?: string
+          thu_close?: string
+          thu_open?: string
+          tue_close?: string
+          tue_open?: string
+          updated_at?: string
+          wed_close?: string
+          wed_open?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barbershop_schedule_settings_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: true
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      barbershop_time_blocks: {
+        Row: {
+          barber_id: string | null
+          barbershop_id: string
+          created_at: string
+          created_by: string | null
+          end_date: string
+          end_time: string
+          id: string
+          only_open_days: boolean
+          reason: string | null
+          repeat_daily: boolean
+          start_date: string
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          barber_id?: string | null
+          barbershop_id: string
+          created_at?: string
+          created_by?: string | null
+          end_date: string
+          end_time: string
+          id?: string
+          only_open_days?: boolean
+          reason?: string | null
+          repeat_daily?: boolean
+          start_date: string
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          barber_id?: string | null
+          barbershop_id?: string
+          created_at?: string
+          created_by?: string | null
+          end_date?: string
+          end_time?: string
+          id?: string
+          only_open_days?: boolean
+          reason?: string | null
+          repeat_daily?: boolean
+          start_date?: string
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barbershop_time_blocks_barber_id_fkey"
+            columns: ["barber_id"]
+            isOneToOne: false
+            referencedRelation: "barbers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "barbershop_time_blocks_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       barbershops: {
         Row: {
           address: string
@@ -477,6 +614,27 @@ export type Database = {
       }
     }
     Functions: {
+      _can_manage_block: {
+        Args: { p_barber_id: string; p_barbershop_id: string }
+        Returns: boolean
+      }
+      _can_manage_schedule: {
+        Args: { p_barbershop_id: string }
+        Returns: boolean
+      }
+      _day_window: {
+        Args: { p_barbershop_id: string; p_day: string }
+        Returns: {
+          close_time: string
+          enabled: boolean
+          open_time: string
+          slot_interval_minutes: number
+        }[]
+      }
+      _resolve_my_barbershop: {
+        Args: { p_barbershop_id: string }
+        Returns: string
+      }
       auto_complete_past_appointments: { Args: never; Returns: undefined }
       barbershop_is_payment_blocked: {
         Args: { p_barbershop_id: string }
@@ -512,6 +670,31 @@ export type Database = {
             }
             Returns: Json
           }
+      create_barbershop_time_block: {
+        Args: {
+          p_barber_id?: string
+          p_barbershop_id?: string
+          p_end_date: string
+          p_end_time: string
+          p_only_open_days?: boolean
+          p_reason?: string
+          p_repeat_daily?: boolean
+          p_start_date: string
+          p_start_time: string
+        }
+        Returns: Json
+      }
+      create_barbershop_time_block_local: {
+        Args: {
+          p_barber_id?: string
+          p_barbershop_id?: string
+          p_day: string
+          p_end_time: string
+          p_reason?: string
+          p_start_time: string
+        }
+        Returns: Json
+      }
       create_barbershop_with_owner: {
         Args: {
           barbershop_address: string
@@ -528,6 +711,10 @@ export type Database = {
       delete_barber_safe: { Args: { p_barber_id: string }; Returns: Json }
       delete_barbershop_safe: {
         Args: { p_barbershop_id: string }
+        Returns: Json
+      }
+      delete_barbershop_time_block: {
+        Args: { p_block_id: string }
         Returns: Json
       }
       ensure_owner_is_barber: {
@@ -563,6 +750,19 @@ export type Database = {
         }[]
       }
       get_barber_dashboard: { Args: { p_day?: string }; Returns: Json }
+      get_barbershop_available_slots: {
+        Args: {
+          p_barber_id?: string
+          p_barbershop_id?: string
+          p_day: string
+          p_duration_minutes?: number
+        }
+        Returns: Json
+      }
+      get_barbershop_schedule_settings: {
+        Args: { p_barbershop_id: string }
+        Returns: Json
+      }
       get_barbershops_by_category_service:
         | {
             Args: { p_catalog_service_id?: string; p_category_slug: string }
@@ -688,6 +888,30 @@ export type Database = {
         Returns: Json
       }
       unaccent: { Args: { "": string }; Returns: string }
+      update_barbershop_schedule_settings: {
+        Args: {
+          p_barbershop_id?: string
+          p_closing_time?: string
+          p_fri_close?: string
+          p_fri_open?: string
+          p_mon_close?: string
+          p_mon_open?: string
+          p_opening_time?: string
+          p_sat_close?: string
+          p_sat_open?: string
+          p_slot_interval_minutes?: number
+          p_sun_close?: string
+          p_sun_enabled?: boolean
+          p_sun_open?: string
+          p_thu_close?: string
+          p_thu_open?: string
+          p_tue_close?: string
+          p_tue_open?: string
+          p_wed_close?: string
+          p_wed_open?: string
+        }
+        Returns: Json
+      }
       upsert_catalog_service:
         | { Args: { p_barbershop_id: string; p_name: string }; Returns: string }
         | {
