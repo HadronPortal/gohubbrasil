@@ -136,7 +136,7 @@ export default function SelectBarbershop() {
   const firstName = profile?.name?.split(" ")[0] || user?.user_metadata?.full_name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || "USUÁRIO";
 
   return (
-    <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24 overflow-hidden">
+    <div className="min-h-screen bg-[#F6F7FB] text-[#172033] flex flex-col items-center pb-24 overflow-hidden">
       <div className="w-full max-w-[390px] p-6 space-y-10">
         {/* Header */}
         <div className="flex justify-between items-center">
