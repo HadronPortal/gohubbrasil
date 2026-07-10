@@ -136,7 +136,7 @@ export default function SelectBarbershop() {
   const firstName = profile?.name?.split(" ")[0] || user?.user_metadata?.full_name?.split(" ")[0] || user?.user_metadata?.name?.split(" ")[0] || "USUÁRIO";
 
   return (
-    <div className="min-h-screen bg-[#1c2333] text-[#c8d4e8] flex flex-col items-center font-light pb-24 overflow-hidden">
+    <div className="min-h-screen bg-[#F6F7FB] text-[#172033] flex flex-col items-center pb-24 overflow-hidden">
       <div className="w-full max-w-[390px] p-6 space-y-10">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -144,12 +144,12 @@ export default function SelectBarbershop() {
             <AdminGear />
           </div>
           <div className="flex items-center gap-3">
-            <UserAvatar 
-              name={profile?.name} 
-              email={user?.email} 
-              avatarUrl={profile?.avatar_url} 
-              size="md" 
-              className="bg-[#141b2a] border border-[#2a3347]" 
+            <UserAvatar
+              name={profile?.name}
+              email={user?.email}
+              avatarUrl={profile?.avatar_url}
+              size="md"
+              className="bg-[#EAF0FF] border border-[#DDE3EE]"
             />
 
             <LogoutButton showText />
@@ -158,16 +158,16 @@ export default function SelectBarbershop() {
 
         {/* Welcome Section */}
         <div>
-          <h1 className="text-[11px] font-light uppercase tracking-[0.2em] text-[#8a9ab5] m-0">BEM-VINDO</h1>
-          <h2 className="text-4xl font-bold uppercase text-[#f0c040] font-oswald tracking-tight m-0 leading-tight">
-            {firstName.toUpperCase()}!
+          <h1 className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#64748B] m-0">Bem-vindo</h1>
+          <h2 className="text-3xl font-bold text-[#172033] tracking-tight m-0 leading-tight">
+            {firstName}!
           </h2>
         </div>
 
         {/* Section Label */}
         <div className="pt-2">
-          <h3 className="text-xs font-bold tracking-[0.25em] text-[#f0c040] font-oswald uppercase">
-            ESCOLHA UM ESTABELECIMENTO
+          <h3 className="text-xs font-semibold tracking-[0.2em] text-[#3157D5] uppercase">
+            Escolha um estabelecimento
           </h3>
         </div>
 
@@ -177,27 +177,27 @@ export default function SelectBarbershop() {
             <div
               key={shop.id}
               onClick={() => handleSelect(shop)}
-              className="flex items-center gap-4 p-4 rounded-[4px] bg-[#141b2a] border border-[#2a3347] hover:border-[#f0c040] transition-all cursor-pointer group select-none touch-manipulation"
+              className="flex items-center gap-4 p-4 rounded-[8px] bg-white border border-[#DDE3EE] hover:border-[#3157D5] hover:shadow-sm transition-all cursor-pointer group select-none touch-manipulation"
               onContextMenu={(e) => e.preventDefault()}
             >
-              <div className="w-16 h-16 rounded-lg bg-[#1c2333] border border-[#2a3347] flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:border-[#f0c040]/50">
+              <div className="w-16 h-16 rounded-[8px] bg-[#EAF0FF] border border-[#DDE3EE] flex items-center justify-center overflow-hidden flex-shrink-0">
                 {shop.logo_url ? (
                   <img src={shop.logo_url} alt={shop.name} className="w-full h-full object-cover" />
                 ) : (
-                  <MapPin className="w-8 h-8 text-[#8a9ab5] group-hover:text-[#f0c040]" />
+                  <MapPin className="w-8 h-8 text-[#3157D5]" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-lg font-bold tracking-wider font-oswald uppercase text-[#c8d4e8] group-hover:text-[#f0c040] truncate">
+                <h4 className="text-base font-bold text-[#172033] group-hover:text-[#3157D5] truncate">
                   {shop.name}
                 </h4>
                 {shop.address && (
-                  <p className="text-[10px] text-[#8a9ab5] uppercase tracking-wider truncate">
+                  <p className="text-[11px] text-[#64748B] truncate">
                     {shop.address}
                   </p>
                 )}
                 {shop.description && (
-                  <p className="text-[10px] text-[#6b7280] mt-1 line-clamp-1 italic">
+                  <p className="text-[11px] text-[#94A3B8] mt-1 line-clamp-1">
                     {shop.description}
                   </p>
                 )}
@@ -205,7 +205,7 @@ export default function SelectBarbershop() {
             </div>
           ))}
           {barbershops.length === 0 && (
-            <div className="text-center py-10 text-[#8a9ab5]">
+            <div className="text-center py-10 text-[#64748B]">
               Nenhum estabelecimento cadastrado.
             </div>
           )}

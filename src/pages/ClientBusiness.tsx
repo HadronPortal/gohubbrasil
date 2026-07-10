@@ -119,7 +119,7 @@ export default function ClientBusiness() {
           <h1 className="mt-1 text-2xl font-extrabold leading-tight">{shop.name}</h1>
           <p className="mt-2 text-sm leading-relaxed text-slate-600">{shop.description || "Profissionais preparados para cuidar de você."}</p>
           <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-600">
-            <span className="flex items-center gap-1 font-semibold text-amber-600"><Star className="h-4 w-4 fill-current" /> Novo</span>
+            <span className="flex items-center gap-1 font-semibold text-[#3157D5]"><Star className="h-4 w-4 fill-current" /> Novo</span>
             <span className="flex items-center gap-1"><Clock3 className="h-4 w-4 text-emerald-600" /> Aberto para agendamentos</span>
             {shop.address && <span className="flex min-w-0 items-center gap-1"><MapPin className="h-4 w-4 shrink-0" /><span className="truncate">{shop.address}</span></span>}
           </div>

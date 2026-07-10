@@ -780,7 +780,7 @@ function FeaturedStore({ item, categoryLabel, accent, index, onClick }: { item: 
             <h3 className="truncate text-base font-extrabold">{item.shop.name}</h3>
             <p className="mt-0.5 truncate text-xs text-slate-500">{categoryLabel} • {item.shop.address || "Estabelecimento parceiro"}</p>
           </div>
-          <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-amber-600"><Star className="h-3.5 w-3.5 fill-current" /> Novo</span>
+          <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-[#3157D5]"><Star className="h-3.5 w-3.5 fill-current" /> Novo</span>
         </div>
         <div className="mt-3 flex items-center gap-2 text-xs text-slate-600">
           {distance && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{distance}</span>}
@@ -802,7 +802,7 @@ function StoreRow({ item, accent, onClick }: { item: StoreItem; accent: string; 
         <h3 className="truncate text-sm font-bold">{item.shop.name}</h3>
         <p className="mt-1 truncate text-xs text-slate-500">{item.shop.description || item.shop.address || "Serviços de beleza"}</p>
         <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-500">
-          <span className="flex items-center gap-1 text-amber-600"><Star className="h-3 w-3 fill-current" /> Novo</span>
+          <span className="flex items-center gap-1 text-[#3157D5]"><Star className="h-3 w-3 fill-current" /> Novo</span>
           {distance && <span>• {distance}</span>}
           <span className="flex items-center gap-1 text-emerald-600"><Clock3 className="h-3 w-3" /> Disponível</span>
         </div>

@@ -406,7 +406,7 @@ export default function ClientAgenda() {
 
             {import.meta.env.DEV && (
               <pre
-                className="mt-3 rounded-md border border-amber-300 bg-amber-50 p-2 text-[11px] text-amber-900"
+                className="mt-3 rounded-md border border-[#DDE3EE] bg-[#F6F7FB] p-2 text-[11px] text-[#172033]"
                 style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
               >
                 {JSON.stringify(
