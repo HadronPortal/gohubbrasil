@@ -379,45 +379,6 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
         </div>
       )}
 
-      {/* Config Modal */}
-      <Dialog open={isConfigModalOpen} onOpenChange={setIsConfigModalOpen}>
-        <DialogContent className="bg-white border-[#DDE3EE] text-[#172033] max-w-[350px]">
-          <DialogHeader>
-            <DialogTitle className="  text-[#3157D5]">Configurar HORÁRIOS</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <TimePicker 
-              label="Abertura" 
-              value={openingTime} 
-              onChange={setOpeningTime} 
-            />
-            <TimePicker 
-              label="Fechamento" 
-              value={closingTime} 
-              onChange={setClosingTime} 
-            />
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-[#64748B] ">Intervalo (minutos)</label>
-              <Select value={slotInterval} onValueChange={setSlotInterval}>
-                <SelectTrigger className="bg-white border-[#DDE3EE]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-[#DDE3EE] text-[#172033]">
-                  {[10, 15, 20, 30, 45, 60, 90, 120].map(val => (
-                    <SelectItem key={val} value={val.toString()}>{val} min</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button onClick={handleSaveConfig} className="w-full bg-[#3157D5] text-white hover:bg-[#274ac0] font-semibold rounded-[8px]">
-              Salvar configurações
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* Block Modal */}
       <Dialog open={isBlockModalOpen} onOpenChange={setIsBlockModalOpen}>
         <DialogContent className="bg-white border-[#DDE3EE] text-[#172033] max-w-[350px] p-0 overflow-hidden rounded-[8px]">
