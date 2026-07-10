@@ -342,22 +342,32 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
       {timeBlocks.length > 0 && (
         <div className="space-y-4 pt-4 border-t border-[#DDE3EE]">
           <h4 className="text-xs font-medium text-[#64748B]  tracking-[2px]">
-            BLOQUEIOS DO DIA ({timeBlocks.length})
+            BLOQUEIOS SALVOS ({timeBlocks.length})
           </h4>
           <div className="space-y-2">
             {timeBlocks.map((block) => (
-              <div key={block.id} className="bg-white border border-[#FDECEC] p-3 rounded-[8px] flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  <div className="bg-[#FDECEC] p-2 rounded">
+              <div key={block.id} className="bg-white border border-[#FDECEC] p-3 rounded-[8px] flex justify-between items-start gap-3">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="bg-[#FDECEC] p-2 rounded shrink-0">
                     <Lock className="w-4 h-4 text-[#DC2626]" />
                   </div>
-                  <div>
-                    <span className="text-[11px] font-bold text-[#DC2626] ">
-                      {new Date(block.starts_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })} - {new Date(block.ends_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })}
-                    </span>
-                    <p className="text-[9px] text-[#64748B] ">
-                      {block.barber_name} {block.reason ? `• ${block.reason}` : ""}
+                  <div className="min-w-0 space-y-0.5">
+                    <p className="text-[12px] font-bold text-[#DC2626]">
+                      {block.start_time} - {block.end_time}
                     </p>
+                    <p className="text-[10px] text-[#172033] font-medium">
+                      {(() => {
+                        const s = block.start_date?.split('-').reverse().join('/');
+                        const e = block.end_date?.split('-').reverse().join('/');
+                        return s === e ? s : `${s} → ${e}`;
+                      })()}
+                    </p>
+                    <p className="text-[10px] text-[#64748B]">
+                      {block.barber_name}
+                    </p>
+                    {block.reason && (
+                      <p className="text-[10px] text-[#64748B] italic">{block.reason}</p>
+                    )}
                   </div>
                 </div>
                 <Button 
