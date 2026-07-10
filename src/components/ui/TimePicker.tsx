@@ -42,7 +42,7 @@ export function TimePicker({ value, onChange, label, minutesStep = 15 }: TimePic
     <>
       <div className="space-y-1.5 w-full">
         {label && (
-          <label className="text-[10px] font-bold text-[#8a9ab5] uppercase tracking-wider">
+          <label className="text-xs font-medium text-[#64748B]">
             {label}
           </label>
         )}
@@ -50,38 +50,38 @@ export function TimePicker({ value, onChange, label, minutesStep = 15 }: TimePic
           type="button"
           variant="outline"
           onClick={() => setIsOpen(true)}
-          className="w-full justify-start text-left font-normal bg-[#141b2a] border-[#2a3347] h-11 text-[#c8d4e8] hover:bg-[#1c2333] hover:border-[#f0c040]/50"
+          className="w-full justify-start text-left font-normal bg-white border-[#DDE3EE] h-11 text-[#172033] hover:bg-[#F6F7FB] hover:border-[#3157D5]/40 rounded-[8px]"
         >
-          <Clock className="mr-2 h-4 w-4 text-[#f0c040]" />
-          <span className="font-oswald text-sm tracking-widest">{value || "--:--"}</span>
+          <Clock className="mr-2 h-4 w-4 text-[#3157D5]" />
+          <span className="text-sm font-semibold">{value || "--:--"}</span>
         </Button>
       </div>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="bg-[#1c2333] border-[#2a3347] text-[#c8d4e8] p-0 overflow-hidden w-[calc(100vw-24px)] max-w-[340px] rounded-lg">
-          <DialogHeader className="p-4 border-b border-[#2a3347] flex flex-row items-center justify-between space-y-0">
-            <DialogTitle className="font-oswald uppercase tracking-widest text-[#f0c040] text-sm">
-              SELECIONAR HORÁRIO
+        <DialogContent className="bg-white border-[#DDE3EE] text-[#172033] p-0 overflow-hidden w-[calc(100vw-24px)] max-w-[340px] rounded-[12px]">
+          <DialogHeader className="p-4 border-b border-[#DDE3EE] flex flex-row items-center justify-between space-y-0">
+            <DialogTitle className="text-[#3157D5] text-sm font-semibold">
+              Selecionar horário
             </DialogTitle>
-            <button onClick={() => setIsOpen(false)} className="text-[#8a9ab5] hover:text-white">
+            <button onClick={() => setIsOpen(false)} className="text-[#64748B] hover:text-[#172033]">
               <X className="w-4 h-4" />
             </button>
           </DialogHeader>
 
           <div className="p-4 flex gap-4 justify-center items-center h-[260px]">
             {/* Hours Column */}
-            <div className="flex-1 flex flex-col items-center">
-              <span className="text-[9px] font-bold text-[#8a9ab5] uppercase tracking-widest mb-2">HORA</span>
-              <div className="w-full overflow-y-auto h-[200px] scrollbar-hide flex flex-col gap-1 pr-1">
+            <div className="flex-1 flex flex-col items-center min-w-0">
+              <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-2">Hora</span>
+              <div className="w-full overflow-y-auto h-[200px] no-scrollbar flex flex-col gap-1 pr-1">
                 {hours.map((h) => (
                   <button
                     key={h}
                     onClick={() => setTempHour(h)}
                     className={cn(
-                      "py-2 px-4 text-center rounded text-lg font-oswald transition-all",
-                      tempHour === h 
-                        ? "bg-[#f0c040] text-[#1c2333] font-bold scale-105" 
-                        : "text-[#c8d4e8] hover:bg-[#141b2a]"
+                      "py-2 px-3 text-center rounded-[8px] text-base transition-all",
+                      tempHour === h
+                        ? "bg-[#3157D5] text-white font-bold"
+                        : "text-[#172033] hover:bg-[#EAF0FF] hover:text-[#3157D5]"
                     )}
                   >
                     {h}
@@ -90,21 +90,21 @@ export function TimePicker({ value, onChange, label, minutesStep = 15 }: TimePic
               </div>
             </div>
 
-            <span className="text-2xl font-oswald text-[#f0c040] mb-[-20px]">:</span>
+            <span className="text-2xl text-[#3157D5] font-bold mb-[-20px]">:</span>
 
             {/* Minutes Column */}
-            <div className="flex-1 flex flex-col items-center">
-              <span className="text-[9px] font-bold text-[#8a9ab5] uppercase tracking-widest mb-2">MIN</span>
-              <div className="w-full overflow-y-auto h-[200px] scrollbar-hide flex flex-col gap-1 pl-1">
+            <div className="flex-1 flex flex-col items-center min-w-0">
+              <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-2">Min</span>
+              <div className="w-full overflow-y-auto h-[200px] no-scrollbar flex flex-col gap-1 pl-1">
                 {minutes.map((m) => (
                   <button
                     key={m}
                     onClick={() => setTempMinute(m)}
                     className={cn(
-                      "py-2 px-4 text-center rounded text-lg font-oswald transition-all",
-                      tempMinute === m 
-                        ? "bg-[#f0c040] text-[#1c2333] font-bold scale-105" 
-                        : "text-[#c8d4e8] hover:bg-[#141b2a]"
+                      "py-2 px-3 text-center rounded-[8px] text-base transition-all",
+                      tempMinute === m
+                        ? "bg-[#3157D5] text-white font-bold"
+                        : "text-[#172033] hover:bg-[#EAF0FF] hover:text-[#3157D5]"
                     )}
                   >
                     {m}
@@ -114,19 +114,19 @@ export function TimePicker({ value, onChange, label, minutesStep = 15 }: TimePic
             </div>
           </div>
 
-          <DialogFooter className="p-4 bg-[#141b2a] border-t border-[#2a3347] flex flex-row gap-3">
-            <Button 
-              variant="outline" 
+          <DialogFooter className="p-4 bg-[#F6F7FB] border-t border-[#DDE3EE] flex flex-row gap-3">
+            <Button
+              variant="outline"
               onClick={() => setIsOpen(false)}
-              className="flex-1 bg-transparent border-[#2a3347] text-[#8a9ab5] hover:text-white hover:bg-[#1c2333] h-11 text-xs font-bold uppercase tracking-widest"
+              className="flex-1 bg-white border-[#DDE3EE] text-[#64748B] hover:bg-[#F6F7FB] hover:text-[#172033] h-11 text-sm font-semibold rounded-[8px]"
             >
-              CANCELAR
+              Cancelar
             </Button>
-            <Button 
+            <Button
               onClick={handleConfirm}
-              className="flex-1 bg-[#f0c040] text-[#1c2333] hover:bg-[#d4a935] h-11 text-xs font-bold uppercase tracking-widest"
+              className="flex-1 bg-[#3157D5] text-white hover:bg-[#274ac0] h-11 text-sm font-semibold rounded-[8px]"
             >
-              <Check className="w-4 h-4 mr-1" /> CONFIRMAR
+              <Check className="w-4 h-4 mr-1" /> Confirmar
             </Button>
           </DialogFooter>
         </DialogContent>
