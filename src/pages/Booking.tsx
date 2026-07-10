@@ -22,6 +22,7 @@ export default function Booking() {
   const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
   const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
   const [availableSlots, setAvailableSlots] = useState<any[]>([]);
+  const [dayClosed, setDayClosed] = useState(false);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [service, setService] = useState<any>(null);
@@ -115,6 +116,7 @@ export default function Booking() {
 
       if (data.success) {
         setAvailableSlots(data.slots || []);
+        setDayClosed(data.settings && data.settings.enabled === false);
       } else {
         toast.error(data.error);
       }
@@ -209,7 +211,7 @@ export default function Booking() {
         {isLoadingSlots ? (
           <div className="rounded-[8px] bg-white py-10 text-center text-sm text-slate-500">Buscando os melhores horários...</div>
         ) : availableSlots.length === 0 ? (
-          <div className="rounded-[8px] border border-dashed border-slate-300 bg-white py-10 text-center text-sm text-slate-500">Nenhum horário disponível nesta data.</div>
+          <div className="rounded-[8px] border border-dashed border-slate-300 bg-white py-10 text-center text-sm text-slate-500">{dayClosed ? "Estabelecimento fechado neste dia." : "Nenhum horário disponível nesta data."}</div>
         ) : (
           <div className="grid grid-cols-3 gap-2">
             {availableSlots.map((slot) => {
