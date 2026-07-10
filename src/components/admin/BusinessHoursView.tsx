@@ -82,8 +82,12 @@ export default function BusinessHoursView({ barbershopId, onBack }: Props) {
       );
       if (error) throw error;
       const res: any = data;
-      if (res && res.success === false) throw new Error(res.error);
+      if (res && res.success === false) {
+        console.error("update_barbershop_schedule_settings error:", res);
+        throw new Error(res.error || "Falha ao salvar");
+      }
       toast.success("Horários de funcionamento salvos!");
+      await load();
     } catch (e: any) {
       toast.error("Erro ao salvar: " + e.message);
     } finally {
