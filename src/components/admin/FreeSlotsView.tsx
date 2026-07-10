@@ -80,7 +80,10 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
   const [blockStartTime, setBlockStartTime] = useState("");
   const [blockEndTime, setBlockEndTime] = useState("");
   const [blockReason, setBlockReason] = useState("");
-  const [blockDate, setBlockDate] = useState<Date | undefined>(new Date());
+  const [blockStartDate, setBlockStartDate] = useState<Date | undefined>(new Date());
+  const [blockEndDate, setBlockEndDate] = useState<Date | undefined>(new Date());
+  const [repeatDaily, setRepeatDaily] = useState(true);
+  const [onlyOpenDays, setOnlyOpenDays] = useState(true);
 
   useEffect(() => {
     fetchSlotsAndBlocks();
@@ -168,8 +171,12 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
 
   const handleCreateBlock = async () => {
     try {
-      if (!blockDate) {
-        toast.error("Selecione a data");
+      if (!blockStartDate || !blockEndDate) {
+        toast.error("Selecione a data inicial e final");
+        return;
+      }
+      if (blockEndDate < blockStartDate) {
+        toast.error("Data final deve ser igual ou após a inicial");
         return;
       }
       if (!blockStartTime) {
@@ -189,15 +196,19 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
         return;
       }
 
-      const dateStr = format(blockDate, "yyyy-MM-dd");
-      
-      const { data, error } = await supabase.rpc('create_barbershop_time_block_local', {
-        p_day: dateStr,
+      const startStr = format(blockStartDate, "yyyy-MM-dd");
+      const endStr = format(blockEndDate, "yyyy-MM-dd");
+
+      const { data, error } = await supabase.rpc('create_barbershop_time_block' as any, {
+        p_start_date: startStr,
+        p_end_date: endStr,
         p_start_time: blockStartTime,
         p_end_time: blockEndTime,
-        p_reason: blockReason || null,
+        p_barbershop_id: null,
         p_barber_id: blockBarberId === "all" ? null : blockBarberId,
-        p_barbershop_id: null
+        p_repeat_daily: repeatDaily,
+        p_only_open_days: onlyOpenDays,
+        p_reason: blockReason || null,
       });
 
       if (error) throw error;
@@ -292,7 +303,8 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
           <Button 
             variant="outline" 
             onClick={() => {
-              setBlockDate(selectedDate);
+              setBlockStartDate(selectedDate);
+              setBlockEndDate(selectedDate);
               setBlockStartTime("");
               setBlockEndTime("");
               setIsBlockModalOpen(true);
@@ -347,7 +359,8 @@ export default function FreeSlotsView({ barbershopId, onBack, profile }: FreeSlo
                   onClick={() => {
                     setBlockBarberId(slot.barber_id);
                     setBlockStartTime(slot.time_label);
-                    setBlockDate(selectedDate);
+                    setBlockStartDate(selectedDate);
+                    setBlockEndDate(selectedDate);
                     
                     const [startH, startM] = slot.time_label.split(":").map(Number);
                     const end = new Date();
