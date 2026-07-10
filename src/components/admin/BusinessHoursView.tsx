@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { TimePicker } from "@/components/ui/TimePicker";
-import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -136,7 +135,21 @@ export default function BusinessHoursView({ barbershopId, onBack }: Props) {
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-[#64748B]">{sunEnabled ? "Aberto" : "Fechado"}</span>
-                <Switch checked={sunEnabled} onCheckedChange={setSunEnabled} />
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={sunEnabled}
+                  onClick={() => setSunEnabled(!sunEnabled)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    sunEnabled ? "bg-[#3157D5]" : "bg-[#DDE3EE]"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                      sunEnabled ? "translate-x-5" : "translate-x-0.5"
+                    }`}
+                  />
+                </button>
               </div>
             </div>
             {sunEnabled && (
