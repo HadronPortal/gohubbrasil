@@ -13,44 +13,46 @@ export const AdminGear: React.FC = () => {
   }
 
   // Se for barbeiro, manda para o dashboard de barbeiro
+  const triggerClass =
+    "p-2 bg-white border border-[#DDE3EE] rounded-full hover:border-[#3157D5] transition-all group";
+  const iconClass = "text-[#64748B] group-hover:text-[#3157D5]";
+
   if (isBarber && !isSuperAdmin) {
     return (
-      <button 
+      <button
         onClick={() => navigate('/barber-dashboard')}
-        className="p-2 bg-[#141b2a] border border-[#2a3347] rounded-full hover:border-[#f0c040] transition-all group"
+        className={triggerClass}
         aria-label="Painel Profissional"
       >
-        <Settings size={20} className="text-[#8a9ab5] group-hover:text-[#f0c040]" />
+        <Settings size={20} className={iconClass} />
       </button>
     );
   }
 
-  // Se for apenas admin/owner (não superadmin), redireciona direto
   if (isAdmin && !isSuperAdmin) {
     return (
-      <button 
+      <button
         onClick={() => navigate('/admin')}
-        className="p-2 bg-[#141b2a] border border-[#2a3347] rounded-full hover:border-[#f0c040] transition-all group"
+        className={triggerClass}
         aria-label="Painel Administrativo"
       >
-        <Settings size={20} className="text-[#8a9ab5] group-hover:text-[#f0c040]" />
+        <Settings size={20} className={iconClass} />
       </button>
     );
   }
 
-  // Se for superadmin, mostra menu simples ou botões
   return (
     <div className="relative">
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 bg-[#141b2a] border border-[#2a3347] rounded-full hover:border-[#f0c040] transition-all group"
+        className={triggerClass}
         aria-label="Opções Administrativas"
       >
-        <Settings size={20} className="text-[#8a9ab5] group-hover:text-[#f0c040]" />
+        <Settings size={20} className={iconClass} />
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 mt-2 w-48 bg-[#141b2a] border border-[#2a3347] rounded-md shadow-lg z-50 overflow-hidden">
+        <div className="absolute left-0 mt-2 w-52 bg-white border border-[#DDE3EE] rounded-[8px] shadow-lg z-50 overflow-hidden">
           <div className="py-1">
             {isAdmin && (
               <button
@@ -58,7 +60,7 @@ export const AdminGear: React.FC = () => {
                   navigate('/admin');
                   setIsOpen(false);
                 }}
-                className="w-full text-left px-4 py-2 text-sm text-[#c8d4e8] hover:bg-[#1c2333] hover:text-[#f0c040] flex items-center gap-2"
+                className="w-full text-left px-4 py-2 text-sm text-[#172033] hover:bg-[#EAF0FF] hover:text-[#3157D5] flex items-center gap-2"
               >
                 <Settings size={14} />
                 Gerenciar Estabelecimento
@@ -70,7 +72,7 @@ export const AdminGear: React.FC = () => {
                   navigate('/super-admin');
                   setIsOpen(false);
                 }}
-                className="w-full text-left px-4 py-2 text-sm text-[#c8d4e8] hover:bg-[#1c2333] hover:text-[#f0c040] flex items-center gap-2 border-t border-[#2a3347]"
+                className="w-full text-left px-4 py-2 text-sm text-[#172033] hover:bg-[#EAF0FF] hover:text-[#3157D5] flex items-center gap-2 border-t border-[#DDE3EE]"
               >
                 <PlusCircle size={14} />
                 Cadastrar Estabelecimento
