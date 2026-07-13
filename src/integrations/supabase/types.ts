@@ -162,6 +162,63 @@ export type Database = {
           },
         ]
       }
+      barbershop_clients: {
+        Row: {
+          avatar_url: string | null
+          barbershop_id: string
+          client_id: string
+          created_at: string
+          email: string | null
+          first_appointment_at: string
+          id: string
+          last_appointment_at: string
+          name: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          barbershop_id: string
+          client_id: string
+          created_at?: string
+          email?: string | null
+          first_appointment_at?: string
+          id?: string
+          last_appointment_at?: string
+          name?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          barbershop_id?: string
+          client_id?: string
+          created_at?: string
+          email?: string | null
+          first_appointment_at?: string
+          id?: string
+          last_appointment_at?: string
+          name?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "barbershop_clients_barbershop_id_fkey"
+            columns: ["barbershop_id"]
+            isOneToOne: false
+            referencedRelation: "barbershops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "barbershop_clients_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       barbershop_schedule_settings: {
         Row: {
           barbershop_id: string
@@ -887,6 +944,10 @@ export type Database = {
           subscription_status: string
           trial_ends_at: string
         }[]
+      }
+      link_client_to_barbershop: {
+        Args: { p_barbershop_id: string }
+        Returns: Json
       }
       mark_barbershop_paid: {
         Args: {
