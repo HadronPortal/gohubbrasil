@@ -766,7 +766,19 @@ function FeaturedStore({ item, categoryLabel, accent, index, onClick }: { item: 
     <button type="button" onClick={onClick} className="w-[82%] shrink-0 snap-start overflow-hidden rounded-[8px] border border-slate-200 bg-white text-left shadow-sm transition active:scale-[0.99]">
       <div className="relative h-36 overflow-hidden bg-slate-100">
         {item.shop.logo_url ? (
-          <img src={item.shop.logo_url} alt={item.shop.name} className="h-full w-full object-cover" />
+          <>
+            <img
+              src={item.shop.logo_url}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full object-cover scale-110 blur-2xl opacity-40"
+            />
+            <img
+              src={item.shop.logo_url}
+              alt={item.shop.name}
+              className="relative z-10 mx-auto h-full w-full object-contain p-3"
+            />
+          </>
         ) : (
           <div className="flex h-full items-center justify-center" style={{ backgroundColor: `${accent}16` }}>
             <Sparkles className="h-10 w-10" style={{ color: accent }} />
