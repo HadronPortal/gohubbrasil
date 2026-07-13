@@ -97,9 +97,21 @@ export default function ClientBusiness() {
   return (
     <div className="gohub-client min-h-screen bg-[#F6F7FB] pb-28 text-[#172033]">
       <div className="mx-auto max-w-md">
-        <section className="relative h-56 overflow-hidden bg-slate-200" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+        <section className="relative h-56 overflow-hidden" style={{ paddingTop: "env(safe-area-inset-top)", backgroundColor: category.soft }}>
           {shop.logo_url ? (
-            <img src={shop.logo_url} alt={shop.name} className="h-full w-full object-cover" />
+            <>
+              <img
+                src={shop.logo_url}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full object-cover scale-110 blur-2xl opacity-40"
+              />
+              <img
+                src={shop.logo_url}
+                alt={shop.name}
+                className="relative z-10 mx-auto h-full w-full object-contain p-6"
+              />
+            </>
           ) : (
             <div className="flex h-full items-center justify-center" style={{ backgroundColor: category.soft }}>
               <img src={category.image} alt="" className="h-40 w-40 object-contain drop-shadow-xl" />

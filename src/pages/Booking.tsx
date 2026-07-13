@@ -229,6 +229,15 @@ export default function Booking() {
     try {
       if (!user) throw new Error("Usuário não autenticado");
 
+      // Auto-link client to establishment (idempotent, no-op if already linked)
+      try {
+        await supabase.rpc("link_client_to_barbershop" as any, {
+          p_barbershop_id: barbershopId,
+        });
+      } catch (linkErr) {
+        console.warn("link_client_to_barbershop failed (non-fatal):", linkErr);
+      }
+
       // Revalidate against time blocks before inserting
       const dayStr = format(selectedDate, "yyyy-MM-dd");
       const { data: blocksData } = await supabase.rpc(

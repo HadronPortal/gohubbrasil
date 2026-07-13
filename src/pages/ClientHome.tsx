@@ -137,7 +137,7 @@ function ShopMiniCard({ shop, badge, onClick }: { shop: Barbershop; badge?: stri
     >
       <div className="relative h-[104px] w-[108px] rounded-[8px] bg-white border border-slate-100 overflow-hidden flex items-center justify-center shadow-sm">
         {shop.logo_url ? (
-          <img src={shop.logo_url} alt={shop.name} className="w-full h-full object-cover" />
+          <img src={shop.logo_url} alt={shop.name} className="w-full h-full object-contain p-2" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-indigo-50 to-sky-50 flex items-center justify-center">
             <Scissors className="w-8 h-8 text-indigo-300" />
