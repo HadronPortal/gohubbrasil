@@ -62,12 +62,18 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
   useEffect(() => {
     if (!open || !barbershopId) return;
     (async () => {
-      const [{ data: svcs }, { data: brs }] = await Promise.all([
+      const [svcRes, brRes] = await Promise.all([
         supabase.from("services").select("id,name,price,duration_minutes").eq("barbershop_id", barbershopId).order("name"),
         supabase.from("barbers").select("id,name,active").eq("barbershop_id", barbershopId).eq("active", true).order("name"),
       ]);
-      setServices((svcs as any) || []);
-      setBarbers(((brs as any) || []).map((b: any) => ({ barber_id: b.id, name: b.name })));
+      if (svcRes.error) { console.error("[ManualBooking] services error", svcRes.error); toast.error("Erro ao carregar serviços: " + svcRes.error.message); }
+      if (brRes.error) { console.error("[ManualBooking] barbers error", brRes.error); toast.error("Erro ao carregar profissionais: " + brRes.error.message); }
+      setServices((svcRes.data as any) || []);
+      const list = ((brRes.data as any) || []).map((b: any) => ({ barber_id: b.id, name: b.name }));
+      setBarbers(list);
+      if (!brRes.error && list.length === 0) {
+        console.warn("[ManualBooking] no active barbers for barbershop", barbershopId);
+      }
     })();
   }, [open, barbershopId]);
 
@@ -160,7 +166,7 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white border-[#DDE3EE] text-[#172033] p-0 overflow-hidden rounded-[12px] flex flex-col w-[calc(100vw-24px)] max-w-[420px] max-h-[92vh] sm:max-w-[420px]">
+      <DialogContent className="bg-white border-[#DDE3EE] text-[#172033] p-0 overflow-hidden flex flex-col w-screen max-w-none h-[100dvh] max-h-[100dvh] rounded-none sm:w-[calc(100vw-24px)] sm:max-w-[420px] sm:h-auto sm:max-h-[92vh] sm:rounded-[12px]">
         <DialogHeader className="px-5 py-4 pr-12 border-b border-[#DDE3EE] shrink-0">
           <DialogTitle className="text-[#3157D5] text-base font-semibold text-left leading-tight truncate">
             {step === "client" ? "Novo agendamento — Cliente" : "Novo agendamento — Detalhes"}
@@ -252,15 +258,15 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
               </Select>
             </div>
 
-            <div className="space-y-1.5 -mx-5 px-5">
+            <div className="space-y-1.5">
               <label className="text-xs font-medium text-[#64748B]">Data</label>
-              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 -mx-5 px-5">
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-5 px-5" style={{ WebkitOverflowScrolling: "touch" }}>
                 {days.map(d => {
                   const selected = format(d, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd");
                   return (
                     <button key={d.toISOString()} onClick={() => setSelectedDate(d)}
                       className={cn(
-                        "flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-[8px] border transition",
+                        "flex-[0_0_auto] min-w-[64px] h-16 flex flex-col items-center justify-center rounded-[8px] border transition",
                         selected ? "bg-[#3157D5] border-[#3157D5] text-white" : "bg-white border-[#DDE3EE] text-[#172033]"
                       )}>
                       <span className={cn("text-[10px] uppercase font-bold", selected ? "text-white/75" : "text-[#64748B]")}>{format(d, "EEE", { locale: ptBR })}</span>
