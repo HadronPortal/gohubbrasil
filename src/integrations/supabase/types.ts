@@ -780,8 +780,6 @@ export type Database = {
         }
         Returns: Json
       }
-      current_user_barbershop: { Args: never; Returns: string }
-      current_user_role: { Args: never; Returns: string }
       delete_barber: { Args: { p_barber_id: string }; Returns: Json }
       delete_barber_safe: { Args: { p_barber_id: string }; Returns: Json }
       delete_barbershop_safe: {
