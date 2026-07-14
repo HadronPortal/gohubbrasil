@@ -168,6 +168,7 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
         </DialogHeader>
 
         {step === "client" ? (
+          <>
           <div className="p-5 space-y-4 overflow-y-auto flex-1 min-h-0">
             {!creatingNew && (
               <>
@@ -223,6 +224,7 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
               <Button variant="outline" onClick={() => onOpenChange(false)} className="border-[#DDE3EE] text-[#64748B] h-11">Cancelar</Button>
               <Button onClick={goToDetails} className="bg-[#3157D5] text-white hover:bg-[#274ac0] h-11">Continuar</Button>
             </div>
+          </>
         ) : (
           <>
           <div className="p-5 space-y-4 overflow-y-auto flex-1 min-h-0">
