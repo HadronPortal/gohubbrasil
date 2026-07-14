@@ -701,6 +701,10 @@ export type Database = {
         Args: { p_appointment_id: string }
         Returns: Json
       }
+      claim_manual_client_account: {
+        Args: { p_name?: string; p_phone: string }
+        Returns: Json
+      }
       create_barber:
         | {
             Args: {
