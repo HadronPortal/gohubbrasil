@@ -114,6 +114,19 @@ export default function Login() {
 
         if (authError) throw authError;
 
+        // Merge with manual client (same phone) if exists
+        try {
+          const digits = String(whatsapp || "").replace(/\D/g, "");
+          if (digits.length >= 10) {
+            await supabase.rpc(
+              "claim_manual_client_account" as any,
+              { p_phone: digits, p_name: fullName } as any
+            );
+          }
+        } catch (e) {
+          console.warn("claim_manual_client_account (signup):", e);
+        }
+
         toast.success("Conta criada com sucesso!");
         setIsSignUp(false);
       } else {
@@ -134,6 +147,19 @@ export default function Login() {
           .single();
 
         if (profileError) throw profileError;
+
+        // Merge with any manual client created by professional using the same phone
+        try {
+          const digits = String(userProfile?.phone || "").replace(/\D/g, "");
+          if (digits.length >= 10) {
+            await supabase.rpc(
+              "claim_manual_client_account" as any,
+              { p_phone: digits, p_name: userProfile?.name || null } as any
+            );
+          }
+        } catch (e) {
+          console.warn("claim_manual_client_account (signin):", e);
+        }
 
         localStorage.removeItem("force_barber_panel");
         navigate(getPostLoginRoute(userProfile), { replace: true });
