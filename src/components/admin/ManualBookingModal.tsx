@@ -294,14 +294,28 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-[#64748B]">Data</label>
-              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-5 pl-5 pr-8" style={{ WebkitOverflowScrolling: "touch" }}>
-                {days.map(d => {
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-[#64748B]">Data</label>
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={goPrevWeek} className="p-1 rounded border border-[#DDE3EE] text-[#64748B] hover:text-[#3157D5]" aria-label="Semana anterior">
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="text-[11px] text-[#64748B] font-medium min-w-[70px] text-center">{weekLabel}</span>
+                  <button type="button" onClick={goNextWeek} className="p-1 rounded border border-[#DDE3EE] text-[#64748B] hover:text-[#3157D5]" aria-label="Próxima semana">
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+              <div
+                className="grid gap-1.5"
+                style={{ gridTemplateColumns: `repeat(${sunEnabled ? 7 : 6}, minmax(0, 1fr))` }}
+              >
+                {weekDays.map(d => {
                   const selected = format(d, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd");
                   return (
-                    <button key={d.toISOString()} onClick={() => setSelectedDate(d)}
+                    <button key={d.toISOString()} onClick={() => { setSelectedDate(d); setSelectedSlot(null); }}
                       className={cn(
-                        "flex-[0_0_auto] min-w-[54px] h-14 px-1 flex flex-col items-center justify-center rounded-[8px] border transition",
+                        "h-14 px-0.5 flex flex-col items-center justify-center rounded-[8px] border transition min-w-0",
                         selected ? "bg-[#3157D5] border-[#3157D5] text-white" : "bg-white border-[#DDE3EE] text-[#172033]"
                       )}>
                       <span className={cn("text-[9px] uppercase font-bold leading-none", selected ? "text-white/80" : "text-[#64748B]")}>{format(d, "EEE", { locale: ptBR })}</span>
