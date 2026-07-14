@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { format, addDays, startOfDay } from "date-fns";
+import { format, addDays, startOfDay, startOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar as CalendarIcon, Search, UserPlus, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, Search, UserPlus, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -47,6 +47,8 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
   const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [sunEnabled, setSunEnabled] = useState<boolean>(false);
+  const [weekStart, setWeekStart] = useState<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }));
 
   useEffect(() => {
     if (!open) {
@@ -62,13 +64,14 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
   useEffect(() => {
     if (!open || !barbershopId) return;
     (async () => {
-      const [svcRes, brRes] = await Promise.all([
+      const [svcRes, brRes, schedRes] = await Promise.all([
         supabase.from("services").select("id,name,price,duration_minutes").eq("barbershop_id", barbershopId).order("name"),
         supabase
           .from("barbers")
           .select("id,user_id,barbershop_id,active,commission_pct,users:user_id(id,name,phone,avatar_url)")
           .eq("barbershop_id", barbershopId)
           .eq("active", true),
+        supabase.rpc("get_barbershop_schedule_settings", { p_barbershop_id: barbershopId }),
       ]);
       if (svcRes.error) { console.error("[ManualBooking] services error", svcRes.error); toast.error("Erro ao carregar serviços: " + svcRes.error.message); }
       if (brRes.error) { console.error("[ManualBooking] barbers error", brRes.error); toast.error("Erro ao carregar profissionais: " + brRes.error.message); }
@@ -81,6 +84,8 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
       if (!brRes.error && list.length === 0) {
         console.warn("[ManualBooking] no active barbers for barbershop", barbershopId);
       }
+      const sched: any = schedRes?.data;
+      setSunEnabled(Boolean(sched?.sun_enabled));
     })();
   }, [open, barbershopId]);
 
@@ -169,7 +174,30 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
     }
   };
 
-  const days = Array.from({ length: 14 }, (_, i) => addDays(startOfDay(new Date()), i));
+  const weekDays = useMemo(() => {
+    const count = sunEnabled ? 7 : 6; // Mon..Sat or Mon..Sun
+    return Array.from({ length: count }, (_, i) => addDays(weekStart, i));
+  }, [weekStart, sunEnabled]);
+
+  const weekLabel = useMemo(() => {
+    const first = weekDays[0];
+    const last = weekDays[weekDays.length - 1];
+    if (!first || !last) return "";
+    return `${format(first, "d")} a ${format(last, "d MMM", { locale: ptBR })}`;
+  }, [weekDays]);
+
+  const goPrevWeek = () => {
+    const ns = addDays(weekStart, -7);
+    setWeekStart(ns);
+    setSelectedDate(ns);
+    setSelectedSlot(null);
+  };
+  const goNextWeek = () => {
+    const ns = addDays(weekStart, 7);
+    setWeekStart(ns);
+    setSelectedDate(ns);
+    setSelectedSlot(null);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -266,14 +294,28 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-[#64748B]">Data</label>
-              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-5 pl-5 pr-8" style={{ WebkitOverflowScrolling: "touch" }}>
-                {days.map(d => {
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-[#64748B]">Data</label>
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={goPrevWeek} className="p-1 rounded border border-[#DDE3EE] text-[#64748B] hover:text-[#3157D5]" aria-label="Semana anterior">
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="text-[11px] text-[#64748B] font-medium min-w-[70px] text-center">{weekLabel}</span>
+                  <button type="button" onClick={goNextWeek} className="p-1 rounded border border-[#DDE3EE] text-[#64748B] hover:text-[#3157D5]" aria-label="Próxima semana">
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+              <div
+                className="grid gap-1.5"
+                style={{ gridTemplateColumns: `repeat(${sunEnabled ? 7 : 6}, minmax(0, 1fr))` }}
+              >
+                {weekDays.map(d => {
                   const selected = format(d, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd");
                   return (
-                    <button key={d.toISOString()} onClick={() => setSelectedDate(d)}
+                    <button key={d.toISOString()} onClick={() => { setSelectedDate(d); setSelectedSlot(null); }}
                       className={cn(
-                        "flex-[0_0_auto] min-w-[54px] h-14 px-1 flex flex-col items-center justify-center rounded-[8px] border transition",
+                        "h-14 px-0.5 flex flex-col items-center justify-center rounded-[8px] border transition min-w-0",
                         selected ? "bg-[#3157D5] border-[#3157D5] text-white" : "bg-white border-[#DDE3EE] text-[#172033]"
                       )}>
                       <span className={cn("text-[9px] uppercase font-bold leading-none", selected ? "text-white/80" : "text-[#64748B]")}>{format(d, "EEE", { locale: ptBR })}</span>
