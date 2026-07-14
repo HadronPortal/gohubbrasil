@@ -20,7 +20,8 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
     user?.app_metadata?.provider === "google" ||
     user?.identities?.some((identity: any) => identity.provider === "google");
 
-  const phoneMissing = !profile?.phone || String(profile.phone).trim() === "";
+  const phoneDigits = String(profile?.phone || "").replace(/\D/g, "");
+  const phoneMissing = phoneDigits.length < 10;
   const role = String(profile?.role || "client").toLowerCase();
   const isSuperAdmin = role === "superadmin" || Boolean((profile as any)?.isSuperAdmin);
   const isStaff =
@@ -55,7 +56,7 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!phoneMissing) {
-      setPhoneSaved(false);
+      setPhoneSaved(true);
     }
   }, [phoneMissing]);
 
