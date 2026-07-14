@@ -166,7 +166,7 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white border-[#DDE3EE] text-[#172033] p-0 overflow-hidden rounded-[12px] flex flex-col w-[calc(100vw-24px)] max-w-[420px] max-h-[92vh] sm:max-w-[420px]">
+      <DialogContent className="bg-white border-[#DDE3EE] text-[#172033] p-0 overflow-hidden flex flex-col w-screen max-w-none h-[100dvh] max-h-[100dvh] rounded-none sm:w-[calc(100vw-24px)] sm:max-w-[420px] sm:h-auto sm:max-h-[92vh] sm:rounded-[12px]">
         <DialogHeader className="px-5 py-4 pr-12 border-b border-[#DDE3EE] shrink-0">
           <DialogTitle className="text-[#3157D5] text-base font-semibold text-left leading-tight truncate">
             {step === "client" ? "Novo agendamento — Cliente" : "Novo agendamento — Detalhes"}
