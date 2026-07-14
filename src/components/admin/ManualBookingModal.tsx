@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { format, addDays, startOfDay } from "date-fns";
+import { format, addDays, startOfDay, startOfWeek } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar as CalendarIcon, Search, UserPlus, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, Search, UserPlus, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -47,6 +47,8 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
   const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [sunEnabled, setSunEnabled] = useState<boolean>(false);
+  const [weekStart, setWeekStart] = useState<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }));
 
   useEffect(() => {
     if (!open) {
@@ -62,13 +64,14 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
   useEffect(() => {
     if (!open || !barbershopId) return;
     (async () => {
-      const [svcRes, brRes] = await Promise.all([
+      const [svcRes, brRes, schedRes] = await Promise.all([
         supabase.from("services").select("id,name,price,duration_minutes").eq("barbershop_id", barbershopId).order("name"),
         supabase
           .from("barbers")
           .select("id,user_id,barbershop_id,active,commission_pct,users:user_id(id,name,phone,avatar_url)")
           .eq("barbershop_id", barbershopId)
           .eq("active", true),
+        supabase.rpc("get_barbershop_schedule_settings", { p_barbershop_id: barbershopId }),
       ]);
       if (svcRes.error) { console.error("[ManualBooking] services error", svcRes.error); toast.error("Erro ao carregar serviços: " + svcRes.error.message); }
       if (brRes.error) { console.error("[ManualBooking] barbers error", brRes.error); toast.error("Erro ao carregar profissionais: " + brRes.error.message); }
@@ -81,6 +84,8 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
       if (!brRes.error && list.length === 0) {
         console.warn("[ManualBooking] no active barbers for barbershop", barbershopId);
       }
+      const sched: any = schedRes?.data;
+      setSunEnabled(Boolean(sched?.sun_enabled));
     })();
   }, [open, barbershopId]);
 
