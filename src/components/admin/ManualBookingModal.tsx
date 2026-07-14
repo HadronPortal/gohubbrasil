@@ -21,7 +21,7 @@ interface Props {
   lockedBarberId?: string | null;
 }
 
-interface ClientRow { id: string; name: string; phone: string | null; }
+interface ClientRow { id: string; client_id?: string | null; name: string; phone: string | null; avatar_url?: string | null; label?: string | null; last_appointment_at?: string | null; }
 interface Barber { barber_id: string; name: string; }
 interface Service { id: string; name: string; price: number; duration_minutes: number; }
 
@@ -80,7 +80,8 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
       const { data, error } = await supabase.rpc("search_clients_for_manual_booking" as any, { p_query: clientQuery.trim() });
       setSearching(false);
       if (error) { toast.error(error.message); return; }
-      if ((data as any)?.success) setClientResults((data as any).clients || []);
+      const rows = Array.isArray(data) ? (data as any[]) : [];
+      setClientResults(rows as ClientRow[]);
     }, 250);
     return () => clearTimeout(t);
   }, [clientQuery, open, step, creatingNew]);
@@ -140,7 +141,7 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
         payload.p_client_name = newName.trim();
         payload.p_client_phone = newPhone.trim();
       } else {
-        payload.p_client_id = selectedClient!.id;
+        payload.p_client_id = selectedClient!.client_id || selectedClient!.id;
       }
       const { data, error } = await supabase.rpc("create_manual_appointment" as any, payload);
       if (error) throw error;
