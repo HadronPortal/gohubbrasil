@@ -174,7 +174,30 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
     }
   };
 
-  const days = Array.from({ length: 14 }, (_, i) => addDays(startOfDay(new Date()), i));
+  const weekDays = useMemo(() => {
+    const count = sunEnabled ? 7 : 6; // Mon..Sat or Mon..Sun
+    return Array.from({ length: count }, (_, i) => addDays(weekStart, i));
+  }, [weekStart, sunEnabled]);
+
+  const weekLabel = useMemo(() => {
+    const first = weekDays[0];
+    const last = weekDays[weekDays.length - 1];
+    if (!first || !last) return "";
+    return `${format(first, "d")} a ${format(last, "d MMM", { locale: ptBR })}`;
+  }, [weekDays]);
+
+  const goPrevWeek = () => {
+    const ns = addDays(weekStart, -7);
+    setWeekStart(ns);
+    setSelectedDate(ns);
+    setSelectedSlot(null);
+  };
+  const goNextWeek = () => {
+    const ns = addDays(weekStart, 7);
+    setWeekStart(ns);
+    setSelectedDate(ns);
+    setSelectedSlot(null);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
