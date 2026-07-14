@@ -62,12 +62,18 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
   useEffect(() => {
     if (!open || !barbershopId) return;
     (async () => {
-      const [{ data: svcs }, { data: brs }] = await Promise.all([
+      const [svcRes, brRes] = await Promise.all([
         supabase.from("services").select("id,name,price,duration_minutes").eq("barbershop_id", barbershopId).order("name"),
         supabase.from("barbers").select("id,name,active").eq("barbershop_id", barbershopId).eq("active", true).order("name"),
       ]);
-      setServices((svcs as any) || []);
-      setBarbers(((brs as any) || []).map((b: any) => ({ barber_id: b.id, name: b.name })));
+      if (svcRes.error) { console.error("[ManualBooking] services error", svcRes.error); toast.error("Erro ao carregar serviços: " + svcRes.error.message); }
+      if (brRes.error) { console.error("[ManualBooking] barbers error", brRes.error); toast.error("Erro ao carregar profissionais: " + brRes.error.message); }
+      setServices((svcRes.data as any) || []);
+      const list = ((brRes.data as any) || []).map((b: any) => ({ barber_id: b.id, name: b.name }));
+      setBarbers(list);
+      if (!brRes.error && list.length === 0) {
+        console.warn("[ManualBooking] no active barbers for barbershop", barbershopId);
+      }
     })();
   }, [open, barbershopId]);
 
