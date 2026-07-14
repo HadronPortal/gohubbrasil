@@ -258,15 +258,15 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
               </Select>
             </div>
 
-            <div className="space-y-1.5 -mx-5 px-5">
+            <div className="space-y-1.5">
               <label className="text-xs font-medium text-[#64748B]">Data</label>
-              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 -mx-5 px-5">
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-5 px-5" style={{ WebkitOverflowScrolling: "touch" }}>
                 {days.map(d => {
                   const selected = format(d, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd");
                   return (
                     <button key={d.toISOString()} onClick={() => setSelectedDate(d)}
                       className={cn(
-                        "flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-[8px] border transition",
+                        "flex-[0_0_auto] min-w-[64px] h-16 flex flex-col items-center justify-center rounded-[8px] border transition",
                         selected ? "bg-[#3157D5] border-[#3157D5] text-white" : "bg-white border-[#DDE3EE] text-[#172033]"
                       )}>
                       <span className={cn("text-[10px] uppercase font-bold", selected ? "text-white/75" : "text-[#64748B]")}>{format(d, "EEE", { locale: ptBR })}</span>
