@@ -160,15 +160,16 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white border-[#DDE3EE] text-[#172033] max-w-[380px] p-0 overflow-hidden rounded-[12px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="p-5 border-b border-[#DDE3EE]">
-          <DialogTitle className="text-[#3157D5] text-base font-semibold">
+      <DialogContent className="bg-white border-[#DDE3EE] text-[#172033] p-0 overflow-hidden rounded-[12px] flex flex-col w-[calc(100vw-24px)] max-w-[420px] max-h-[92vh] sm:max-w-[420px]">
+        <DialogHeader className="px-5 py-4 pr-12 border-b border-[#DDE3EE] shrink-0">
+          <DialogTitle className="text-[#3157D5] text-base font-semibold text-left leading-tight truncate">
             {step === "client" ? "Novo agendamento — Cliente" : "Novo agendamento — Detalhes"}
           </DialogTitle>
         </DialogHeader>
 
         {step === "client" ? (
-          <div className="p-5 space-y-4">
+          <>
+          <div className="p-5 space-y-4 overflow-y-auto flex-1 min-h-0">
             {!creatingNew && (
               <>
                 <div className="relative">
@@ -218,13 +219,15 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-3 pt-2">
+            </div>
+            <div className="grid grid-cols-2 gap-3 p-5 pt-3 border-t border-[#DDE3EE] shrink-0 bg-white">
               <Button variant="outline" onClick={() => onOpenChange(false)} className="border-[#DDE3EE] text-[#64748B] h-11">Cancelar</Button>
               <Button onClick={goToDetails} className="bg-[#3157D5] text-white hover:bg-[#274ac0] h-11">Continuar</Button>
             </div>
-          </div>
+          </>
         ) : (
-          <div className="p-5 space-y-4">
+          <>
+          <div className="p-5 space-y-4 overflow-y-auto flex-1 min-h-0">
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-[#64748B]">Serviço</label>
               <Select value={serviceId} onValueChange={setServiceId}>
@@ -249,15 +252,15 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
               </Select>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 -mx-5 px-5">
               <label className="text-xs font-medium text-[#64748B]">Data</label>
-              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 -mx-5 px-5">
                 {days.map(d => {
                   const selected = format(d, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd");
                   return (
                     <button key={d.toISOString()} onClick={() => setSelectedDate(d)}
                       className={cn(
-                        "shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-[8px] border transition",
+                        "flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-[8px] border transition",
                         selected ? "bg-[#3157D5] border-[#3157D5] text-white" : "bg-white border-[#DDE3EE] text-[#172033]"
                       )}>
                       <span className={cn("text-[10px] uppercase font-bold", selected ? "text-white/75" : "text-[#64748B]")}>{format(d, "EEE", { locale: ptBR })}</span>
@@ -277,7 +280,7 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
                   {barberId && serviceId ? "Nenhum horário disponível." : "Selecione serviço e profissional."}
                 </div>
               ) : (
-                <div className="grid grid-cols-4 gap-2 max-h-[180px] overflow-y-auto">
+                <div className="grid grid-cols-4 gap-2 max-h-[180px] overflow-y-auto pr-1">
                   {slots.map(sl => {
                     const sel = selectedSlot?.starts_at === sl.starts_at;
                     return (
@@ -294,13 +297,14 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-3 pt-2">
+            </div>
+            <div className="grid grid-cols-2 gap-3 p-5 pt-3 border-t border-[#DDE3EE] shrink-0 bg-white">
               <Button variant="outline" onClick={() => setStep("client")} className="border-[#DDE3EE] text-[#64748B] h-11">Voltar</Button>
               <Button onClick={handleSubmit} disabled={submitting || !selectedSlot} className="bg-[#3157D5] text-white hover:bg-[#274ac0] h-11">
                 {submitting ? "Salvando..." : "Confirmar"}
               </Button>
             </div>
-          </div>
+          </>
         )}
       </DialogContent>
     </Dialog>
