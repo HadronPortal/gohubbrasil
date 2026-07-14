@@ -64,12 +64,19 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
     (async () => {
       const [svcRes, brRes] = await Promise.all([
         supabase.from("services").select("id,name,price,duration_minutes").eq("barbershop_id", barbershopId).order("name"),
-        supabase.from("barbers").select("id,name,active").eq("barbershop_id", barbershopId).eq("active", true).order("name"),
+        supabase
+          .from("barbers")
+          .select("id,user_id,barbershop_id,active,commission_pct,users:user_id(id,name,phone,avatar_url)")
+          .eq("barbershop_id", barbershopId)
+          .eq("active", true),
       ]);
       if (svcRes.error) { console.error("[ManualBooking] services error", svcRes.error); toast.error("Erro ao carregar serviços: " + svcRes.error.message); }
       if (brRes.error) { console.error("[ManualBooking] barbers error", brRes.error); toast.error("Erro ao carregar profissionais: " + brRes.error.message); }
       setServices((svcRes.data as any) || []);
-      const list = ((brRes.data as any) || []).map((b: any) => ({ barber_id: b.id, name: b.name }));
+      const list = ((brRes.data as any[]) || []).map((b: any) => {
+        const u = Array.isArray(b.users) ? b.users[0] : b.users;
+        return { barber_id: b.id, name: u?.name ?? "Profissional" };
+      }).sort((a: any, b: any) => a.name.localeCompare(b.name));
       setBarbers(list);
       if (!brRes.error && list.length === 0) {
         console.warn("[ManualBooking] no active barbers for barbershop", barbershopId);
