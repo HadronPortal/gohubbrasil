@@ -64,12 +64,19 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
     (async () => {
       const [svcRes, brRes] = await Promise.all([
         supabase.from("services").select("id,name,price,duration_minutes").eq("barbershop_id", barbershopId).order("name"),
-        supabase.from("barbers").select("id,name,active").eq("barbershop_id", barbershopId).eq("active", true).order("name"),
+        supabase
+          .from("barbers")
+          .select("id,user_id,barbershop_id,active,commission_pct,users:user_id(id,name,phone,avatar_url)")
+          .eq("barbershop_id", barbershopId)
+          .eq("active", true),
       ]);
       if (svcRes.error) { console.error("[ManualBooking] services error", svcRes.error); toast.error("Erro ao carregar serviços: " + svcRes.error.message); }
       if (brRes.error) { console.error("[ManualBooking] barbers error", brRes.error); toast.error("Erro ao carregar profissionais: " + brRes.error.message); }
       setServices((svcRes.data as any) || []);
-      const list = ((brRes.data as any) || []).map((b: any) => ({ barber_id: b.id, name: b.name }));
+      const list = ((brRes.data as any[]) || []).map((b: any) => {
+        const u = Array.isArray(b.users) ? b.users[0] : b.users;
+        return { barber_id: b.id, name: u?.name ?? "Profissional" };
+      }).sort((a: any, b: any) => a.name.localeCompare(b.name));
       setBarbers(list);
       if (!brRes.error && list.length === 0) {
         console.warn("[ManualBooking] no active barbers for barbershop", barbershopId);
@@ -260,17 +267,17 @@ export default function ManualBookingModal({ open, onOpenChange, barbershopId, o
 
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-[#64748B]">Data</label>
-              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-5 px-5" style={{ WebkitOverflowScrolling: "touch" }}>
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-5 pl-5 pr-8" style={{ WebkitOverflowScrolling: "touch" }}>
                 {days.map(d => {
                   const selected = format(d, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd");
                   return (
                     <button key={d.toISOString()} onClick={() => setSelectedDate(d)}
                       className={cn(
-                        "flex-[0_0_auto] min-w-[64px] h-16 flex flex-col items-center justify-center rounded-[8px] border transition",
+                        "flex-[0_0_auto] min-w-[54px] h-14 px-1 flex flex-col items-center justify-center rounded-[8px] border transition",
                         selected ? "bg-[#3157D5] border-[#3157D5] text-white" : "bg-white border-[#DDE3EE] text-[#172033]"
                       )}>
-                      <span className={cn("text-[10px] uppercase font-bold", selected ? "text-white/75" : "text-[#64748B]")}>{format(d, "EEE", { locale: ptBR })}</span>
-                      <span className="text-base font-bold">{format(d, "d")}</span>
+                      <span className={cn("text-[9px] uppercase font-bold leading-none", selected ? "text-white/80" : "text-[#64748B]")}>{format(d, "EEE", { locale: ptBR })}</span>
+                      <span className="text-sm font-bold leading-tight mt-1">{format(d, "d")}</span>
                     </button>
                   );
                 })}
