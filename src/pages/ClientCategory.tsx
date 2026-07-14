@@ -763,34 +763,45 @@ type StoreItem = {
 function FeaturedStore({ item, categoryLabel, accent, index, onClick }: { item: StoreItem; categoryLabel: string; accent: string; index: number; onClick: () => void }) {
   const distance = formatDistance(item.distance);
   return (
-    <button type="button" onClick={onClick} className="w-[82%] shrink-0 snap-start overflow-hidden rounded-[8px] border border-slate-200 bg-white text-left shadow-sm transition active:scale-[0.99]">
-      <div className="relative h-36 overflow-hidden bg-slate-100">
+    <button
+      type="button"
+      onClick={onClick}
+      className="relative flex w-[82%] shrink-0 snap-start items-center gap-3 overflow-hidden rounded-[10px] border border-slate-200 bg-white p-3 pt-6 text-left shadow-sm transition active:scale-[0.99]"
+    >
+      {index === 0 && (
+        <span className="absolute left-2 top-2 rounded bg-[#3157D5]/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-[#3157D5]">
+          Destaque
+        </span>
+      )}
+      <div
+        className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[8px]"
+        style={{ backgroundColor: `${accent}14` }}
+      >
         {item.shop.logo_url ? (
-          <img
-            src={item.shop.logo_url}
-            alt={item.shop.name}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
+          <img src={item.shop.logo_url} alt={item.shop.name} className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full items-center justify-center" style={{ backgroundColor: `${accent}16` }}>
-            <Sparkles className="h-10 w-10" style={{ color: accent }} />
-          </div>
+          <Sparkles className="h-6 w-6" style={{ color: accent }} />
         )}
-        {index === 0 && <span className="absolute left-3 top-3 rounded bg-white px-2 py-1 text-[10px] font-bold text-slate-700 shadow">Destaque</span>}
       </div>
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h3 className="truncate text-base font-extrabold">{item.shop.name}</h3>
-            <p className="mt-0.5 truncate text-xs text-slate-500">{categoryLabel} • {item.shop.address || "Estabelecimento parceiro"}</p>
-          </div>
-          <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-[#3157D5]"><Star className="h-3.5 w-3.5 fill-current" /> Novo</span>
-        </div>
-        <div className="mt-3 flex items-center gap-2 text-xs text-slate-600">
-          {distance && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{distance}</span>}
-          {item.minPrice !== null && <span>• a partir de R$ {item.minPrice.toFixed(0)}</span>}
+      <div className="min-w-0 flex-1">
+        <h3 className="truncate text-sm font-bold">{item.shop.name}</h3>
+        <p className="mt-0.5 truncate text-[11px] text-slate-500">
+          {categoryLabel} • {item.shop.address || "Estabelecimento parceiro"}
+        </p>
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-600">
+          <span className="flex items-center gap-1 font-bold text-[#3157D5]">
+            <Star className="h-3 w-3 fill-current" /> Novo
+          </span>
+          {distance && (
+            <span className="flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
+              {distance}
+            </span>
+          )}
+          {item.minPrice !== null && <span>a partir de R$ {item.minPrice.toFixed(0)}</span>}
         </div>
       </div>
+      <ChevronRight className="h-5 w-5 shrink-0 text-slate-400" />
     </button>
   );
 }
