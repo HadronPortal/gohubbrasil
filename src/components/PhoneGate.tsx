@@ -122,6 +122,14 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
       }
 
       toast.success("Telefone atualizado com sucesso!");
+      try {
+        await supabase.rpc(
+          "claim_manual_client_account" as any,
+          { p_phone: cleanPhone, p_name: profile?.name || user.user_metadata?.full_name || user.user_metadata?.name || null } as any
+        );
+      } catch (mergeErr) {
+        console.warn("claim_manual_client_account:", mergeErr);
+      }
       await refreshProfile();
       setPhoneSaved(true);
     } catch (error: any) {
