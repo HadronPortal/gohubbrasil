@@ -89,7 +89,12 @@ export default function AdminDashboard({
   const [activeTab, setActiveTab] = useState<"today" | "upcoming" | "history">("today");
 
   useEffect(() => {
-    if (barbershopId) fetchDashboardData();
+    if (barbershopId) {
+      fetchDashboardData();
+    } else {
+      // Sem barbershop_id definido: não trava em skeleton
+      setIsLoading(false);
+    }
   }, [barbershopId]);
 
   const fetchDashboardData = async () => {
@@ -178,6 +183,14 @@ export default function AdminDashboard({
         <div className="h-64 animate-pulse rounded-[8px] bg-white border border-[#DDE3EE]" />
       </div>
     );
+
+  if (!barbershopId) {
+    return (
+      <div className="rounded-[8px] border border-[#FDECEC] bg-white p-4 text-sm text-[#B91C1C]" style={{ fontFamily: "Poppins, sans-serif" }}>
+        Não foi possível carregar o estabelecimento vinculado a este usuário. Verifique se o cadastro do dono está vinculado a um estabelecimento.
+      </div>
+    );
+  }
 
   if (showFreeSlots && barbershopId) {
     return <FreeSlotsView barbershopId={barbershopId} onBack={() => setShowFreeSlots(false)} profile={profile} />;
