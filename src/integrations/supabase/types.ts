@@ -705,6 +705,10 @@ export type Database = {
         Args: { p_name?: string; p_phone: string }
         Returns: Json
       }
+      complete_my_onboarding: {
+        Args: { p_accept_whatsapp_policy?: boolean; p_phone?: string }
+        Returns: Json
+      }
       create_barber:
         | {
             Args: {
@@ -911,6 +915,7 @@ export type Database = {
           status: string
         }[]
       }
+      get_my_onboarding_state: { Args: never; Returns: Json }
       get_owner_dashboard_appointments: {
         Args: { p_day: string }
         Returns: {
