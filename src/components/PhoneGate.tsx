@@ -32,16 +32,22 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
   const [policyLoading, setPolicyLoading] = useState(false);
   const [policyScrolledToEnd, setPolicyScrolledToEnd] = useState(false);
 
-  const role = String(profile?.role || "client").toLowerCase();
+  // Only decide roles once we actually have a profile loaded from the DB.
+  // Falling back to "client" while profile is null causes the WhatsApp policy
+  // to flash for owners/staff between SIGNED_IN and profile hydration.
+  const hasProfile = Boolean(profile && profile.id);
+  const role = hasProfile ? String(profile?.role || "").toLowerCase() : "";
   const isSuperAdmin = role === "superadmin" || Boolean((profile as any)?.isSuperAdmin);
   const isStaff =
-    isSuperAdmin ||
-    role === "owner" ||
-    role === "admin" ||
-    role === "barber" ||
-    role === "professional";
+    hasProfile &&
+    (isSuperAdmin ||
+      role === "owner" ||
+      role === "admin" ||
+      role === "barber" ||
+      role === "professional");
 
-  const enabled = !authLoading && Boolean(user?.id) && !isStaff;
+  const sessionReady = !authLoading && Boolean(user?.id) && hasProfile;
+  const enabled = sessionReady && !isStaff;
 
   const {
     data: onboarding,
@@ -50,17 +56,18 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
     error: onboardingError,
     refetch,
   } = useQuery({
-    queryKey: ["onboarding-state", user?.id],
+    queryKey: ["my-onboarding-state", user?.id],
     queryFn: fetchOnboardingState,
     enabled,
     staleTime: 60_000,
     retry: 1,
+    placeholderData: (prev) => prev,
   });
 
   // On sign-out (user becomes null), clear only this query's cache.
   useEffect(() => {
     if (!user?.id) {
-      queryClient.removeQueries({ queryKey: ["onboarding-state"] });
+      queryClient.removeQueries({ queryKey: ["my-onboarding-state"] });
     }
   }, [user?.id, queryClient]);
 
@@ -74,11 +81,23 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
   };
 
-  // Staff or unauthenticated: bypass the gate entirely.
-  if (!enabled) return <>{children}</>;
+  // Unauthenticated: pass through (login/public routes render normally).
+  if (!authLoading && !user?.id) return <>{children}</>;
 
-  // Loading state (session/RPC): show loader, never render policy/phone form yet.
-  if (onboardingLoading || (isFetching && !onboarding)) {
+  // Session/profile still loading: show loader — never render policy/phone yet.
+  if (!sessionReady) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-white">
+        <Loader2 className="h-8 w-8 animate-spin text-[#3157D5]" />
+      </main>
+    );
+  }
+
+  // Staff bypass — only after profile confirms the role.
+  if (isStaff) return <>{children}</>;
+
+  // RPC still resolving for the first time: loader (no policy flash).
+  if (onboardingLoading || !onboarding) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-white">
         <Loader2 className="h-8 w-8 animate-spin text-[#3157D5]" />
@@ -87,7 +106,7 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
   }
 
   // RPC error — do not assume empty state.
-  if (onboardingError || !onboarding) {
+  if (onboardingError) {
     return (
       <main className="min-h-screen bg-white px-6 py-10 text-[#172033]">
         <div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-[430px] flex-col items-center justify-center gap-4 text-center">
@@ -136,7 +155,10 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
         console.warn("claim_manual_client_account:", mergeErr);
       }
 
-      await queryClient.invalidateQueries({ queryKey: ["onboarding-state", user?.id] });
+      queryClient.setQueryData(["my-onboarding-state", user?.id], {
+        phone: cleanPhone,
+        whatsapp_policy_accepted: onboarding.whatsapp_policy_accepted,
+      });
       await refetch();
       toast.success("Telefone atualizado com sucesso!");
     } catch (error: any) {
@@ -162,7 +184,10 @@ export function PhoneGate({ children }: { children: React.ReactNode }) {
         p_accept_whatsapp_policy: true,
       } as any);
       if (error) throw error;
-      await queryClient.invalidateQueries({ queryKey: ["onboarding-state", user?.id] });
+      queryClient.setQueryData(["my-onboarding-state", user?.id], {
+        phone: onboarding?.phone || "",
+        whatsapp_policy_accepted: true,
+      });
       await refetch();
     } catch (error: any) {
       console.error("Erro ao registrar consentimento WhatsApp:", error);
